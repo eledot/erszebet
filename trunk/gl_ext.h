@@ -63,6 +63,6 @@ extern int gl_texture_cube_map_size_max;
 extern int gl_viewport_max[2];
 extern int gl_max_clip_planes;
 
-void gl_init_extensions (lib_t lib, const char *ext);
+void gl_init_extensions (const char *ext);
 
 #endif /* !_GL_EXT_H */

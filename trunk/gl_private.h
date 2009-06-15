@@ -26,7 +26,6 @@
 #include "common.h"
 #include "gl_ext.h"
 #include "gl_ext_funcs.h"
-#include "gl_funcs.h"
 #include "gl_helpers.h"
 #include "gl_texture.h"
 
@@ -38,7 +37,7 @@ void gl_check_error (const char *func, const char *file, int line);
 #define GLERROR() gl_check_error(__FUNCTION__, __FILE__, __LINE__)
 #else
 #define GLERROR()
-#define gl_error eglGetError()
+#define gl_error glGetError()
 #endif
 
 #endif /* !_GL_PRIVATE_H */

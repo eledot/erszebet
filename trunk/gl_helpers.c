@@ -35,7 +35,7 @@ void eglDepthMask (GLboolean flag)
         return;
 
     depth_mask_flag = flag;
-    eglDepthMask_(depth_mask_flag);
+    glDepthMask(depth_mask_flag);
 }
 
 /*
@@ -49,7 +49,7 @@ void eglBindTexture (GLenum target, GLuint tex)
         return;
 
     texture = tex;
-    eglBindTexture_(target, tex);
+    glBindTexture(target, tex);
 }
 
 /*
@@ -67,7 +67,7 @@ void eglColor3f (GLfloat r, GLfloat g, GLfloat b)
     color_b = b;
     color_a = 1;
 
-    eglColor4f_(color_r, color_g, color_b, color_a);
+    glColor4f(color_r, color_g, color_b, color_a);
 }
 
 /*
@@ -85,7 +85,7 @@ void eglColor4f (GLfloat r, GLfloat g, GLfloat b, GLfloat a)
     color_b = b;
     color_a = a;
 
-    eglColor4f_(color_r, color_g, color_b, color_a);
+    glColor4f(color_r, color_g, color_b, color_a);
 }
 
 /*
@@ -131,7 +131,7 @@ void eglEnable (GLenum cap)
         break;
     }
 
-    eglEnable_(cap);
+    glEnable(cap);
 }
 
 /*
@@ -177,7 +177,7 @@ void eglDisable (GLenum cap)
         break;
     }
 
-    eglDisable_(cap);
+    glDisable(cap);
 }
 
 /*
@@ -205,7 +205,7 @@ void gl_set_perspective (GLdouble fov, GLdouble aspect, GLdouble zNear, GLdouble
         xmax = ymax * aspect;
     }
 
-    eglFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
     GLERROR();
 }
 
@@ -216,7 +216,7 @@ gl_tex_env
 */
 void gl_tex_env (GLint param)
 {
-    eglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
     GLERROR();
 }
 
@@ -228,22 +228,22 @@ gl_reset_helpers
 void gl_reset_helpers (void)
 {
     depth_mask_flag = GL_FALSE;
-    eglDepthMask_(depth_mask_flag);
+    glDepthMask(depth_mask_flag);
     GLERROR();
 
     color_r = color_g = color_b = color_a = 0;
-    eglColor4f_(color_r, color_g, color_b, color_a);
+    glColor4f(color_r, color_g, color_b, color_a);
     GLERROR();
 
     alpha_test = blend = cull_face = depth_test = fog = GL_FALSE;
-    eglDisable_(GL_ALPHA_TEST);
+    glDisable(GL_ALPHA_TEST);
     GLERROR();
-    eglDisable_(GL_BLEND);
+    glDisable(GL_BLEND);
     GLERROR();
-    eglDisable_(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     GLERROR();
-    eglDisable_(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     GLERROR();
-    eglDisable_(GL_FOG);
+    glDisable(GL_FOG);
     GLERROR();
 }

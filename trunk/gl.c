@@ -23,7 +23,6 @@
 
 static int gl_i = 0;
 
-static lib_t libgl;
 mem_pool_t mempool;
 
 static const uint8_t internal_font_data[] =
@@ -51,7 +50,7 @@ void gl_check_error (const char *func, const char *file, int line)
 
     gl_error = 0;
 
-    err = eglGetError();
+    err = glGetError();
 
     if (GL_NO_ERROR != err)
     {
@@ -81,7 +80,7 @@ gl_clear
 */
 void gl_clear (void)
 {
-    eglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     GLERROR();
 }
 
@@ -111,7 +110,7 @@ int gl_get_screen_rgb (image_t *image)
     image->width = video_width;
     image->height = video_height;
 
-    eglReadPixels(0, 0, video_width, video_height, GL_RGB, GL_UNSIGNED_BYTE, image->data);
+    glReadPixels(0, 0, video_width, video_height, GL_RGB, GL_UNSIGNED_BYTE, image->data);
     GLERROR();
 
     return 0;
@@ -138,12 +137,12 @@ void gl_draw_stretched (int gltex)
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
 
-    eglBegin(GL_QUADS);
-    eglTexCoord2f(0, 0); eglVertex2f(0, 0);
-    eglTexCoord2f(1, 0); eglVertex2f(video_width, 0);
-    eglTexCoord2f(1, 1); eglVertex2f(video_width, video_height);
-    eglTexCoord2f(0, 1); eglVertex2f(0, video_height);
-    eglEnd();
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex2f(0, 0);
+    glTexCoord2f(1, 0); glVertex2f(video_width, 0);
+    glTexCoord2f(1, 1); glVertex2f(video_width, video_height);
+    glTexCoord2f(0, 1); glVertex2f(0, video_height);
+    glEnd();
     GLERROR();
 }
 
@@ -178,12 +177,12 @@ void gl_draw_line2d_loop (const float *coords, int num)
 {
     int i;
 
-    eglBegin(GL_LINE_LOOP);
+    glBegin(GL_LINE_LOOP);
 
     for(i = 0; i < num; i++)
-        eglVertex2f(coords[(i << 1) + 0], coords[(i << 1) + 1]);
+        glVertex2f(coords[(i << 1) + 0], coords[(i << 1) + 1]);
 
-    eglEnd();
+    glEnd();
     GLERROR();
 }
 
@@ -194,10 +193,10 @@ gl_draw_line2d
 */
 void gl_draw_line2d (float x0, float y0, float x1, float y1)
 {
-    eglBegin(GL_LINES);
-    eglVertex2f(x0, y0);
-    eglVertex2f(x1, y1);
-    eglEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x0, y0);
+    glVertex2f(x1, y1);
+    glEnd();
     GLERROR();
 }
 
@@ -222,7 +221,7 @@ void gl_draw_text (const char *text, float x, float y)
     eglBindTexture(GL_TEXTURE_2D, internal_font);
     GLERROR();
 
-    eglBegin(GL_QUADS);
+    glBegin(GL_QUADS);
 
     for (; *text && x < video_width ;text++, x += GL_INTERNAL_FONT_CW)
     {
@@ -235,20 +234,20 @@ void gl_draw_text (const char *text, float x, float y)
         tx2 = tx + 1.0f/16.0f;
         ty2 = ty + 1.0f/8.0f - 1.0f/32.0f;
 
-        eglTexCoord2f(tx, ty);
-        eglVertex2f(x, y);
+        glTexCoord2f(tx, ty);
+        glVertex2f(x, y);
 
-        eglTexCoord2f(tx2, ty);
-        eglVertex2f(x + GL_INTERNAL_FONT_CW, y);
+        glTexCoord2f(tx2, ty);
+        glVertex2f(x + GL_INTERNAL_FONT_CW, y);
 
-        eglTexCoord2f(tx2, ty2);
-        eglVertex2f(x + GL_INTERNAL_FONT_CW, y - GL_INTERNAL_FONT_CH);
+        glTexCoord2f(tx2, ty2);
+        glVertex2f(x + GL_INTERNAL_FONT_CW, y - GL_INTERNAL_FONT_CH);
 
-        eglTexCoord2f(tx, ty2);
-        eglVertex2f(x, y - GL_INTERNAL_FONT_CH);
+        glTexCoord2f(tx, ty2);
+        glVertex2f(x, y - GL_INTERNAL_FONT_CH);
     }
 
-    eglEnd();
+    glEnd();
     GLERROR();
 }
 
@@ -263,7 +262,7 @@ void gl_set_viewport (int x, int y, int w, int h)
         return;
 
     gl_clear();
-    eglViewport(x, y, w, h);
+    glViewport(x, y, w, h);
     aspect = (GLdouble)(w - x) / (GLdouble)(h - y);
     GLERROR();
 }
@@ -275,15 +274,15 @@ gl_switch_2d
 */
 void gl_switch_2d (void)
 {
-    eglMatrixMode(GL_PROJECTION);
+    glMatrixMode(GL_PROJECTION);
     GLERROR();
-    eglLoadIdentity();
+    glLoadIdentity();
     GLERROR();
-    eglOrtho(0, video_width, 0, video_height, -1, 1);
+    glOrtho(0, video_width, 0, video_height, -1, 1);
     GLERROR();
-    eglMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);
     GLERROR();
-    eglLoadIdentity();
+    glLoadIdentity();
     GLERROR();
 
     eglDepthMask(GL_FALSE);
@@ -297,7 +296,7 @@ void gl_switch_2d (void)
     eglEnable(GL_BLEND);
     GLERROR();
     gl_tex_env(GL_REPLACE);
-    eglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLERROR();
     gl_color(1, 1, 1, 1);
 }
@@ -309,18 +308,18 @@ gl_switch_3d
 */
 void gl_switch_3d (void)
 {
-    eglMatrixMode(GL_PROJECTION);
+    glMatrixMode(GL_PROJECTION);
     GLERROR();
-    eglLoadIdentity();
+    glLoadIdentity();
     GLERROR();
 
     gl_set_perspective((GLdouble)r_fov->f, aspect, 4, 999999.0);
 
-    eglCullFace(GL_FRONT);
+    glCullFace(GL_FRONT);
     GLERROR();
-    eglMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);
     GLERROR();
-    eglLoadIdentity();
+    glLoadIdentity();
     GLERROR();
 
     eglDepthMask(GL_FALSE);
@@ -335,17 +334,17 @@ void gl_switch_3d (void)
     GLERROR();
 
 /*
-  eglRotatef(-90, 1, 0, 0);
+  glRotatef(-90, 1, 0, 0);
   GLERROR();
-  eglRotatef( 90, 0, 0, 1);
+  glRotatef( 90, 0, 0, 1);
   GLERROR();
-  eglRotatef(-vid.viewangles[2],  1, 0, 0);
+  glRotatef(-vid.viewangles[2],  1, 0, 0);
   GLERROR();
-  eglRotatef(-vid.viewangles[0],  0, 1, 0);
+  glRotatef(-vid.viewangles[0],  0, 1, 0);
   GLERROR();
-  eglRotatef(-vid.viewangles[1],  0, 0, 1);
+  glRotatef(-vid.viewangles[1],  0, 0, 1);
   GLERROR();
-  eglTranslatef(-vid.vieworg[0],  -vid.vieworg[1], -vid.vieworg[2]);
+  glTranslatef(-vid.vieworg[0],  -vid.vieworg[1], -vid.vieworg[2]);
   GLERROR();
 */
 }
@@ -397,60 +396,52 @@ gl_init
 int gl_init (void)
 {
     const char *s;
-    const char *names[] =
-    {
-        "libGL.so",
-        NULL
-    };
-
-    if (LIB_HANDLE_INVALID == (libgl = lib_open(names, gl_funcs, 0)))
-        return -1;
 
     mem_alloc_static_pool("gl", 0);
 
     gl_i = 1;
 
-    s = (void *)eglGetString(GL_VENDOR);
+    s = (void *)glGetString(GL_VENDOR);
     GLERROR();
     sys_printf("opengl vendor: %s\n", NULL != s ? s : "undefined");
-    s = (void *)eglGetString(GL_VERSION);
+    s = (void *)glGetString(GL_VERSION);
     GLERROR();
     sys_printf("opengl version: %s\n", NULL != s ? s : "undefined");
-    s = (void *)eglGetString(GL_RENDERER);
+    s = (void *)glGetString(GL_RENDERER);
     GLERROR();
     sys_printf("opengl renderer: %s\n", NULL != s ? s : "undefined");
 
-    extensions = (void *)eglGetString(GL_EXTENSIONS);
+    extensions = (void *)glGetString(GL_EXTENSIONS);
     GLERROR();
 
     sys_printf("opengl extensions: %s\n", extensions);
 
     gl_reset_helpers();
-    gl_init_extensions(libgl, extensions);
+    gl_init_extensions(extensions);
 
-    eglDepthFunc(GL_LEQUAL);
+    glDepthFunc(GL_LEQUAL);
     GLERROR();
-    eglDepthRange(0, 1);
+    glDepthRange(0, 1);
     GLERROR();
 
     gl_tex_env(GL_REPLACE);
     eglEnable(GL_TEXTURE_2D);
     GLERROR();
-    eglAlphaFunc(GL_GREATER, 0);
+    glAlphaFunc(GL_GREATER, 0);
     GLERROR();
-    eglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLERROR();
 
     /* nicest */
-    eglHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     GLERROR();
-    eglHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
     GLERROR();
-    eglHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     GLERROR();
-    eglHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     GLERROR();
-    eglHint(GL_FOG_HINT, GL_NICEST);
+    glHint(GL_FOG_HINT, GL_NICEST);
     GLERROR();
 
     eglEnable(GL_DEPTH_TEST);
@@ -460,14 +451,14 @@ int gl_init (void)
     eglEnable(GL_CULL_FACE);
     GLERROR();
 
-    eglLineWidth(1.0f);
+    glLineWidth(1.0f);
     GLERROR();
-    eglPointSize(1.0f);
+    glPointSize(1.0f);
     GLERROR();
 
-    eglClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     GLERROR();
-    eglClearDepth(1.0f);
+    glClearDepth(1.0f);
     GLERROR();
 
     gl_set_viewport(0, 0, video_width, video_height);
@@ -495,8 +486,6 @@ void gl_shutdown (void)
 
     gl_texture_delete(internal_font);
     gl_texture_shutdown();
-
-    lib_close(libgl);
 
     gl_i = 0;
 

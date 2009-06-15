@@ -31,7 +31,6 @@
     GL_ADD_EXT_VAR(cvar)                                        \
     static lib_func_t *cvar##_funcs = NULL;
 
-static lib_t       libgl;
 static const char *extensions;
 
 GL_ADD_EXT_VAR2(gl_nv_fog_distance);
@@ -84,6 +83,7 @@ static int gl_add_extension (const char *name,
                              lib_func_t *funcs,
                              int       (*init_func) (int ok))
 {
+#if 0
     const char *s;
 
     *cvar = cvar_get(cvar_name, "1", 0);
@@ -109,7 +109,7 @@ static int gl_add_extension (const char *name,
 no:
     if (NULL != init_func)
         init_func(0);
-
+#endif
     return 0;
 }
 
@@ -123,7 +123,7 @@ static int nvfog_init (int ok)
     if (!ok)
         return 0;
 
-    eglHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
+    glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
     GLERROR();
 
     return 0;
@@ -139,7 +139,7 @@ static int lod_bias_get_max (int ok)
     if (!ok)
         return 0;
 
-    eglGetIntegerv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &gl_lod_bias_max);
+    glGetIntegerv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &gl_lod_bias_max);
     GLERROR();
 
     return 0;
@@ -155,7 +155,7 @@ static int aniso_get_max (int ok)
     if (!ok)
         return 0;
 
-    eglGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_anisotropy_max);
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_anisotropy_max);
     GLERROR();
 
     return 0;
@@ -171,7 +171,7 @@ static int compressed_init (int ok)
     if (!ok)
         return 0;
 
-    eglGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB, &gl_compressed_tex_num_formats);
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB, &gl_compressed_tex_num_formats);
     GLERROR();
 
     gl_compressed_tex_formats = mem_alloc_static(gl_compressed_tex_num_formats * sizeof(int));
@@ -182,7 +182,7 @@ static int compressed_init (int ok)
         return -1;
     }
 
-    eglGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS_ARB, gl_compressed_tex_formats);
+    glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS_ARB, gl_compressed_tex_formats);
     GLERROR();
 
     return 0;
@@ -198,7 +198,7 @@ static int gen_mipmap_init (int ok)
     if (!ok)
         return 0;
 
-    eglHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
+    glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
     GLERROR();
 
     return 0;
@@ -214,7 +214,7 @@ static int tex3d_init (int ok)
     if (!ok)
         return 0;
 
-    eglGetIntegerv(GL_MAX_3D_TEXTURE_SIZE_EXT, &gl_texture3d_size_max);
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE_EXT, &gl_texture3d_size_max);
     GLERROR();
 
     return 0;
@@ -230,7 +230,7 @@ static int texcubemap_init (int ok)
     if (!ok)
         return 0;
 
-    eglGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB, &gl_texture_cube_map_size_max);
+    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB, &gl_texture_cube_map_size_max);
     GLERROR();
 
     return 0;
@@ -246,7 +246,7 @@ static int clipvol_init (int ok)
     if (!ok)
         return 0;
 
-    eglHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_NICEST);
+    glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_NICEST);
     GLERROR();
 
     return 0;
@@ -257,12 +257,11 @@ static int clipvol_init (int ok)
 gl_init_extensions
 =================
 */
-void gl_init_extensions (lib_t lib, const char *ext)
+void gl_init_extensions (const char *ext)
 {
-    libgl      = lib;
     extensions = ext;
 
-    if (NULL == libgl || NULL == extensions || NULL == mempool)
+    if (NULL == extensions || NULL == mempool)
         return;
 
     GL_ADD_EXT("GL_ARB_depth_texture",              gl_arb_depth_texture,              NULL);
@@ -293,19 +292,19 @@ void gl_init_extensions (lib_t lib, const char *ext)
     GL_ADD_EXT("GL_SGIS_generate_mipmap",           gl_sgis_generate_mipmap,           &gen_mipmap_init);
     GL_ADD_EXT("GLX_SGI_swap_control",              glx_sgi_swap_control,              NULL);
 
-    eglGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);
     GLERROR();
     sys_printf("opengl max texture size: %i\n", gl_max_texture_size);
 
-    eglGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &gl_max_texture_units);
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &gl_max_texture_units);
     GLERROR();
     sys_printf("opengl max texture units: %i\n", gl_max_texture_units);
 
-    eglGetIntegerv(GL_MAX_VIEWPORT_DIMS, gl_viewport_max);
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, gl_viewport_max);
     GLERROR();
     sys_printf("opengl max viewport: %ix%i\n", gl_viewport_max[0], gl_viewport_max[1]);
 
-    eglGetIntegerv(GL_MAX_CLIP_PLANES, &gl_max_clip_planes);
+    glGetIntegerv(GL_MAX_CLIP_PLANES, &gl_max_clip_planes);
     GLERROR();
     sys_printf("opengl max clip planes: %i\n", gl_max_clip_planes);
 }

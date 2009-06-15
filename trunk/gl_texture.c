@@ -27,7 +27,7 @@ static cvar_t *gl_picmip;
 /* FIXME -- implement compressed textures & 3d textures support */
 
 #define GL_IMAGE_DATA2D(mip, im)                                        \
-    eglTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im->data);
+    glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im->data);
 
 /*
 =================
@@ -78,7 +78,7 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
     if (0 != image_resize(image, sw, sh))
         return -1;
 
-    eglGenTextures(1, &tex);
+    glGenTextures(1, &tex);
     GLERROR();
     eglBindTexture(GL_TEXTURE_2D, tex);
     GLERROR();
@@ -87,7 +87,7 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
 
     if (ext_gl_sgis_generate_mipmap && gl_sgis_generate_mipmap->i)
     {
-        eglTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
         GLERROR();
         GL_IMAGE_DATA2D(0, image);
         GLERROR();
@@ -112,18 +112,18 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
 
     if (flags & GL_TEX_FL_NOFILTER)
     {
-        eglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         GLERROR();
-        eglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         GLERROR();
     }
     else
     {
-        eglTexParameteri(GL_TEXTURE_2D,
+        glTexParameteri(GL_TEXTURE_2D,
                          GL_TEXTURE_MIN_FILTER,
                          gl_trilinear->i ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST);
         GLERROR();
-        eglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         GLERROR();
     }
 
@@ -132,7 +132,7 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         gl_ext_texture_filter_anisotropic->i)
     {
         GLfloat ani = CLAMP(gl_anisotropy_level->f, 1, gl_anisotropy_max);
-        eglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ani);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ani);
         GLERROR();
     }
 
@@ -141,14 +141,14 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         gl_ext_texture_lod_bias->i)
     {
         GLfloat lod = CLAMP(gl_lod_bias->f, 0, gl_lod_bias_max);
-        eglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS_EXT, lod);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS_EXT, lod);
         GLERROR();
     }
 
     return 0;
 
 error:
-    eglDeleteTextures(1, &tex);
+    glDeleteTextures(1, &tex);
     GLERROR();
 
     return -1;
@@ -163,7 +163,7 @@ void gl_texture_delete (int gltex)
 {
     GLuint tex = gltex;
 
-    eglDeleteTextures(1, &tex);
+    glDeleteTextures(1, &tex);
 }
 
 /*
