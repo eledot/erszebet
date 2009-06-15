@@ -48,7 +48,7 @@
 #include "strlcpy.h"
 #include "sys_arg.h"
 #include "sys.h"
-#include "video_sdl.h"
+#include "video.h"
 #include "g_main.h"
 
 #endif /* !_COMMON_H */

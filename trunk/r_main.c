@@ -157,8 +157,6 @@ void r_frame (void)
 
     if (video_grabbed)
         gl_draw_text("X", cursor_x - GL_INTERNAL_FONT_CW/2, cursor_y + GL_INTERNAL_FONT_CH/2);
-
-    video_flip();
 }
 
 /*

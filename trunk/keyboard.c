@@ -17,9 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
-#include <SDL.h>
-
 #include "common.h"
+#include "video_private.h"
 
 static const char *key_names[] =
 {
@@ -105,8 +104,6 @@ static const char *key_names[] =
     "scroll"
 };
 
-extern int (*esdl_enable_key_repeat) (int delay, int interval);
-
 /*
 =================
 key_set_repeat
@@ -114,10 +111,12 @@ key_set_repeat
 */
 void key_set_repeat (int repeat)
 {
+#ifdef ENGINE_VIDEO_SDL
     if (repeat)
-        esdl_enable_key_repeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
     else
-        esdl_enable_key_repeat(0, 0);
+        SDL_EnableKeyRepeat(0, 0);
+#endif
 }
 
 /*
@@ -131,14 +130,14 @@ void key_event (int printable, int printable_shift, int normal, int mod, int dow
 
     if (KEY_ENTER == normal && (mod & KEYMOD_ALT) && down)
     {
-        video_event(1, 0, 0, 0);
+        video_fullscreen_toggle();
     }
 
     if (KEY_BACKQUOTE == normal && down)
     {
         repeat = !repeat;
         key_set_repeat(repeat);
-        video_event(0, 1, 0, 0);
+        video_grab_toggle();
     }
 
     if (KEY_ALPHANUM == normal)

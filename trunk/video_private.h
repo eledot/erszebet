@@ -17,20 +17,13 @@
    Boston, MA 02110-1301 USA
 */
 
-/**
- * @file event.h
- *
- * @brief Events interface header
- *
- * @author ftrvxmtrx
- */
+#ifndef _VIDEO_PRIVATE_H
+#define _VIDEO_PRIVATE_H
 
-#ifndef _EVENT_H
-#define _EVENT_H
+#include "common.h"
 
-/**
- * @brief Events frame func
- */
-void event_frame (void);
+#ifdef ENGINE_VIDEO_SDL
+#include <SDL.h>
+#endif
 
-#endif /* !_EVENT_H */
+#endif /* !_VIDEO_PRIVATE_H */

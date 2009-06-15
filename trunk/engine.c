@@ -76,9 +76,9 @@ static void engine_frame (void)
 {
     sys_get_time();
 
-    event_frame();
     snd_frame();
     r_frame();
+    video_frame();
     g_frame();
     cmdbuf_frame();
 }

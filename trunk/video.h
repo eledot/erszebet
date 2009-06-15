@@ -20,7 +20,7 @@
 /**
  * @file video.h
  *
- * @brief SDL video interface header
+ * @brief Video interface header
  *
  * @author ftrvxmtrx
  */
@@ -43,6 +43,9 @@ extern int video_height;
  */
 extern int video_fullscreen;
 
+/**
+ * @brief Non-zero if input is grabbed
+ */
 extern int video_grabbed;
 
 /**
@@ -51,19 +54,9 @@ extern int video_grabbed;
 extern double video_aspect;
 
 /**
- * @brief Receives special events
- *
- * @param fullscreen_toggle Non-zero to toggle fullscreen mode (for alt+enter)
- * @param grab_toggle Non-zero to toggle input grabbing (console in windowed mode)
- * @param neww New main surface width (video resize event)
- * @param newh New main surface height (video resize event)
+ * @brief Flips main surface with second buffer and parses input/video events
  */
-void video_event (int fullscreen_toggle, int grab_toggle, int neww, int newh);
-
-/**
- * @brief Flips main surface with second buffer
- */
-void video_flip (void);
+void video_frame (void);
 
 /**
  * @brief Switches video mode
@@ -75,6 +68,16 @@ void video_flip (void);
  * @return 0 on success
  */
 int video_set_mode (int w, int h, int fullscreen);
+
+/**
+ * @brief Toggles input grabbing
+ */
+void video_grab_toggle (void);
+
+/**
+ * @brief Toggles fullscreen mode
+ */
+void video_fullscreen_toggle (void);
 
 /**
  * @brief Video module initialization

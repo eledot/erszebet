@@ -18,13 +18,12 @@
 */
 
 #include "common.h"
+#include "video_private.h"
+#include "event_maps.h"
 
-#include <SDL.h>
-#include "video_sdl_funcs.h"
+#ifdef ENGINE_VIDEO_SDL
 
 #define DEFAULT_FLAGS (SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_OPENGL)
-
-static lib_t libsdl;
 
 static int video_i = 0;
 
@@ -44,28 +43,28 @@ int video_fullscreen;
 int video_grabbed = 0;
 double video_aspect;
 
+static int input_grabbed = 1;
+
 /*
 =================
 video_grab_toggle
 =================
 */
-static void video_grab_toggle (void)
+void video_grab_toggle (void)
 {
     if (nograb)
         return;
 
     if (!video_grabbed || video_fullscreen)
     {
-        esdl_show_cursor(SDL_DISABLE);
-        esdl_wm_grab_input(SDL_GRAB_ON);
-
+        SDL_ShowCursor(SDL_DISABLE);
+        SDL_WM_GrabInput(SDL_GRAB_ON);
         video_grabbed = 1;
     }
     else
     {
-        esdl_show_cursor(SDL_ENABLE);
-        esdl_wm_grab_input(SDL_GRAB_OFF);
-
+        SDL_ShowCursor(SDL_ENABLE);
+        SDL_WM_GrabInput(SDL_GRAB_OFF);
         video_grabbed = 0;
     }
 
@@ -77,11 +76,11 @@ static void video_grab_toggle (void)
 video_fullscreen_toggle
 =================
 */
-static void video_fullscreen_toggle (void)
+void video_fullscreen_toggle (void)
 {
     video_fullscreen = !video_fullscreen;
 
-    esdl_wm_toggle_fullscreen(surf);
+    SDL_WM_ToggleFullScreen(surf);
 
     if (video_fullscreen && !video_grabbed)
         video_grab_toggle();
@@ -91,21 +90,10 @@ static void video_fullscreen_toggle (void)
 
 /*
 =================
-video_flip
-=================
-*/
-void video_flip (void)
-{
-    esdl_gl_swap_buffers();
-    errno = 0;
-}
-
-/*
-=================
 video_event
 =================
 */
-void video_event (int fullscreen_toggle, int grab_toggle, int neww, int newh)
+static void video_event (int fullscreen_toggle, int grab_toggle, int neww, int newh)
 {
     if (fullscreen_toggle)
         video_fullscreen_toggle();
@@ -115,6 +103,88 @@ void video_event (int fullscreen_toggle, int grab_toggle, int neww, int newh)
 
     if (neww && newh)
         video_set_mode(neww, newh, video_fullscreen);
+}
+
+/*
+=================
+video_frame
+=================
+*/
+void video_frame (void)
+{
+    SDL_Event ev;
+    int       mod, sym;
+
+    SDL_GL_SwapBuffers();
+
+    while (SDL_PollEvent(&ev))
+    {
+        errno = 0;
+
+        switch (ev.type)
+        {
+        case SDL_MOUSEMOTION:
+            if (!input_grabbed)
+                continue;
+
+            mouse_event(0, 0, ev.motion.xrel, ev.motion.yrel);
+            break;
+
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            if (!input_grabbed)
+                continue;
+
+            mod = 0;
+
+            if (ev.key.keysym.mod & KMOD_SHIFT)
+                mod |= KEYMOD_SHIFT;
+
+            if (ev.key.keysym.mod & KMOD_CTRL)
+                mod |= KEYMOD_CTRL;
+
+            if (ev.key.keysym.mod & KMOD_ALT)
+                mod |= KEYMOD_ALT;
+
+            if (ev.key.keysym.mod & KMOD_META)
+                mod |= KEYMOD_META;
+
+            sym = ev.key.keysym.sym;
+
+            key_event(map_print[sym],
+                      map_print_shift[sym],
+                      map_normal[sym],
+                      mod,
+                      SDL_PRESSED == ev.key.state);
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            if (!input_grabbed)
+                continue;
+
+            mouse_event(ev.button.button, SDL_PRESSED == ev.button.state, 0, 0);
+            break;
+
+        case SDL_ACTIVEEVENT:
+            if (SDL_APPINPUTFOCUS == ev.active.state || SDL_APPACTIVE == ev.active.state)
+                input_grabbed = ev.active.gain;
+            break;
+
+        case SDL_VIDEORESIZE:
+            video_set_mode(ev.resize.w, ev.resize.h, video_fullscreen);
+            break;
+
+        case SDL_QUIT:
+            cmdbuf_add("quit\n", CMD_SRC_ENGINE);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    errno = 0;
 }
 
 /*
@@ -135,12 +205,12 @@ int video_set_mode (int w, int h, int fullscreen)
 
     sys_printf("using %ix%i video mode\n", w, h);
 
-    esdl_gl_set_attribute(SDL_GL_RED_SIZE, 8);
-    esdl_gl_set_attribute(SDL_GL_GREEN_SIZE, 8);
-    esdl_gl_set_attribute(SDL_GL_BLUE_SIZE, 8);
-    esdl_gl_set_attribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    if (NULL == (surf = esdl_set_video_mode(w, h, 32, flags)))
+    if (NULL == (surf = SDL_SetVideoMode(w, h, 32, flags)))
     {
         sys_printf("SDL_SetVideoMode failed on %ix%i\n", w, h);
         return -1;
@@ -166,44 +236,32 @@ video_init
 */
 int video_init (void)
 {
-    int         flags, w = 0, h = 0, i;
-    const char *names[] =
-    {
-        "libSDL-1.2.so.0",
-        "libSDL.so",
-        NULL
-    };
+    int flags, w = 0, h = 0, i;
 
     nograb = sys_arg_find("-nograb");
-
-    if (LIB_HANDLE_INVALID == (libsdl = lib_open(names, funcs, 0)))
-    {
-        sys_printf("failed to load sdl library\n");
-        return -1;
-    }
 
     r_mode = cvar_get("r_mode", "c", CVAR_FL_SAVE);
     r_custom_width = cvar_get("r_custom_width", "480", CVAR_FL_SAVE);
     r_custom_height = cvar_get("r_custom_height", "320", CVAR_FL_SAVE);
     r_fullscreen = cvar_get("r_fullscreen", "0", CVAR_FL_SAVE);
 
-    if (0 != esdl_init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))
+    if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))
     {
         sys_printf("SDL_Init failed\n");
-        return -2;
+        return -1;
     }
 
     video_i = 1;
 
-    esdl_event_state(SDL_VIDEOEXPOSE, SDL_IGNORE);
+    SDL_EventState(SDL_VIDEOEXPOSE, SDL_IGNORE);
 
     flags = DEFAULT_FLAGS | SDL_FULLSCREEN;
 
-    if (NULL == (modes = esdl_list_modes(NULL, flags)))
+    if (NULL == (modes = SDL_ListModes(NULL, flags)))
     {
         sys_printf("no available video modes\n");
-        esdl_quit();
-        return -3;
+        SDL_Quit();
+        return -2;
     }
 
     errno = 0;
@@ -244,12 +302,11 @@ int video_init (void)
 
     if (0 != video_set_mode(w, h, r_fullscreen->i))
     {
-        esdl_quit();
-        return -4;
+        SDL_Quit();
+        return -3;
     }
 
     video_grab_toggle();
-
     errno = 0;
 
     sys_printf("+video\n");
@@ -269,11 +326,10 @@ void video_shutdown (void)
 
     video_i = 0;
 
-    esdl_quit();
-
-    lib_close(libsdl);
-
+    SDL_Quit();
     errno = 0;
 
     sys_printf("-video\n");
 }
+
+#endif
