@@ -90,23 +90,6 @@ void video_fullscreen_toggle (void)
 
 /*
 =================
-video_event
-=================
-*/
-static void video_event (int fullscreen_toggle, int grab_toggle, int neww, int newh)
-{
-    if (fullscreen_toggle)
-        video_fullscreen_toggle();
-
-    if (grab_toggle)
-        video_grab_toggle();
-
-    if (neww && newh)
-        video_set_mode(neww, newh, video_fullscreen);
-}
-
-/*
-=================
 video_frame
 =================
 */

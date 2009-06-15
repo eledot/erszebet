@@ -17,11 +17,13 @@
    Boston, MA 02110-1301 USA
 */
 
+#include "common.h"
+
+#ifdef ENGINE_SND
+
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "common.h"
-#include "snd_openal_funcs.h"
 #include "snd_wav.h"
 #include "snd_ogg.h"
 #include "snd_flac.h"
@@ -39,9 +41,8 @@ typedef struct sound_s
     struct sound_s *prev;
 }sound_t;
 
-static int   snd_i = 0;
-static lib_t libopenal;
-static int   alc_done = 0;
+static int snd_i = 0;
+static int alc_done = 0;
 
 static ALCdevice  *snd_device;
 static ALCcontext *snd_context;
@@ -86,7 +87,7 @@ static void snd_check_error (const char *func, const char *file, int line)
 
     if (alc_done)
     {
-        err = eal_get_error();
+        err = alGetError();
 
         if (AL_NO_ERROR != err)
         {
@@ -106,7 +107,7 @@ static void snd_check_error (const char *func, const char *file, int line)
         }
     }
 
-    err = ealc_get_error(snd_device);
+    err = alcGetError(snd_device);
 
     if (ALC_NO_ERROR != err)
     {
@@ -131,7 +132,7 @@ static void snd_check_error (const char *func, const char *file, int line)
 #else /* !ENGINE_SND_DEBUG */
 
 #define ALERROR()
-#define al_error eal_get_error()
+#define al_error alGetError()
 
 #endif /* ENGINE_SND_DEBUG */
 
@@ -145,7 +146,7 @@ static void s_volume_callback (const cvar_t *cvar)
     if (!snd_i)
         return;
 
-    eal_listenerf(AL_GAIN, cvar->f);
+    alListenerf(AL_GAIN, cvar->f);
     ALERROR();
 }
 
@@ -165,7 +166,7 @@ void snd_set_listener_pos (const float *pos)
         return;
     }
 
-    eal_listener3f(AL_POSITION, pos[0], pos[1], pos[2]);
+    alListener3f(AL_POSITION, pos[0], pos[1], pos[2]);
     ALERROR();
 }
 
@@ -185,7 +186,7 @@ void snd_set_listener_orientation (const float *ori)
         return;
     }
 
-    eal_listenerfv(AL_ORIENTATION, ori);
+    alListenerfv(AL_ORIENTATION, ori);
     ALERROR();
 }
 
@@ -205,7 +206,7 @@ void snd_set_listener_velocity (const float *vel)
         return;
     }
 
-    eal_listenerfv(AL_VELOCITY, vel);
+    alListenerfv(AL_VELOCITY, vel);
     ALERROR();
 }
 
@@ -249,6 +250,9 @@ snd_sound_t snd_load (const char *name, int flags UV)
     sound_t *sound;
     char     tmp[MISC_MAX_FILENAME];
 
+    if (!snd_i)
+        return NULL;
+
     if (NULL == (sound = mem_alloc_static(sizeof(*sound))))
     {
         sys_printf("failed to allocate %i bytes for sound\n", sizeof(*sound));
@@ -265,27 +269,27 @@ snd_sound_t snd_load (const char *name, int flags UV)
 
             sound->streaming = streaming;
 
-            eal_gen_buffers(1, &sound->al_buffer);
+            alGenBuffers(1, &sound->al_buffer);
             ALERROR();
 
             if (al_error)
             {
-                sys_printf("eal_gen_buffers failed\n");
+                sys_printf("alGenBuffers failed\n");
                 goto error;
             }
 
             if (!streaming)
             {
-                eal_buffer_data(sound->al_buffer,
-                                sound->stream.stream_data_format,
-                                sound->stream.data,
-                                sound->stream.data_size,
-                                sound->stream.stream_data_rate);
+                alBufferData(sound->al_buffer,
+                             sound->stream.stream_data_format,
+                             sound->stream.data,
+                             sound->stream.data_size,
+                             sound->stream.stream_data_rate);
                 ALERROR();
 
                 if (al_error)
                 {
-                    sys_printf("eal_buffer_data failed\n");
+                    sys_printf("alBufferData failed\n");
                     goto error;
                 }
 
@@ -357,12 +361,6 @@ snd_init
 int snd_init (void)
 {
     const char *s;
-    const char *names[] =
-    {
-        "libopenal.so.0.0.0",
-        "libopenal.so.0",
-        "libopenal.so"
-    };
 
     alc_done = 0;
     sounds = sounds_streaming = NULL;
@@ -375,52 +373,44 @@ int snd_init (void)
     if (sys_arg_find("-nosound"))
         return 0;
 
-    if (LIB_HANDLE_INVALID == (libopenal = lib_open(names, funcs, 0)))
-    {
-        sys_printf("openal support disabled\n");
-        return -1;
-    }
-
     /* open default device */
-    snd_device = ealc_open_device(NULL);
+    snd_device = alcOpenDevice(NULL);
     ALERROR();
 
     if (NULL == snd_device)
     {
         sys_printf("failed to open default sound device\n");
-        lib_close(libopenal);
         return -2;
     }
 
     /* create default context */
-    snd_context = ealc_create_context(snd_device, NULL);
+    snd_context = alcCreateContext(snd_device, NULL);
     ALERROR();
 
     if (NULL == snd_context)
     {
         sys_printf("failed to create sound context\n");
-        lib_close(libopenal);
         return -3;
     }
 
     /* set current context. alGetError becomes available, btw */
-    ealc_make_context_current(snd_context);
+    alcMakeContextCurrent(snd_context);
     alc_done = 1;
     ALERROR();
 
     errno = 0;
 
     /* print some info about OpenAL */
-    s = eal_get_string(AL_VENDOR);
+    s = alGetString(AL_VENDOR);
     sys_printf("openal vendor: %s\n", NULL != s ? s : "undefined");
     ALERROR();
-    s = eal_get_string(AL_VERSION);
+    s = alGetString(AL_VERSION);
     sys_printf("openal version: %s\n", NULL != s ? s : "undefined");
     ALERROR();
-    s = eal_get_string(AL_RENDERER);
+    s = alGetString(AL_RENDERER);
     sys_printf("openal renderer: %s\n", NULL != s ? s : "undefined");
     ALERROR();
-    s = extensions = eal_get_string(AL_EXTENSIONS);
+    s = extensions = alGetString(AL_EXTENSIONS);
     sys_printf("openal extensions: %s\n", NULL != s ? s : "undefined");
     ALERROR();
 
@@ -438,30 +428,6 @@ int snd_init (void)
 
     sys_printf("+snd\n");
 
-/*
-    {
-        ALuint id;
-        float or[3] = { 0, 0, 0 };
-        sound_t *s;
-
-        if (NULL != (s = snd_load("snd3flac", 0)))
-        {
-            eal_gen_sources(1, &id);
-            ALERROR();
-            eal_sourcef(id, AL_GAIN, 1.0f);
-            ALERROR();
-            eal_sourcefv(id, AL_POSITION, or);
-            ALERROR();
-            eal_sourcef(id, AL_REFERENCE_DISTANCE, 320);
-            ALERROR();
-            eal_sourcei(id, AL_BUFFER, s->al_buffer);
-            ALERROR();
-            eal_source_play(id);
-            ALERROR();
-        }
-    }
-*/
-
     return 0;
 }
 
@@ -475,15 +441,13 @@ void snd_shutdown (void)
     if (!snd_i)
         return;
 
-    ealc_make_context_current(NULL);
+    alcMakeContextCurrent(NULL);
     alc_done = 0; /* no context here -- can't use alGetError */
     ALERROR();
-    ealc_destroy_context(snd_context);
+    alcDestroyContext(snd_context);
     ALERROR();
-    ealc_close_device(snd_device);
+    alcCloseDevice(snd_device);
     ALERROR();
-
-    lib_close(libopenal);
 
     mem_free_static_pool();
 
@@ -495,3 +459,17 @@ void snd_shutdown (void)
 
     sys_printf("-snd\n");
 }
+
+#else
+
+void snd_set_listener_pos (const float *pos UV) { }
+void snd_set_listener_velocity (const float *vel UV) { }
+int snd_get_stream_format (int bps UV, int channels UV) { return -1; }
+snd_sound_t snd_load (const char *name UV, int flags UV) { return NULL; }
+void snd_unload (snd_sound_t *sound UV) { }
+void snd_frame (void) { }
+
+int snd_init (void) { return 0; }
+void snd_shutdown (void) { }
+
+#endif /* ENGINE_SND */

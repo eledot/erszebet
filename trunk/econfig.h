@@ -35,10 +35,14 @@
 #define ENGINE_VIDEO_SDL
 #define ENGINE_IMAGE_PNG
 #define ENGINE_IMAGE_JPEG
+#define ENGINE_SND
+
+#ifdef ENGINE_SND
 #define ENGINE_SND_WAV
 #define ENGINE_SND_OGG
 #define ENGINE_SND_FLAC
 #define ENGINE_SYS_PRINTF
+#endif
 
 /* debugging */
 #ifdef DEBUG
