@@ -1,0 +1,39 @@
+--- chipmunk-old/cpBody.c	2009-06-12 16:20:49.000000000 +0300
++++ chipmunk/cpBody.c	2009-06-12 16:28:33.000000000 +0300
+@@ -46,6 +46,7 @@
+ 	cpBodySetAngle(body, 0.0f);
+ 	body->w = 0.0f;
+ 	body->t = 0.0f;
++        body->gravity = 0.0f;
+ 	
+ 	body->v_bias = cpvzero;
+ 	body->w_bias = 0.0f;
+--- chipmunk-old/cpBody.h	2009-06-12 16:20:49.000000000 +0300
++++ chipmunk/cpBody.h	2009-06-12 16:25:31.000000000 +0300
+@@ -51,11 +51,13 @@
+ 	// Angular components of motion (angle, angular velocity, and torque)
+ 	// Always use cpBodySetAngle() to set the angle of the body as a and rot must agree.
+ 	cpFloat a, w, t;
++
++    cpFloat gravity;
+ 	
+ 	// Cached unit length vector representing the angle of the body.
+ 	// Used for fast vector rotation using cpvrotate().
+ 	cpVect rot;
+-	
++
+ 	// *** User Definable Fields
+ 	
+ 	// User defined data pointer.
+--- chipmunk-old/cpSpace.c	2009-06-12 16:20:49.000000000 +0300
++++ chipmunk/cpSpace.c	2009-06-12 16:28:39.000000000 +0300
+@@ -542,7 +542,8 @@
+ 	cpFloat damping = cpfpow(1.0f/space->damping, -dt);
+ 	for(int i=0; i<bodies->num; i++){
+ 		cpBody *body = (cpBody *)bodies->arr[i];
+-		body->velocity_func(body, space->gravity, damping, dt);
++                cpVect grav = cpv(0.0, space->gravity.y + body->gravity);
++		body->velocity_func(body, grav, damping, dt);
+ 	}
+ 
+ 	for(int i=0; i<arbiters->num; i++)
