@@ -348,6 +348,9 @@ int snd_flac_load (const char   *name,
     FLAC__StreamDecoder          *dec = NULL;
     FLAC__StreamDecoderInitStatus status;
 
+    if (!snd_flac_i)
+        return -1;
+
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
         sys_printf("bad args (name=%p, pool=%p, stream=%p, streaming=%p)\n",

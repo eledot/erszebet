@@ -28,7 +28,7 @@ WARN=  -W -Wall
 INCS=  -I/usr/include ${shell sdl-config --cflags} ${shell pkg-config --cflags flac}
 # stupid vorbis.pc
 INCS+= ${shell pkg-config --cflags vorbis} -I/usr/include/vorbis -I/usr/local/include/vorbis
-LIBS=  -lm -lpthread -L/usr/local/lib -lGL -lSDL -lFLAC
+LIBS=  -lm -lpthread -L/usr/local/lib -lGL -lSDL -lFLAC -lvorbisfile
 
 ifeq "${RELEASE}" "1"
 CFLAGS+= -s -Os -g0 -DRELEASE

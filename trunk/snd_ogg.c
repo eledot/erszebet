@@ -17,19 +17,15 @@
    Boston, MA 02110-1301 USA
 */
 
+#include "common.h"
+
 #ifdef ENGINE_SND_OGG
 
 #include <vorbisfile.h>
 
-#include "common.h"
-#include "snd_ogg_funcs.h"
-
 #define STREAM_BUFFER_SIZE 65536
 
 static int snd_ogg_i = 0;
-
-static lib_t libvorbis;
-static lib_t libvorbisfile;
 
 /*
 =================
@@ -95,8 +91,9 @@ static const ov_callbacks callbacks =
 snd_ogg_stream_unload
 =================
 */
-static void snd_ogg_stream_unload (snd_stream_t *stream)
+static void snd_ogg_stream_unload (snd_stream_t *stream UV)
 {
+    /* FIXME */
 }
 
 /*
@@ -104,8 +101,10 @@ static void snd_ogg_stream_unload (snd_stream_t *stream)
 snd_ogg_stream_func
 =================
 */
-static int snd_ogg_stream_func (snd_stream_t *stream, int flags, snd_feed_callback_t feed)
+static int snd_ogg_stream_func (snd_stream_t *stream UV, int flags UV, snd_feed_callback_t feed UV)
 {
+    /* FIXME */
+
     return SND_STREAM_RET_OK;
 }
 
@@ -123,6 +122,9 @@ int snd_ogg_load (const char   *name,
     int             file_size, length, buffer_size, add, cursec;
     OggVorbis_File *vorbisfile = NULL;
     vorbis_info    *vorbisinfo = NULL;
+
+    if (!snd_ogg_i)
+        return -1;
 
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
@@ -149,13 +151,13 @@ int snd_ogg_load (const char   *name,
     stream->file    = f;
     stream->private = vorbisfile;
 
-    if (eov_open_callbacks(stream, vorbisfile, NULL, 0, callbacks) != 0)
+    if (ov_open_callbacks(stream, vorbisfile, NULL, 0, callbacks) != 0)
     {
         sys_printf("bad ogg file\n");
         goto error;
     }
 
-    if (!(vorbisinfo = eov_info(vorbisfile, -1)))
+    if (!(vorbisinfo = ov_info(vorbisfile, -1)))
     {
         sys_printf("ov_info failed\n");
         goto error;
@@ -186,7 +188,7 @@ int snd_ogg_load (const char   *name,
         goto error;
     }
 
-    length = eov_pcm_total(vorbisfile, -1) * vorbisinfo->channels * 2;
+    length = ov_pcm_total(vorbisfile, -1) * vorbisinfo->channels * 2;
 
     *streaming = length > PCM_MAX_NONSTREAMING;
 
@@ -214,18 +216,18 @@ int snd_ogg_load (const char   *name,
 
         buffer_size = 0;
 
-        while (0 < (add = eov_read(vorbisfile,
-                                   (char *)stream->data + buffer_size,
-                                   length - buffer_size,
-                                   0,
-                                   2,
-                                   1,
-                                   &cursec)))
+        while (0 < (add = ov_read(vorbisfile,
+                                  (char *)stream->data + buffer_size,
+                                  length - buffer_size,
+                                  0,
+                                  2,
+                                  1,
+                                  &cursec)))
         {
             buffer_size += add;
         }
 
-        eov_clear(vorbisfile);
+        ov_clear(vorbisfile);
         mem_free(stream->private);
     }
 
@@ -235,7 +237,7 @@ error:
     sys_printf("failed to load \"%s\"\n", name);
 
     if (NULL != vorbisfile)
-        eov_clear(vorbisfile);
+        ov_clear(vorbisfile);
     else
         fs_close(f);
 
@@ -255,40 +257,10 @@ snd_ogg_init
 */
 int snd_ogg_init (void)
 {
-    const char *names[] =
-    {
-        "libvorbisfile.so.3.3.0",
-        "libvorbisfile.so.3",
-        "libvorbisfile.so",
-        NULL
-    };
-
-    const char *names2[] =
-    {
-        "libvorbis.so.0.4.1",
-        "libvorbis.so.0",
-        "libvorbis.so",
-        NULL
-    };
-
     if (sys_arg_find("-nolibvorbis"))
         return 0;
 
-    if (LIB_HANDLE_INVALID == (libvorbisfile = lib_open(names, funcs, 0)))
-    {
-        sys_printf("ogg support disabled\n");
-        lib_close(libvorbis);
-        return -1;
-    }
-
-    if (LIB_HANDLE_INVALID == (libvorbis = lib_open(names2, NULL, 0)))
-    {
-        sys_printf("ogg support disabled\n");
-        return -2;
-    }
-
     snd_ogg_i = 1;
-
     sys_printf("+snd_ogg\n");
 
     return 0;
@@ -303,9 +275,6 @@ void snd_ogg_shutdown (void)
 {
     if (!snd_ogg_i)
         return;
-
-    lib_close(libvorbisfile);
-    lib_close(libvorbis);
 
     sys_printf("-snd_ogg\n");
 }
