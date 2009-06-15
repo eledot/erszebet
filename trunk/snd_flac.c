@@ -17,25 +17,22 @@
    Boston, MA 02110-1301 USA
 */
 
+#include "common.h"
+
 #ifdef ENGINE_SND_FLAC
 
 #include <stream_decoder.h>
 
-#include "common.h"
-#include "snd_flac_funcs.h"
-
 #define STREAM_BUFFER_SIZE 65536
 
 static int snd_flac_i = 0;
-
-static lib_t libflac;
 
 /*
 =================
 eflac_decoder_read
 =================
 */
-static FLAC__StreamDecoderReadStatus eflac_decoder_read (const FLAC__StreamDecoder *decoder,
+static FLAC__StreamDecoderReadStatus eflac_decoder_read (const FLAC__StreamDecoder *decoder UV,
                                                          FLAC__byte                 buffer[],
                                                          size_t                    *bytes,
                                                          void                      *client_data)
@@ -60,7 +57,7 @@ static FLAC__StreamDecoderReadStatus eflac_decoder_read (const FLAC__StreamDecod
 eflac_decoder_seek
 =================
 */
-static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (const FLAC__StreamDecoder *decoder,
+static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (const FLAC__StreamDecoder *decoder UV,
                                                          FLAC__uint64               abs_offset,
                                                          void                      *client_data)
 {
@@ -78,7 +75,7 @@ static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (const FLAC__StreamDecod
 eflac_decoder_tell
 =================
 */
-static FLAC__StreamDecoderTellStatus eflac_decoder_tell (const FLAC__StreamDecoder *decoder,
+static FLAC__StreamDecoderTellStatus eflac_decoder_tell (const FLAC__StreamDecoder *decoder UV,
                                                          FLAC__uint64              *abs_offset,
                                                          void                      *client_data)
 {
@@ -99,7 +96,7 @@ static FLAC__StreamDecoderTellStatus eflac_decoder_tell (const FLAC__StreamDecod
 eflac_decoder_length
 =================
 */
-static FLAC__StreamDecoderLengthStatus eflac_decoder_length (const FLAC__StreamDecoder *decoder,
+static FLAC__StreamDecoderLengthStatus eflac_decoder_length (const FLAC__StreamDecoder *decoder UV,
                                                              FLAC__uint64              *stream_length,
                                                              void                      *client_data)
 {
@@ -120,7 +117,7 @@ static FLAC__StreamDecoderLengthStatus eflac_decoder_length (const FLAC__StreamD
 eflac_decoder_eof
 =================
 */
-static FLAC__bool eflac_decoder_eof (const FLAC__StreamDecoder *decoder, void *client_data)
+static FLAC__bool eflac_decoder_eof (const FLAC__StreamDecoder *decoder UV, void *client_data)
 {
     snd_stream_t *s = client_data;
 
@@ -132,7 +129,7 @@ static FLAC__bool eflac_decoder_eof (const FLAC__StreamDecoder *decoder, void *c
 flac_decoder_write
 =================
 */
-static FLAC__StreamDecoderWriteStatus eflac_decoder_write (const FLAC__StreamDecoder *decoder,
+static FLAC__StreamDecoderWriteStatus eflac_decoder_write (const FLAC__StreamDecoder *decoder UV,
                                                            const FLAC__Frame         *frame,
                                                            const FLAC__int32 *const   buffer[],
                                                            void                      *client_data)
@@ -207,7 +204,7 @@ static FLAC__StreamDecoderWriteStatus eflac_decoder_write (const FLAC__StreamDec
 eflac_decoder_metadata
 =================
 */
-static void eflac_decoder_metadata (const FLAC__StreamDecoder  *decoder,
+static void eflac_decoder_metadata (const FLAC__StreamDecoder  *decoder UV,
                                     const FLAC__StreamMetadata *metadata,
                                     void                       *client_data)
 {
@@ -259,9 +256,9 @@ static void eflac_decoder_metadata (const FLAC__StreamDecoder  *decoder,
 eflac_decoder_error
 =================
 */
-static void eflac_decoder_error (const FLAC__StreamDecoder     *decoder,
+static void eflac_decoder_error (const FLAC__StreamDecoder     *decoder UV,
                                  FLAC__StreamDecoderErrorStatus status,
-                                 void                          *client_data)
+                                 void                          *client_data UV)
 {
     switch (status)
     {
@@ -322,7 +319,7 @@ static void eflac_decoder_print_init_status (FLAC__StreamDecoderInitStatus s)
 snd_flac_stream_unload
 =================
 */
-static void snd_flac_stream_unload (snd_stream_t *stream)
+static void snd_flac_stream_unload (snd_stream_t *stream UV)
 {
 }
 
@@ -331,7 +328,7 @@ static void snd_flac_stream_unload (snd_stream_t *stream)
 snd_flac_stream_func
 =================
 */
-static int snd_flac_stream_func (snd_stream_t *stream, int flags, snd_feed_callback_t feed)
+static int snd_flac_stream_func (snd_stream_t *stream UV, int flags UV, snd_feed_callback_t feed UV)
 {
     return SND_STREAM_RET_OK;
 }
@@ -367,7 +364,7 @@ int snd_flac_load (const char   *name,
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
         return -2;
 
-    if (NULL == (dec = eflac_decoder_new()))
+    if (NULL == (dec = FLAC__stream_decoder_new()))
     {
         sys_printf("eflac_decoder_new failed\n");
         goto error;
@@ -376,16 +373,16 @@ int snd_flac_load (const char   *name,
     stream->file    = f;
     stream->private = dec;
 
-    status = eflac_decoder_init_stream(dec,
-                                       &eflac_decoder_read,
-                                       &eflac_decoder_seek,
-                                       &eflac_decoder_tell,
-                                       &eflac_decoder_length,
-                                       &eflac_decoder_eof,
-                                       &eflac_decoder_write,
-                                       &eflac_decoder_metadata,
-                                       &eflac_decoder_error,
-                                       stream);
+    status = FLAC__stream_decoder_init_stream(dec,
+                                              &eflac_decoder_read,
+                                              &eflac_decoder_seek,
+                                              &eflac_decoder_tell,
+                                              &eflac_decoder_length,
+                                              &eflac_decoder_eof,
+                                              &eflac_decoder_write,
+                                              &eflac_decoder_metadata,
+                                              &eflac_decoder_error,
+                                              stream);
 
     if (FLAC__STREAM_DECODER_INIT_STATUS_OK != status)
     {
@@ -393,7 +390,7 @@ int snd_flac_load (const char   *name,
         goto error;
     }
 
-    if (!eflac_decoder_process_until_eom(dec))
+    if (!FLAC__stream_decoder_process_until_end_of_metadata(dec))
     {
         sys_printf("eflac_decoder_process_until_eom failed\n");
         goto error;
@@ -429,19 +426,19 @@ int snd_flac_load (const char   *name,
             goto error;
         }
 
-        if (!eflac_decoder_process_until_eos(dec))
+        if (!FLAC__stream_decoder_process_until_end_of_stream(dec))
         {
             sys_printf("eflac_decoder_process_until_eos failed\n");
             goto error;
         }
 
-        if (!eflac_decoder_finish(dec))
+        if (!FLAC__stream_decoder_finish(dec))
         {
             sys_printf("eflac_decoder_finish failed\n");
             //goto error;
         }
 
-        eflac_decoder_delete(dec);
+        FLAC__stream_decoder_delete(dec);
     }
 
     return 0;
@@ -456,7 +453,7 @@ error:
         fs_close(stream->file);
 
     if (NULL != dec)
-        eflac_decoder_delete(dec);
+        FLAC__stream_decoder_delete(dec);
 
     return -3;
 }
@@ -468,26 +465,10 @@ snd_flac_init
 */
 int snd_flac_init (void)
 {
-    const char *names[] =
-    {
-        "libFLAC.so.8.2.0",
-        "libFLAC.so.8",
-        "libFLAC.so",
-        NULL
-    };
-
     if (sys_arg_find("-nolibflac"))
         return 0;
 
-    if (LIB_HANDLE_INVALID == (libflac = lib_open(names, funcs, 0)))
-    {
-        sys_printf("flac support disabled\n");
-        lib_close(libflac);
-        return -1;
-    }
-
     snd_flac_i = 1;
-
     sys_printf("+snd_flac\n");
 
     return 0;
@@ -502,8 +483,6 @@ void snd_flac_shutdown (void)
 {
     if (!snd_flac_i)
         return;
-
-    lib_close(libflac);
 
     sys_printf("-snd_flac\n");
 }
