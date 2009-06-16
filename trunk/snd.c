@@ -21,8 +21,8 @@
 
 #ifdef ENGINE_SND
 
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 
 #include "snd_wav.h"
 #include "snd_ogg.h"
