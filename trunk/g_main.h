@@ -20,7 +20,7 @@
 #ifndef _G_MAIN_H
 #define _G_MAIN_H
 
-double g_time;
+extern double g_time;
 
 void g_call_func (const char *func, const char *types, ...);
 
