@@ -17,18 +17,15 @@
    Boston, MA 02110-1301 USA
 */
 
+#include "common.h"
+
 #ifdef ENGINE_IMAGE_JPEG
 
 #include <setjmp.h>
 #include <stdio.h>
 #include <jpeglib.h>
 
-#include "common.h"
-#include "image_jpeg_funcs.h"
-
 static int image_jpeg_i = 0;
-
-static lib_t libjpeg;
 
 static jmp_buf   jpeg_jmpbuf;
 static fs_file_t jpeg_file;
@@ -177,7 +174,7 @@ static void ejpeg_src (j_decompress_ptr cinfo, void *infile)
             .term_source = &ejpeg_source_mgr_term_source
         };
 
-    mgr.resync_to_restart = ejpeg_resync_to_restart;
+    mgr.resync_to_restart = jpeg_resync_to_restart;
 
     cinfo->src = &mgr;
     jpeg_file  = infile;
@@ -222,7 +219,7 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
         return -2;
 
-    ds.err = ejpeg_std_error(&em);
+    ds.err = jpeg_std_error(&em);
 
     ds.err->error_exit   = ejpeg_error_exit;
     ds.err->emit_message = ejpeg_emit_message;
@@ -233,16 +230,16 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
         return -3;
     }
 
-    ejpeg_create_decompress(&ds, JPEG_LIB_VERSION, sizeof(ds));
+    jpeg_CreateDecompress(&ds, JPEG_LIB_VERSION, sizeof(ds));
 
     if (setjmp(jpeg_jmpbuf))
         goto error;
 
     ejpeg_src(&ds, f);
-    ejpeg_read_header(&ds, TRUE);
+    jpeg_read_header(&ds, TRUE);
 
     ds.out_color_space = JCS_RGB;
-    ejpeg_start_decompress(&ds);
+    jpeg_start_decompress(&ds);
 
     width  = ds.output_width;
     height = ds.output_height;
@@ -253,11 +250,11 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     for (r = 0; r < height ;r++, p += inc)
     {
         JSAMPARRAY scanlines[1] = { (void *)p };
-        ejpeg_read_scanlines(&ds, (void *)scanlines, 1);
+        jpeg_read_scanlines(&ds, (void *)scanlines, 1);
     }
 
-    ejpeg_finish_decompress(&ds);
-    ejpeg_destroy_decompress(&ds);
+    jpeg_finish_decompress(&ds);
+    jpeg_destroy_decompress(&ds);
 
     fs_close(f);
 
@@ -284,7 +281,7 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     return 0;
 
 error:
-    ejpeg_destroy_decompress(&ds);
+    jpeg_destroy_decompress(&ds);
 
     fs_close(f);
 
@@ -312,7 +309,7 @@ int image_jpeg_save (const char *name, image_t *im)
     if (NULL == (f = fs_open(name, FS_WRONLY, NULL, 0)))
         return -2;
 
-    cs.err = ejpeg_std_error(&em);
+    cs.err = jpeg_std_error(&em);
 
     cs.err->error_exit   = ejpeg_error_exit;
     cs.err->emit_message = ejpeg_emit_message;
@@ -323,7 +320,7 @@ int image_jpeg_save (const char *name, image_t *im)
         return -3;
     }
 
-    ejpeg_create_compress(&cs, JPEG_LIB_VERSION, sizeof(cs));
+    jpeg_CreateCompress(&cs, JPEG_LIB_VERSION, sizeof(cs));
 
     if (setjmp(jpeg_jmpbuf))
         goto error;
@@ -335,10 +332,9 @@ int image_jpeg_save (const char *name, image_t *im)
     cs.input_components = 3;
     cs.in_color_space   = JCS_RGB;
 
-    ejpeg_set_defaults(&cs);
-    ejpeg_set_quality(&cs, 100, TRUE);
-
-    ejpeg_start_compress(&cs, TRUE);
+    jpeg_set_defaults(&cs);
+    jpeg_set_quality(&cs, 100, TRUE);
+    jpeg_start_compress(&cs, TRUE);
 
     inc = im->width * 3;
 
@@ -346,18 +342,18 @@ int image_jpeg_save (const char *name, image_t *im)
     {
         JSAMPROW scanlines[1] = { (void *)im->data + inc * r };
 
-        ejpeg_write_scanlines(&cs, scanlines, 1);
+        jpeg_write_scanlines(&cs, scanlines, 1);
     }
 
-    ejpeg_finish_compress(&cs);
-    ejpeg_destroy_compress(&cs);
+    jpeg_finish_compress(&cs);
+    jpeg_destroy_compress(&cs);
 
     fs_close(f);
 
     return 0;
 
 error:
-    ejpeg_destroy_compress(&cs);
+    jpeg_destroy_compress(&cs);
 
     fs_close(f);
 
@@ -371,25 +367,10 @@ image_jpeg_init
 */
 int image_jpeg_init (void)
 {
-    const char *names[] =
-    {
-        "libjpeg.so.62.0.0",
-        "libjpeg.so.62",
-        "libjpeg.so",
-        NULL
-    };
-
     if (sys_arg_find("-nolibjpeg"))
         return 0;
 
-    if (LIB_HANDLE_INVALID == (libjpeg = lib_open(names, funcs, 0)))
-    {
-        sys_printf("jpeg support disabled\n");
-        return -1;
-    }
-
     image_jpeg_i = 1;
-
     sys_printf("+image_jpeg\n");
 
     return 0;
@@ -405,10 +386,7 @@ void image_jpeg_shutdown (void)
     if (!image_jpeg_i)
         return;
 
-    lib_close(libjpeg);
-
     image_jpeg_i = 0;
-
     sys_printf("-image_jpeg\n");
 }
 
