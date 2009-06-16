@@ -51,7 +51,7 @@ static void ejpeg_error_exit (j_common_ptr cinfo)
 ejpeg_emit_message
 =================
 */
-static void ejpeg_emit_message (j_common_ptr cinfo, int msg_level)
+static void ejpeg_emit_message (j_common_ptr cinfo UV, int msg_level UV)
 {
     /* shut up warnings */
 /*
@@ -111,7 +111,7 @@ static void ejpeg_source_mgr_skip_input_data (j_decompress_ptr cinfo, long num_b
 ejpeg_source_mgr_term_source
 =================
 */
-static void ejpeg_source_mgr_term_source (j_decompress_ptr cinfo)
+static void ejpeg_source_mgr_term_source (j_decompress_ptr cinfo UV)
 {
 }
 
