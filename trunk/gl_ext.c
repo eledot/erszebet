@@ -123,8 +123,10 @@ static int nvfog_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_GENERATE_MIPMAP_HINT_SGIS
     glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -139,8 +141,10 @@ static int lod_bias_get_max (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_MAX_TEXTURE_LOD_BIAS_EXT
     glGetIntegerv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &gl_lod_bias_max);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -155,8 +159,10 @@ static int aniso_get_max (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_EXT_texture_filter_anisotropic
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_anisotropy_max);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -171,6 +177,7 @@ static int compressed_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_ARB_texture_compression
     glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB, &gl_compressed_tex_num_formats);
     GLERROR();
 
@@ -184,6 +191,7 @@ static int compressed_init (int ok)
 
     glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS_ARB, gl_compressed_tex_formats);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -198,8 +206,10 @@ static int gen_mipmap_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_SGIS_generate_mipmap
     glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -214,8 +224,10 @@ static int tex3d_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_EXT_texture3D
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE_EXT, &gl_texture3d_size_max);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -230,8 +242,10 @@ static int texcubemap_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_ARB_texture_cube_map
     glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB, &gl_texture_cube_map_size_max);
     GLERROR();
+#endif
 
     return 0;
 }
@@ -246,8 +260,10 @@ static int clipvol_init (int ok)
     if (!ok)
         return 0;
 
+#ifdef GL_EXT_clip_volume_hint
     glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_NICEST);
     GLERROR();
+#endif
 
     return 0;
 }
