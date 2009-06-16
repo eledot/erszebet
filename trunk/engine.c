@@ -19,8 +19,6 @@
 
 #include "common.h"
 #include "engine.h"
-#include "event.h"
-#include "r_texture.h"
 
 #define INIT(a)                                 \
     if (0 != a##_init())                        \
