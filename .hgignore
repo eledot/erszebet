@@ -1,9 +1,8 @@
 syntax: glob
 
-trunk/build
+build
 *~
 *.d
 *.o
-erszebet
 *.core
 .DS_Store
