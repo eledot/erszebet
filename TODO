@@ -1,5 +1,5 @@
-- get rid of dlopen, use linking instead
 - use lua_atpanic
 - port engine to iphone
++ get rid of dlopen, use linking instead
 + multiple shapes for set_body to allow more complex shapes for entity
 + -nograb option
