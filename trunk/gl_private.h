@@ -20,8 +20,8 @@
 #ifndef _GL_PRIVATE_H
 #define _GL_PRIVATE_H
 
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <gl.h>
+#include <glext.h>
 
 #include "common.h"
 #include "gl_ext.h"
