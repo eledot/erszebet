@@ -5,3 +5,4 @@ syntax: glob
 *.o
 erszebet
 *.core
+.DS_Store

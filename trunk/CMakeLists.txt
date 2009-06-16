@@ -16,7 +16,7 @@
 #   Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 2.6)
-project(erszebet C)
+project(erszebet)
 
 set(P ${PROJECT_NAME})
 
@@ -75,6 +75,12 @@ add_executable(${P} ${SRC_FILES})
 add_dependencies(${P} chipmunk)
 add_dependencies(${P} lua)
 target_link_libraries(${P} chipmunk lua)
+
+if(APPLE)
+  add_definitions(-DSDL_APPLE)
+  add_dependencies(${P} sdl)
+  target_link_libraries(${P} sdl)
+endif(APPLE)
 
 include(FindOpenGL)
 if(OPENGL_FOUND)

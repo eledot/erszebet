@@ -168,7 +168,10 @@ void grab_signals (void)
 main
 =================
 */
-int main (int argc, char **argv)
+#ifndef SDL_APPLE
+#define SDL_main main
+#endif
+int SDL_main (int argc, char **argv)
 {
     int            res;
     struct timeval tp;

@@ -1,0 +1,8 @@
+include(FindSDL)
+if(SDL_FOUND)
+  include_directories(${SDL_INCLUDE_DIR})
+else(SDL_FOUND)
+  message(FATAL_ERROR "SDL not found")
+endif(SDL_FOUND)
+file(GLOB SRC_FILES *.m)
+add_library(sdl STATIC ${SRC_FILES})
