@@ -28,7 +28,6 @@
 
 #include <errno.h>
 
-#include "econfig.h"
 #include "misc.h"
 #include "mem.h"
 #include "cmd.h"

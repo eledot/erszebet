@@ -22,7 +22,7 @@
 
 #include "keyboard.h"
 
-static const unsigned char map_print[SDLK_LAST] =
+static const unsigned char map_print[] =
 {
 /*             0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15 */
 /*    0  */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -45,7 +45,7 @@ static const unsigned char map_print[SDLK_LAST] =
 /*   17  */   '=',   0
 };
 
-static const unsigned char map_print_shift[SDLK_LAST] =
+static const unsigned char map_print_shift[] =
 {
 /*             0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15 */
 /*    0  */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
