@@ -29,7 +29,7 @@
 
 #define GL_ADD_EXT_VAR2(cvar)                                   \
     GL_ADD_EXT_VAR(cvar)                                        \
-    static lib_func_t *cvar##_funcs = NULL;
+    static libgl_func_t *cvar##_funcs = NULL;
 
 static const char *extensions;
 
@@ -77,11 +77,11 @@ int gl_max_clip_planes;
 gl_add_extension
 =================
 */
-static int gl_add_extension (const char *name,
-                             cvar_t    **cvar,
-                             const char *cvar_name,
-                             lib_func_t *funcs,
-                             int       (*init_func) (int ok))
+static int gl_add_extension (const char   *name,
+                             cvar_t      **cvar,
+                             const char   *cvar_name,
+                             libgl_func_t *funcs,
+                             int         (*init_func) (int ok))
 {
 #if 0
     const char *s;

@@ -39,7 +39,6 @@
 #include "gl.h"
 #include "image.h"
 #include "keyboard.h"
-#include "lib.h"
 #include "math.h"
 #include "mouse.h"
 #include "r_main.h"

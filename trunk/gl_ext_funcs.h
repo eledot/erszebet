@@ -140,9 +140,15 @@ GLEXTPRIVATE void (*eglBlendFuncSeparateEXT) (GLenum sfactorRGB, GLenum dfactorR
 /* gl_ext_blend_minmax */
 GLEXTPRIVATE void (*eglBlendEquationEXT) (GLenum mode);
 
+typedef struct
+{
+    const char *name;
+    void      **func;
+}libgl_func_t;
+
 #ifndef GLEXTNOFUNCS
 
-static lib_func_t gl_arb_texture_compression_funcs[] =
+static libgl_func_t gl_arb_texture_compression_funcs[] =
 {
     { "glCompressedTexImage3DARB",    (void **)&eglCompressedTexImage3DARB    },
     { "glCompressedTexImage2DARB",    (void **)&eglCompressedTexImage2DARB    },
@@ -154,21 +160,21 @@ static lib_func_t gl_arb_texture_compression_funcs[] =
     { NULL, NULL }
 };
 
-static lib_func_t gl_ext_polygon_offset_funcs[] =
+static libgl_func_t gl_ext_polygon_offset_funcs[] =
 {
     { "glPolygonOffsetEXT", (void **)&eglPolygonOffsetEXT },
     { NULL, NULL }
 };
 
-static lib_func_t gl_arb_vertex_shader_funcs[] =
+static libgl_func_t gl_arb_vertex_shader_funcs[] =
 {
     { "glBindAttribLocationARB", (void **)&eglBindAttribLocationARB },
-    { "glGetActiveAttribARB", (void **)&eglGetActiveAttribARB       },
-    { "glGetAttribLocationARB", (void **)&eglGetAttribLocationARB   },
+    { "glGetActiveAttribARB",    (void **)&eglGetActiveAttribARB    },
+    { "glGetAttribLocationARB",  (void **)&eglGetAttribLocationARB  },
     { NULL, NULL }
 };
 
-static lib_func_t gl_arb_vertex_program_funcs[] =
+static libgl_func_t gl_arb_vertex_program_funcs[] =
 {
     { "glVertexAttrib1dARB",             (void **)&eglVertexAttrib1dARB             },
     { "glVertexAttrib1dvARB",            (void **)&eglVertexAttrib1dvARB            },
@@ -235,20 +241,20 @@ static lib_func_t gl_arb_vertex_program_funcs[] =
     { NULL, NULL }
 };
 
-static lib_func_t glx_sgi_swap_control_funcs[] =
+static libgl_func_t glx_sgi_swap_control_funcs[] =
 {
     { "glXSwapIntervalSGI", (void **)&eglXSwapIntervalSGI },
     { NULL, NULL }
 };
 
-static lib_func_t gl_ext_texture3d_funcs[] =
+static libgl_func_t gl_ext_texture3d_funcs[] =
 {
     { "glTexImage3DEXT",    (void **)&eglTexImage3DEXT    },
     { "glTexSubImage3DEXT", (void **)&eglTexSubImage3DEXT },
     { NULL, NULL }
 };
 
-static lib_func_t gl_ext_fog_coord_funcs[] =
+static libgl_func_t gl_ext_fog_coord_funcs[] =
 {
     { "glFogCoordfEXT",       (void **)&eglFogCoordfEXT       },
     { "glFogCoordfvEXT",      (void **)&eglFogCoordfvEXT      },
@@ -258,14 +264,14 @@ static lib_func_t gl_ext_fog_coord_funcs[] =
     { NULL, NULL }
 };
 
-static lib_func_t gl_arb_point_parameters_funcs[] =
+static libgl_func_t gl_arb_point_parameters_funcs[] =
 {
     { "glPointParameterfARB",  (void **)&eglPointParameterfARB  },
     { "glPointParameterfvARB", (void **)&eglPointParameterfvARB },
     { NULL, NULL }
 };
 
-static lib_func_t gl_arb_occlusion_query_funcs[] =
+static libgl_func_t gl_arb_occlusion_query_funcs[] =
 {
     { "glGenQueriesARB",        (void **)&eglGenQueriesARB        },
     { "glDeleteQueriesARB",     (void **)&eglDeleteQueriesARB     },
@@ -278,13 +284,13 @@ static lib_func_t gl_arb_occlusion_query_funcs[] =
     { NULL, NULL }
 };
 
-static lib_func_t gl_ext_blend_func_separate_funcs[] =
+static libgl_func_t gl_ext_blend_func_separate_funcs[] =
 {
     { "glBlendFuncSeparateEXT", (void **)&eglBlendFuncSeparateEXT },
     { NULL, NULL }
 };
 
-static lib_func_t gl_ext_blend_minmax_funcs[] =
+static libgl_func_t gl_ext_blend_minmax_funcs[] =
 {
     { "glBlendEquationEXT", (void **)&eglBlendEquationEXT },
     { NULL, NULL }
