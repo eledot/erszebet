@@ -20,6 +20,7 @@
 #include "common.h"
 #include "image_png.h"
 #include "image_jpeg.h"
+#include "image_cg.h"
 
 static int image_i = 0;
 
@@ -32,7 +33,9 @@ static const struct
 }loaders[] =
 {
     { "png", (void *)&image_png_load  },
-    { "jpg", (void *)&image_jpeg_load }
+    { "jpg", (void *)&image_jpeg_load },
+    { "png", (void *)&image_cg_load   },
+    { "jpg", (void *)&image_cg_load   }
 };
 
 /*
@@ -312,6 +315,7 @@ int image_init (void)
 
     image_png_init();
     image_jpeg_init();
+    image_cg_init();
 
     image_i = 1;
 
@@ -334,6 +338,7 @@ void image_shutdown (void)
 
     image_png_shutdown();
     image_jpeg_shutdown();
+    image_cg_shutdown();
 
     image_i = 0;
 

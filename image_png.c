@@ -17,12 +17,12 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-
 #ifdef ENGINE_IMAGE_PNG
 
 #include <png.h>
 #include <setjmp.h>
+
+#include "common.h"
 
 static int image_png_i = 0;
 

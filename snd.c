@@ -17,13 +17,12 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-
 #ifdef ENGINE_SND
 
 #include <al.h>
 #include <alc.h>
 
+#include "common.h"
 #include "snd_wav.h"
 #include "snd_ogg.h"
 #include "snd_flac.h"
@@ -460,7 +459,9 @@ void snd_shutdown (void)
     sys_printf("-snd\n");
 }
 
-#else
+#else /* !ENGINE_SND */
+
+#include "common.h"
 
 void snd_set_listener_pos (const float *pos UV) { }
 void snd_set_listener_velocity (const float *vel UV) { }

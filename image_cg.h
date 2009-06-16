@@ -17,36 +17,12 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _IMAGE_CG_H
+#define _IMAGE_CG_H
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
+int image_cg_load (const char *name, image_t *im, mem_pool_t pool);
 
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
+int image_cg_init (void);
+void image_cg_shutdown (void);
 
-#endif /* !_COMMON_H */
+#endif /* !_IMAGE_CG_H */

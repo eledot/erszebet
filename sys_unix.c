@@ -168,7 +168,7 @@ void grab_signals (void)
 main
 =================
 */
-#ifndef SDL_APPLE
+#ifndef ENGINE_OS_APPLE
 #define SDL_main main
 #endif
 int SDL_main (int argc, char **argv)

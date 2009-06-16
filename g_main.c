@@ -301,8 +301,6 @@ int g_init (void)
 
     luaL_openlibs(lst);
 
-    g_start_time = sys_time;
-    g_time = 0.0;
     g_set_double("time", g_time);
     g_physics_init(mempool);
     g_entity_init(lst, mempool);
@@ -318,6 +316,9 @@ int g_init (void)
     lua_pop(lst, 1);
 
     g_i = 1;
+
+    g_start_time = sys_get_time();
+    g_time = 0.0;
 
     sys_printf("+g\n");
 

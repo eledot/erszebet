@@ -18,18 +18,19 @@
 */
 
 /**
- * @file math.h
+ * @file emath.h
  *
- * @brief Math interface header
+ * @brief Maths interface header
  *
  * @author ftrvxmtrx
  */
 
-#ifndef _MATH_H
-#include <math.h>
-#ifndef _MATH_H
-#define _MATH_H
-#endif /* !_MATH_H */
+#ifndef _EMATH_H
+#define _EMATH_H
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif /* !M_PI */
 
 #define MIN(a, b)          ((a) < (b) ? (a) : (b))
 #define MAX(a, b)          ((a) > (b) ? (a) : (b))
@@ -38,4 +39,4 @@
 
 int ceil_pwrov2 (int n);
 
-#endif /* !_MATH_H */
+#endif /* !_EMATH_H */

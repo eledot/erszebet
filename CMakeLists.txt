@@ -77,7 +77,7 @@ add_dependencies(${P} lua)
 target_link_libraries(${P} chipmunk lua)
 
 if(APPLE)
-  add_definitions(-DSDL_APPLE)
+  add_definitions(-DENGINE_OS_APPLE)
   add_dependencies(${P} sdl)
   target_link_libraries(${P} sdl)
 endif(APPLE)

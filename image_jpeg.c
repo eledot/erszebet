@@ -17,13 +17,13 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-
 #ifdef ENGINE_IMAGE_JPEG
 
 #include <setjmp.h>
 #include <stdio.h>
 #include <jpeglib.h>
+
+#include "common.h"
 
 static int image_jpeg_i = 0;
 

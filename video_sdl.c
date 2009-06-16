@@ -17,11 +17,11 @@
    Boston, MA 02110-1301 USA
 */
 
+#ifdef ENGINE_VIDEO_SDL
+
 #include "common.h"
 #include "video_private.h"
 #include "event_maps.h"
-
-#ifdef ENGINE_VIDEO_SDL
 
 #define DEFAULT_FLAGS (SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_OPENGL)
 

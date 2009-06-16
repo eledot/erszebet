@@ -17,11 +17,11 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-
 #ifdef ENGINE_SND_FLAC
 
 #include <stream_decoder.h>
+
+#include "common.h"
 
 #define STREAM_BUFFER_SIZE 65536
 
