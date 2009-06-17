@@ -47,7 +47,10 @@ typedef struct image_s
     int  width;                    /**< Image width                           */
     int  height;                   /**< Image height                          */
     int  flags;                    /**< Image flags                           */
+    int  miplevels;                /**< Number of mip levels in image         */
+    int  format;                   /**< Image data GL format (0 for RGBA)     */
     unsigned char *data;           /**< Pixels (NULL in case texture created) */
+    int  data_size;
 
     struct image_s *next;
 }image_t;

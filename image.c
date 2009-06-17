@@ -21,6 +21,7 @@
 #include "image_png.h"
 #include "image_jpeg.h"
 #include "image_cg.h"
+#include "image_pvrtc.h"
 
 static int image_i = 0;
 
@@ -32,11 +33,12 @@ static const struct
     int (*func) (const char *name, image_t *im, mem_pool_t pool);
 }loaders[] =
 {
-    { "png", (void *)&image_png_load  },
-    { "jpg", (void *)&image_jpeg_load },
+    { "png", (void *)&image_png_load   },
+    { "jpg", (void *)&image_jpeg_load  },
 /* FIXME -- CoreGraphics has premultipled alpha */
-/*    { "png", (void *)&image_cg_load   }, */
-    { "jpg", (void *)&image_cg_load   }
+/*    { "png", (void *)&image_cg_load    }, */
+    { "jpg", (void *)&image_cg_load    },
+    { "pvr", (void *)&image_pvrtc_load }
 };
 
 /*
@@ -132,7 +134,7 @@ int image_mipmap (image_t *image)
         return -1;
     }
 
-    if (image->width < 2 || image->height < 2)
+    if (image->width < 2 || image->height < 2 || image->format || image->miplevels)
         return 0;
 
     in = out = image->data;
@@ -173,7 +175,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
         return -1;
     }
 
-    if (outwidth == image->width && image->height == outheight)
+    if (image->format || (outwidth == image->width && image->height == outheight))
         return 0;
 
     indata   = image->data;

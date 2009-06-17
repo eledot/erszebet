@@ -44,7 +44,6 @@ image_cg_load
 */
 int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
 {
-    CFURLRef          url = NULL;
     CGDataProviderRef provider = NULL;
     CGImageRef        image = NULL;
     CGColorSpaceRef   color_space = NULL;
@@ -55,9 +54,7 @@ int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
     if (!image_cg_i)
         return -1;
 
-    if ((NULL == (url = fs_get_url(name)) ||
-         NULL == (provider = CGDataProviderCreateWithURL(url))) &&
-        (NULL == (provider = fs_get_data_provider(name))))
+    if (NULL == (provider = fs_get_data_provider(name)))
     {
         sys_printf("failed to get data provider\n");
         goto error;
@@ -125,9 +122,6 @@ error:
 
     if (NULL != provider)
         CGDataProviderRelease(provider);
-
-    if (NULL != url)
-        CFRelease(url);
 
     if (NULL != data && error)
         mem_free(data);
