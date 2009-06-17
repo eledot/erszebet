@@ -19,18 +19,16 @@
 
 #ifdef ENGINE_IMAGE_CG
 
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreGraphics.h/CoreGraphics.h>
+#include <CoreGraphics.h>
 
 #include "common.h"
+#include "fs_helpers_apple.h"
 
 static int image_cg_i = 0;
 
-static CFBundleRef cg_main_bundle;
-
-typedef CGImageRef (*im_prov_t) (CGDataProviderRef source,
-                                 const CGFloat decode[],
-                                 bool shouldInterpolate,
+typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
+                                 const CGFloat          decode[],
+                                 bool                   shouldInterpolate,
                                  CGColorRenderingIntent intent);
 
 static im_prov_t providers[] =
@@ -46,22 +44,22 @@ image_cg_load
 */
 int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
 {
-    CFStringRef       filename = NULL;
     CFURLRef          url = NULL;
     CGDataProviderRef provider = NULL;
     CGImageRef        image = NULL;
     CGColorSpaceRef   color_space = NULL;
     CGContextRef      context = NULL;
-    int               width, height, error = -1;
+    int               width, height, error = -1, prov;
     unsigned char    *data = NULL;
 
     if (!image_cg_i)
         return -1;
 
-    if (NULL == (filename = CFStringCreateWithCString(NULL, name, kCFStringEncodingUTF8)) ||
-        NULL == (url_ref = CFBundleCopyResourceURL(cg_main_bundle, name, NULL, NULL))     ||
-        NULL == (provider = CGDataProviderCreateWithURL(url)))
+    if ((NULL == (url = fs_get_url(name)) ||
+         NULL == (provider = CGDataProviderCreateWithURL(url))) &&
+        (NULL == (provider = fs_get_data_provider(name))))
     {
+        sys_printf("failed to get data provider\n");
         goto error;
     }
 
@@ -88,6 +86,12 @@ int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
 
     data = mem_alloc(pool, height * width * 4);
     color_space = CGImageGetColorSpace(image);
+
+    if (NULL == color_space)
+    {
+        sys_printf("failed to get color space\n");
+        goto error;
+    }
 
     if (NULL == (context = CGBitmapContextCreate(data,
                                                  width,
@@ -125,10 +129,7 @@ error:
     if (NULL != url)
         CFRelease(url);
 
-    if (NULL != name_ref)
-        CFRelease(name_ref);
-
-    if (NULL != data)
+    if (NULL != data && error)
         mem_free(data);
 
     return error;
@@ -143,12 +144,6 @@ int image_cg_init (void)
 {
     if (sys_arg_find("-nocg"))
         return 0;
-
-    if (NULL == (cg = CFBundleGetMainBundle()))
-    {
-        sys_printf("CFBundleGetMainBundle failed\n");
-        return -1;
-    }
 
     image_cg_i = 1;
     sys_printf("+image_cg\n");
@@ -165,8 +160,6 @@ void image_cg_shutdown (void)
 {
     if (!image_cg_i)
         return;
-
-    CFRelease(cg_main_bundle);
 
     image_cg_i = 0;
     sys_printf("-image_cg\n");

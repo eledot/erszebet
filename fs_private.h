@@ -17,37 +17,18 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _FS_PRIVATE_H
+#define _FS_PRIVATE_H
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
+typedef struct
+{
+    int  valid;
+    char path[MISC_MAX_FILENAME];
+    int  rdonly;
+}path_t;
 
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
+#define FS_MAX_PATHS 4
 
-#endif /* !_COMMON_H */
+extern path_t paths[FS_MAX_PATHS];
+
+#endif /* !_FS_PRIVATE_H */

@@ -32,6 +32,8 @@ static cvar_t *r_show_fps;
 static cvar_t *r_show_collisions;
 cvar_t *r_fov;
 
+r_texture_t *tex;
+
 /* FIXME -- threaded screenshot cmd and shout if failed to take a shot */
 
 /*
@@ -148,11 +150,13 @@ void r_frame (void)
         gl_enable_textures();
     }
 
-    if (r_show_fps->i)
+    //if (r_show_fps->i)
     {
         char tmp[16];
         snprintf(tmp, sizeof(tmp), "fps: %i", r_get_fps());
         gl_draw_text(tmp, 0, video_height);
+
+        gl_draw_stretched(tex->gltex);
     }
 
     if (video_grabbed)
@@ -177,6 +181,11 @@ int r_init (void)
 
     if (0 != r_texture_init())
         return -1;
+
+    if (0 == r_texture_load("tex", 0, R_TEX_DEFAULT, &tex))
+    {
+        printf("OK!!!!111111111111111111\n");
+    }
 
     r_i = 1;
 

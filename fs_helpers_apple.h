@@ -17,37 +17,19 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _FS_HELPERS_APPLE_H
+#define _FS_HELPERS_APPLE_H
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
+#ifdef ENGINE_OS_APPLE
 
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
+#include <CoreGraphics.h>
 
-#endif /* !_COMMON_H */
+CFURLRef fs_get_url (const char *name);
+CGDataProviderRef fs_get_data_provider (const char *name);
+
+#endif
+
+int fs_helpers_apple_init (void);
+void fs_helpers_apple_shutdown (void);
+
+#endif /* !_FS_HELPERS_APPLE_H */

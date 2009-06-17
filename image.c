@@ -34,7 +34,8 @@ static const struct
 {
     { "png", (void *)&image_png_load  },
     { "jpg", (void *)&image_jpeg_load },
-    { "png", (void *)&image_cg_load   },
+/* FIXME -- CoreGraphics has premultipled alpha */
+/*    { "png", (void *)&image_cg_load   }, */
     { "jpg", (void *)&image_cg_load   }
 };
 

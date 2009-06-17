@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 
 #include "common.h"
+#include "fs_private.h"
 
 #define MAX_FILES 64
 
@@ -36,13 +37,6 @@ typedef struct file_s
     struct file_s *prev;
 }file_t;
 
-typedef struct
-{
-    int  valid;
-    char path[MISC_MAX_FILENAME];
-    int  rdonly;
-}path_t;
-
 static int fs_i = 0;
 
 static file_t *files;
@@ -52,7 +46,7 @@ static cvar_t *fs_base;
 static cvar_t *fs_home;
 static cvar_t *fs_game;
 
-static path_t paths[4];
+path_t paths[FS_MAX_PATHS];
 
 /*
 =================
@@ -374,10 +368,16 @@ int fs_init (void)
     const char *home, *s;
     char        tmp[MISC_MAX_FILENAME];
 
+    if (0 != fs_helpers_apple_init())
+    {
+        sys_printf("fs_helpers_apple_init failed\n");
+        return -1;
+    }
+
     if (NULL == (home = getenv("HOME")) || !home[0])
     {
         sys_printf("$HOME env var hasn\'t been set\n");
-        return -1;
+        return -2;
     }
 
     snprintf(tmp, sizeof(tmp), "%s/%s", home, FS_HOME_BASE);
@@ -393,14 +393,14 @@ int fs_init (void)
         if (!(*s >= '0' && *s <= '9') && !(*s >= 'a' && *s <= 'z') && *s != '_')
         {
             sys_printf("%s contains invalid char\n", fs_game->name);
-            return -2;
+            return -3;
         }
     }
 
     if (!fs_home->s[0])
     {
         sys_printf("fs_home cvar is empty\n");
-        return -3;
+        return -4;
     }
 
     fs_add_paths(fs_base->s, fs_home->s);
@@ -425,6 +425,8 @@ void fs_shutdown (void)
 
     if (!fs_i)
         return;
+
+    fs_helpers_apple_shutdown();
 
     for (f = files; NULL != f ;f = f->next)
     {
