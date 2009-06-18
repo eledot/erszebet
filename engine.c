@@ -44,10 +44,12 @@ static void quit_f (const struct cmd_s *cmd UV, int source UV, int argc UV, cons
 echo_f
 =================
 */
-static void echo_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv)
+static void echo_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv PUV)
 {
     if (argc < 2)
         return;
+
+    /* FIXME -- console printf should be used */
 
     sys_printf("%s\n", argv[1]);
 }

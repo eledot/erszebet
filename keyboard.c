@@ -124,7 +124,7 @@ void key_set_repeat (int repeat)
 key_event
 =================
 */
-void key_event (int printable, int printable_shift, int normal, int mod, int down)
+void key_event (int printable, int printable_shift PUV, int normal, int mod, int down)
 {
     static int repeat = 0;
 

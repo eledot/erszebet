@@ -40,7 +40,7 @@ static int snd_wav_i = 0;
 snd_wav_stream_unload
 =================
 */
-static void snd_wav_stream_unload (snd_stream_t *stream)
+static void snd_wav_stream_unload (snd_stream_t *stream UV)
 {
 }
 
@@ -49,7 +49,7 @@ static void snd_wav_stream_unload (snd_stream_t *stream)
 snd_wav_stream_func
 =================
 */
-static int snd_wav_stream_func (snd_stream_t *stream, int flags, snd_feed_callback_t feed)
+static int snd_wav_stream_func (snd_stream_t *stream UV, int flags UV, snd_feed_callback_t feed UV)
 {
     return SND_STREAM_RET_OK;
 }

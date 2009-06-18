@@ -49,7 +49,7 @@ static void epng_read (png_structp png_ptr, png_bytep data, png_size_t length)
 epng_error
 =================
 */
-static void epng_error (png_structp png_ptr, png_const_charp msg)
+static void epng_error (png_structp png_ptr, png_const_charp msg PUV)
 {
     sys_printf("libpng error: %s\n", msg);
 

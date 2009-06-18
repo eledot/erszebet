@@ -27,7 +27,18 @@ static cvar_t *gl_picmip;
 /* FIXME -- implement compressed textures & 3d textures support */
 
 #define GL_IMAGE_DATA2D(mip, im)                                        \
-    glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im->data);
+    {                                                                   \
+        glTexImage2D(GL_TEXTURE_2D,                                     \
+                     mip,                                               \
+                     GL_RGBA,                                           \
+                     im->width,                                         \
+                     im->height,                                        \
+                     0,                                                 \
+                     GL_RGBA,                                           \
+                     GL_UNSIGNED_BYTE,                                  \
+                     im->data);                                         \
+    }
+
 
 /*
 =================
@@ -85,28 +96,35 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
 
     *gltex = tex;
 
-    if (ext_gl_sgis_generate_mipmap && gl_sgis_generate_mipmap->i)
+    if (NULL != image->teximage2d)
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-        GLERROR();
-        GL_IMAGE_DATA2D(0, image);
-        GLERROR();
+        image->teximage2d(image);
     }
     else
     {
-        GL_IMAGE_DATA2D(0, image);
-        GLERROR();
-
-        for (mip = 1; image->width > 1 || image->height > 1 ;mip++)
+        if (ext_gl_sgis_generate_mipmap && gl_sgis_generate_mipmap->i)
         {
-            if (0 != image_mipmap(image))
-            {
-                sys_printf("mipmap failed\n");
-                goto error;
-            }
-
-            GL_IMAGE_DATA2D(mip, image);
+            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
             GLERROR();
+            GL_IMAGE_DATA2D(0, image);
+            GLERROR();
+        }
+        else
+        {
+            GL_IMAGE_DATA2D(0, image);
+            GLERROR();
+
+            for (mip = 1; image->width > 1 || image->height > 1 ;mip++)
+            {
+                if (0 != image_mipmap(image))
+                {
+                    sys_printf("mipmap failed\n");
+                    goto error;
+                }
+
+                GL_IMAGE_DATA2D(mip, image);
+                GLERROR();
+            }
         }
     }
 

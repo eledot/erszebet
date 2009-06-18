@@ -46,11 +46,12 @@ typedef struct image_s
     char name[MISC_MAX_FILENAME];  /**< Image filename passed to image_load   */
     int  width;                    /**< Image width                           */
     int  height;                   /**< Image height                          */
-    int  flags;                    /**< Image flags                           */
     int  miplevels;                /**< Number of mip levels in image         */
-    int  format;                   /**< Image data GL format (0 for RGBA)     */
+    int  format;                   /**< Image data GL format                  */
     unsigned char *data;           /**< Pixels (NULL in case texture created) */
     int  data_size;
+
+    void (*teximage2d) (struct image_s *im);
 
     struct image_s *next;
 }image_t;

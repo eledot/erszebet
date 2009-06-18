@@ -61,13 +61,54 @@ static int image_pvrtc_i = 0;
 
 /*
 =================
+image_pvrtc_teximage2d
+=================
+*/
+static void image_pvrtc_teximage2d (image_t *im)
+{
+    int            i, off, width, height;
+    unsigned char *data;
+
+    width = im->width;
+    height = im->height;
+    off = (width * height) >> 2;
+
+    for (data = im->data, i = 0; data < im->data + im->data_size - off && i < im->miplevels ;i++)
+    {
+        glCompressedTexImage2D(GL_TEXTURE_2D,
+                               i,
+                               im->format,
+                               im->width,
+                               im->height,
+                               0,
+                               off,
+                               data);
+
+        if (GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG == im->format ||
+            GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG == im->format)
+        {
+            data += ((width * height << 1) + 7) >> 3;
+        }
+        else
+        {
+            data += ((width * height << 2) + 7) >> 3;
+        }
+
+        width  > 1 ? width  >>= 1 : 1;
+        height > 1 ? height >>= 1 : 1;
+        off = (width * height) >> 2;
+    }
+}
+
+/*
+=================
 image_pvrtc_load
 =================
 */
 int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
 {
     fs_file_t      f;
-    int            size, format, mipmaps_num = 1;
+    int            size, format, mipmaps_num = 1, pf;
     unsigned char *data = NULL;
     pvrtc_header_t header;
 
@@ -112,16 +153,21 @@ int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
     if (header.pixel_format & PVRTC_FL_MIPMAPS)
         mipmaps_num = header.mipmaps_num;
 
-    format = header.pixel_format & 0xff;
+    pf = header.pixel_format;
+    format = pf & 0xff;
 
     switch (format)
     {
     case PVRTC_FORMAT_PVRTC2:
-        format = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+        format = ((pf & PVRTC_FL_HAS_ALPHA)
+                  ? GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+                  : GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
         break;
 
     case PVRTC_FORMAT_PVRTC4:
-        format = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        format = ((pf & PVRTC_FL_HAS_ALPHA)
+                  ? GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+                  : GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
         break;
 
     default:
@@ -137,12 +183,14 @@ int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
         goto error;
     }
 
-    im->width     = header.width;
-    im->height    = header.height;
-    im->data      = data;
-    im->data_size = header.data_size;
-    im->format    = format;
-    im->miplevels = mipmaps_num;
+    im->width      = header.width;
+    im->height     = header.height;
+    im->data       = data;
+    im->data_size  = header.data_size;
+    im->format     = format;
+    im->pixel_type = 0;
+    im->miplevels  = mipmaps_num;
+    im->teximage2d = &image_pvrtc_teximage2d;
 
     fs_close(f);
 
@@ -189,7 +237,9 @@ void image_pvrtc_shutdown (void)
 
 #else /* !ENGINE_IMAGE_PVRTC || !GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG */
 
-int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool) { return -1; }
+#include "common.h"
+
+int image_pvrtc_load (const char *name UV, image_t *im UV, mem_pool_t pool UV) { return -1; }
 
 int image_pvrtc_init (void) { return -1; }
 void image_pvrtc_shutdown (void) { }

@@ -101,6 +101,8 @@ int image_load (const char *name, image_t *image)
     if (!filename_is_valid(name))
         return -2;
 
+    image->teximage2d = NULL;
+
     for (i = 0; i < STSIZE(loaders) ;i++)
     {
         snprintf(tmp, sizeof(tmp), "%s.%s", name, loaders[i].ext);

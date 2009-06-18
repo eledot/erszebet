@@ -41,7 +41,11 @@ double            g_time;
 g_error
 =================
 */
-static int g_error_real (int status, const char *msg, const char *file, int line, const char *func)
+static int g_error_real (int         status,
+                         const char *msg PUV,
+                         const char *file PUV,
+                         int         line PUV,
+                         const char *func PUV)
 {
     const char *err;
 
