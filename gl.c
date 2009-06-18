@@ -359,6 +359,8 @@ static int gl_create_internal_font (void)
     image_t im;
     int     i, k, pix;
 
+    memset(&im, 0, sizeof(im));
+
     im.width  = 128;
     im.height = 128;
 
