@@ -17,46 +17,20 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _SYS_IPHONE_H
+#define _SYS_IPHONE_H
 
-#ifdef __cplusplus
-extern "C"
+#import <UIKit/UIKit.h>
+
+@class eagl_view;
+
+@interface application_delegate : NSObject <UIApplicationDelegate>
 {
-#endif
-
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
-
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
-
-#ifdef __cplusplus
+    UIWindow  *window;
+    eagl_view *glView;
 }
-#endif
 
-#endif /* !_COMMON_H */
+@property (nonatomic, retain) IBOutlet UIWindow  *window;
+@property (nonatomic, retain) IBOutlet eagl_view *glView;
+
+#endif /* !_SYS_IPHONE_H */

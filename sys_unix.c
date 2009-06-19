@@ -27,8 +27,21 @@
 #include "engine.h"
 
 double sys_time = 0.0;
-
 static double oldtime = 0.0;
+
+/*
+=================
+init_time
+=================
+*/
+static void init_time (void)
+{
+    struct timeval tp;
+
+    /* start from 0.0 */
+    gettimeofday(&tp, NULL);
+    oldtime = (double)tp.tv_sec + tp.tv_usec / 1000000.0;
+}
 
 /*
 =================
@@ -154,7 +167,7 @@ static void signal_handler (int sig UV)
 grab_signals
 =================
 */
-void grab_signals (void)
+static void grab_signals (void)
 {
     int i;
     int signals[] = { SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGSEGV };
@@ -168,29 +181,32 @@ void grab_signals (void)
 main
 =================
 */
+#ifndef ENGINE_OS_IPHONE
 #ifndef ENGINE_OS_APPLE
 #define SDL_main main
-#endif
+#endif /* !ENGINE_OS_APPLE */
 int SDL_main (int argc, char **argv)
 {
-    int            res;
-    struct timeval tp;
+    int res;
 
     signal(SIGFPE, SIG_IGN);
 
-    /* start from 0.0 */
-    gettimeofday(&tp, NULL);
-    oldtime = (double)tp.tv_sec + tp.tv_usec / 1000000.0;
-
+    init_time();
     sys_get_time();
     sys_arg_set(argc, argv);
     grab_signals();
 
     sys_printf("starting engine...\n");
 
-    res = engine_run();
+    if (0 == (res = engine_init()))
+    {
+        while (0 == engine_frame());
+
+        res = engine_stop();
+    }
 
     sys_printf("exiting...\n");
 
     return res;
 }
+#endif /* !ENGINE_OS_IPHONE */

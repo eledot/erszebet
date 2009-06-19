@@ -315,4 +315,4 @@ void video_shutdown (void)
     sys_printf("-video\n");
 }
 
-#endif
+#endif /* ENGINE_VIDEO_SDL */

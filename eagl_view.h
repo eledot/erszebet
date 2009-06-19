@@ -17,46 +17,31 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _EAGL_VIEW_H
+#define _EAGL_VIEW_H
 
-#ifdef __cplusplus
-extern "C"
+#import <UIKit/UIKit.h>
+#import "gl_private.h"
+
+@interface eagl_view : UIView
 {
-#endif
+@private
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
+    EAGLContext *context;
+    GLuint       buffer_render;
+    GLuint       buffer_frame;
+    GLuint       buffer_depth;
 
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
-
-#ifdef __cplusplus
+    NSTimer       *animation_timer;
+    NSTimeInterval animation_interval;
 }
-#endif
 
-#endif /* !_COMMON_H */
+@property NSTimeInterval animation_interval;
+
+- (void)startAnimation;
+- (void)stopAnimation;
+- (void)drawView;
+
+@end
+
+#endif /* !_EAGL_VIEW_H */

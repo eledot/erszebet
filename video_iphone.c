@@ -17,46 +17,68 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifdef ENGINE_OS_IPHONE
 
-#ifdef __cplusplus
-extern "C"
+int video_width;
+int video_height;
+int video_fullscreen;
+int video_grabbed = 0;
+double video_aspect;
+
+/*
+=================
+video_grab_toggle
+=================
+*/
+void video_grab_toggle (void)
 {
-#endif
-
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
-
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
-
-#ifdef __cplusplus
 }
-#endif
 
-#endif /* !_COMMON_H */
+/*
+=================
+video_fullscreen_toggle
+=================
+*/
+void video_fullscreen_toggle (void)
+{
+}
+
+/*
+=================
+video_frame
+=================
+*/
+void video_frame (void)
+{
+}
+
+/*
+=================
+video_set_mode
+=================
+*/
+int video_set_mode (int w, int h, int fullscreen)
+{
+    return -1;
+}
+
+/*
+=================
+video_init
+=================
+*/
+int video_init (void)
+{
+    return 0;
+}
+
+/*
+=================
+video_shutdown
+=================
+*/
+void video_shutdown (void)
+{
+}
+
+#endif /* ENGINE_OS_IPHONE */

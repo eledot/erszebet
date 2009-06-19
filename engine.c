@@ -72,8 +72,11 @@ static void exec_f (const struct cmd_s *cmd UV, int source UV, int argc, const c
 engine_frame
 =================
 */
-static void engine_frame (void)
+int engine_frame (void)
 {
+    if (engine_quit_flag)
+        return -1;
+
     sys_get_time();
 
     snd_frame();
@@ -81,14 +84,16 @@ static void engine_frame (void)
     video_frame();
     g_frame();
     cmdbuf_frame();
+
+    return 0;
 }
 
 /*
 =================
-engine_run
+engine_init
 =================
 */
-int engine_run (void)
+int engine_init (void)
 {
     INIT(cvar);
     INIT(cmd);
@@ -130,12 +135,10 @@ int engine_run (void)
 
     INIT(g);
 
-    while (!engine_quit_flag)
-    {
-        engine_frame();
-    }
+    return 0;
 
 error:
+
     return engine_stop();
 }
 

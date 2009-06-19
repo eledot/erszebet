@@ -28,12 +28,9 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-/**
- * @brief Initializes and runs the engine
- *
- * @return Return code, 0 on success
- */
-int engine_run (void);
+int engine_frame (void);
+
+int engine_init (void);
 
 /**
  * @brief Deinitializes the engine

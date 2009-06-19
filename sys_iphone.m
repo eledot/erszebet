@@ -17,46 +17,48 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifdef ENGINE_OS_IPHONE
 
-#ifdef __cplusplus
-extern "C"
+#import "sys_iphone.h"
+#import "eagl_view.h"
+
+#include "common.h"
+
+@implementation application_delegate
+
+@synthesize window;
+@synthesize glView;
+
+- (void) applicationDidFinishLaunching:(UIApllication *)application
 {
-#endif
+    engine_init();
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
-
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
-
-#ifdef __cplusplus
+    glView.animationInterval = 1.0 / 60.0;
+    [glView startAnimation];
 }
-#endif
 
-#endif /* !_COMMON_H */
+- (void) applicationWillResignActive:(UIApplication *)application
+{
+    glView.animationInterval = 1.0 / 5.0;
+}
+
+- (void) applicationDidBecomeActive:(UIApplication *)application
+{
+    glview.animationInterval = 1.0 / 60.0;
+}
+
+- (void) applicationWillTerminate:(UIApplication *)application
+{
+    engine_stop();
+}
+
+- (void) dealloc
+{
+    [glView release];
+    [window release];
+    [super dealloc];
+}
+
+@end
+
+#endif /* ENGINE_OS_IPHONE */
