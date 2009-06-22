@@ -55,6 +55,10 @@ void *mem_alloc_real (mem_pool_t pool, uint32_t size);
 
 void mem_free (void *m);
 
+
+char *mem_strdup_static_real (const char *src, mem_pool_t mempool);
+
+#define mem_strdup_static(s) mem_strdup_static_real(s, mempool)
 #define mem_alloc_static_pool(name, max) mempool = mem_alloc_pool((name), (max))
 #define mem_alloc_static(size) mem_alloc(mempool, size)
 

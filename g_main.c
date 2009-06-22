@@ -63,6 +63,39 @@ static int g_error_real (int         status,
 
 /*
 =================
+g_call_cmd
+=================
+*/
+void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv)
+{
+    lua_getref(lst, cmd->lua_func);
+    lua_pushstring(lst, cmd->name);
+    lua_pushinteger(lst, source);
+    lua_pushinteger(lst, argc);
+    g_push_strings(argv, argc);
+
+    if (0 != g_error(lua_pcall(lst, 4, 0, 0), "lua_pcall failed"))
+    {
+        sys_printf("tried to call %s with 4 arg(s)\n", cmd->lua_func);
+    }
+}
+
+/*
+=================
+g_destroy_cmd
+=================
+*/
+void g_destroy_cmd (cmd_t *cmd)
+{
+    if (NULL == lst)
+        return;
+
+    if (cmd->lua_func)
+        lua_unref(lst, cmd->lua_func);
+}
+
+/*
+=================
 g_call_func
 =================
 */
@@ -263,6 +296,25 @@ void g_pop_vector (int index, double *vector, int num)
 
 /*
 =================
+g_push_strings
+=================
+*/
+void g_push_strings (const char **strings, int num)
+{
+    int i;
+
+    lua_createtable(lst, num, 0);
+
+    for (i = 0; i < num ;i++)
+    {
+        lua_pushinteger(lst, i + 1);
+        lua_pushstring(lst, strings[i]);
+        lua_settable(lst, -3);
+    }
+}
+
+/*
+=================
 g_frame
 =================
 */
@@ -290,6 +342,65 @@ static int game_lua_set_gravity (lua_State *lst)
 
 /*
 =================
+game_lua_register_cmd
+=================
+*/
+static int game_lua_register_cmd (lua_State *lst)
+{
+    const char *name  = luaL_checkstring(lst, 1);
+    int         flags = luaL_checknumber(lst, 3);
+    cmd_t      *cmd   = cmd_register(name, NULL, NULL, flags);
+    int         func;
+
+    lua_pushvalue(lst, 2);
+    func = lua_ref(lst, 1);
+
+    if (NULL == cmd)
+        return 0;
+
+    cmd->lua_func = func;
+
+    return 0;
+}
+
+/*
+=================
+game_lua_execute
+=================
+*/
+static int game_lua_execute (lua_State *lst)
+{
+    const char *s = luaL_checkstring(lst, -1);
+
+    cmdbuf_add(s, CMD_SRC_CONSOLE);
+
+    return 0;
+}
+
+/*
+=================
+g_init_cmd
+=================
+*/
+static void g_init_cmd (void)
+{
+    g_set_integer("CMD_SERVER", CMD_FL_SERVER);
+    g_set_integer("CMD_THREAD", CMD_FL_THREAD);
+    g_set_integer("CMD_CHEATS", CMD_FL_CHEATS);
+
+    g_set_integer("CMD_SRC_KEY_DOWN", CMD_SRC_KEY_DOWN);
+    g_set_integer("CMD_SRC_KEY_UP", CMD_SRC_KEY_UP);
+    g_set_integer("CMD_SRC_CONSOLE", CMD_SRC_CONSOLE);
+    g_set_integer("CMD_SRC_ENGINE", CMD_SRC_ENGINE);
+    g_set_integer("CMD_SRC_GAME", CMD_SRC_GAME);
+    g_set_integer("CMD_SRC_REMOTE", CMD_SRC_REMOTE);
+
+    lua_register(lst, "register_cmd", &game_lua_register_cmd);
+    lua_register(lst, "execute", &game_lua_execute);
+}
+
+/*
+=================
 g_init
 =================
 */
@@ -305,6 +416,7 @@ int g_init (void)
 
     luaL_openlibs(lst);
 
+    g_init_cmd();
     g_set_double("time", g_time);
     g_physics_init(mempool);
     g_entity_init(lst, mempool);

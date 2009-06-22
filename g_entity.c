@@ -348,7 +348,7 @@ static int ent_lua_spawn (lua_State *lst)
     g_entity_t *ent = g_entity_create();
 
     lua_pushvalue(lst, -1);
-    ent->ref = lua_ref(lst, -1);
+    ent->ref = lua_ref(lst, 1);
     lua_pushlightuserdata(lst, ent);
     lua_setfield(lst, -2, "__ref");
 

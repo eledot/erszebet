@@ -58,6 +58,8 @@ typedef struct cvar_s
 
     cvar_callback_t callback;      /**< Called on each change */
 
+    const char *help;              /**< Help message          */
+
     struct cvar_s *next;
 }cvar_t;
 

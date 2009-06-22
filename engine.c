@@ -121,6 +121,12 @@ int engine_init (void)
 
     cmd_register("exec", NULL, &exec_f, 0);
 
+    cmdbuf_add("bind q quit\n", CMD_SRC_ENGINE);
+    cmdbuf_add("bind s screenshot_jpeg\n", CMD_SRC_ENGINE);
+    cmdbuf_frame();
+
+    INIT(g);
+
     cmdbuf_add("exec config.cfg\n", CMD_SRC_ENGINE);
     cmdbuf_frame();
     cmdbuf_add("exec autoexec.cfg\n", CMD_SRC_ENGINE);
@@ -132,8 +138,6 @@ int engine_init (void)
     */
     sys_arg_to_cmdbuf('+');
     cmdbuf_frame();
-
-    INIT(g);
 
     return 0;
 

@@ -31,7 +31,9 @@ typedef enum
 
 typedef enum
 {
-    CMD_SRC_USER = 0,
+    CMD_SRC_KEY_DOWN = 0,
+    CMD_SRC_KEY_UP,
+    CMD_SRC_CONSOLE,
     CMD_SRC_ENGINE,
     CMD_SRC_GAME,
     CMD_SRC_REMOTE,
@@ -49,6 +51,7 @@ typedef struct cmd_s
     char alias[CMD_MAX_ALIAS];
 
     cmd_action_t action;
+    int          lua_func;
 
     int flags;
 

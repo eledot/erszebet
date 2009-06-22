@@ -143,7 +143,7 @@ cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, i
     }
     else
     {
-        if (NULL != c->action)
+        if (NULL != c->action || 0 != c->lua_func)
         {
             sys_printf("cmd \"%s\" already registered\n", name);
             return NULL;
@@ -180,8 +180,15 @@ cmd_shutdown
 */
 void cmd_shutdown (void)
 {
+    int    i;
+    cmd_t *c;
+
     if (!cmd_i)
         return;
+
+    for (i = 0; i < STSIZE(cmds) ;i++)
+        for (c = cmds[i]; NULL != c ;c = c->next)
+            g_destroy_cmd(c);
 
     mem_free_static_pool();
 

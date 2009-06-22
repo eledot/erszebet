@@ -100,4 +100,11 @@ spawn_Tb(195, 90)
 spawn_Tb(115, 190)
 spawn_Tb(115, 90)
 
+function funccc(cmd, src, argc, argv)
+   print(cmd, src, argc, argv)
+end
+
+register_cmd("fffuuu", funccc, 0)
+execute("bind b fffuuu")
+
 print("done")

@@ -370,7 +370,7 @@ void g_physics_update_ent (g_entity_t *ent)
     ent->origin[1]   = body->p.y;
     ent->velocity[0] = body->v.x;
     ent->velocity[1] = body->v.y;
-    ent->angle       = body->a * (180.0/M_PI);
+    ent->angle       = body->a;
     ent->rotation    = body->w;
     ent->gravity     = -body->gravity;
     ent->elasticity  = shape->e;
@@ -395,8 +395,8 @@ void g_physics_update_body (g_entity_t *ent)
 
     body->p = cpv(ent->origin[0], ent->origin[1]);
     body->v = cpv(ent->velocity[0], ent->velocity[1]);
-    cpBodySetAngle(body, ent->angle/(180.0/M_PI));
-    body->w = 0.0;/* ent->rotation; */ /* FIXME */
+    cpBodySetAngle(body, ent->angle);
+    body->w = ent->rotation; /* FIXME */
     body->t = 0.0; /* FIXME */
     body->gravity = -ent->gravity;
 
@@ -439,7 +439,7 @@ void g_physics_draw_collisions (void)
             const cpPolyShape *poly = ent->shapes[shn];
             const cpCircleShape *circle = ent->shapes[shn];
 
-/*
+///*
   #define CLENGTH 16
   gl_color(0, 1, 0, 1);
   gl_draw_line2d(body->p.x, body->p.y - CLENGTH,
@@ -447,7 +447,7 @@ void g_physics_draw_collisions (void)
   gl_draw_line2d(body->p.x - CLENGTH, body->p.y,
   body->p.x + CLENGTH, body->p.y);
   gl_color(1, 1, 1, 1);
-*/
+//*/
 
             switch (shape->klass->type)
             {

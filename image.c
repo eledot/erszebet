@@ -323,7 +323,6 @@ int image_init (void)
     image_cg_init();
 
     image_i = 1;
-
     sys_printf("+image\n");
 
     return 0;
@@ -346,6 +345,5 @@ void image_shutdown (void)
     image_cg_shutdown();
 
     image_i = 0;
-
     sys_printf("-image\n");
 }

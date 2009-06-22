@@ -197,6 +197,22 @@ void mem_free_pool_real (mem_pool_t *pool
 
 /*
 =================
+mem_strcpy_static
+=================
+*/
+char *mem_strdup_static_real (const char *src, mem_pool_t mempool)
+{
+    char *res;
+    int   len = strlen(src) + 1;
+
+    res = mem_alloc_static(len);
+    memcpy(res, src, len);
+
+    return res;
+}
+
+/*
+=================
 mem_alloc_real
 =================
 */

@@ -38,23 +38,29 @@ void cmdbuf_exec (const char *c, int source)
     cmd_t  *cmd;
     cvar_t *cvar;
 
+    /* FIXME -- check for too much reverse calls */
+
     if (!string_tokenize(c))
         return;
 
     if (NULL != (cmd = cmd_find(tok_argv[0])))
     {
-        if (NULL == cmd->action)
-            cmdbuf_exec(cmd->alias, source);
-        else
+        if (0 != cmd->lua_func)
+            g_call_cmd(cmd, source, tok_argc, tok_argv);
+        else if (NULL != cmd->action)
             cmd->action(cmd, source, tok_argc, tok_argv);
+        else if (NULL != cmd->alias)
+            cmdbuf_exec(cmd->alias, source);
     }
     else if (NULL != (cvar = cvar_find(tok_argv[0])) && !(cvar->flags & CVAR_FL_HIDDEN))
     {
         if (tok_argc != 2)
         {
-            /* FIXME -- print help message */
-            //if (CMD_SRC_USER == source)
-            //    sys_printf(cvar->help);
+            if (CMD_SRC_CONSOLE == source && NULL != cvar->help)
+            {
+                /* FIXME -- print to console */
+                sys_printf(cvar->help);
+            }
         }
         else if (!(cvar->flags & CVAR_FL_RDONLY))
         {
@@ -62,7 +68,7 @@ void cmdbuf_exec (const char *c, int source)
         }
         else
         {
-            if (CMD_SRC_USER == source)
+            if (CMD_SRC_CONSOLE == source)
             {
                 sys_printf("cvar \"%s\" is read-only\n", cvar->name);
             }
@@ -70,7 +76,7 @@ void cmdbuf_exec (const char *c, int source)
     }
     else
     {
-        if (CMD_SRC_USER == source)
+        if (CMD_SRC_KEY_DOWN == source || CMD_SRC_CONSOLE == source)
         {
             sys_printf("unknown cmd or cvar \"%s\"\n", tok_argv[0]);
         }
@@ -127,7 +133,7 @@ void cmdbuf_add (const char *c, int source)
 
     if (noend)
     {
-        strlcpy(cmdbuf + cmdbuf_len + 1, "\n", CMDBUF_SIZE - cmdbuf_len - 1);
+        strlcpy(cmdbuf + cmdbuf_len, "\n", CMDBUF_SIZE - cmdbuf_len);
         cmdbuf_len++;
     }
 }
@@ -234,8 +240,9 @@ static void set_f (const struct cmd_s *cmd, int source, int argc, const char **a
 
     if (NULL != (c = cvar_find(argv[1])) && (c->flags & CVAR_FL_RDONLY))
     {
-        if (CMD_SRC_USER == source)
+        if (CMD_SRC_CONSOLE == source)
         {
+            /* FIXME -- print to console */
             sys_printf("\"%s\" is read-only\n", argv[1]);
         }
 

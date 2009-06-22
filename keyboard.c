@@ -20,6 +20,15 @@
 #include "common.h"
 #include "video_private.h"
 
+static int keyboard_i = 0;
+
+static mem_pool_t mempool;
+
+typedef struct bind_s
+{
+    char *cmd;
+}bind_t;
+
 static const char *key_names[] =
 {
     "",
@@ -104,6 +113,62 @@ static const char *key_names[] =
     "scroll"
 };
 
+static bind_t key_binds['z' - '0'];
+static bind_t key_special_binds[STSIZE(key_names)];
+
+/*
+=================
+bind_f
+=================
+*/
+static void bind_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv)
+{
+    bind_t *bind = NULL;
+
+    if (argc < 3)
+        return;
+
+    if (strlen(argv[1]) == 1)
+    {
+        int key = tolower(argv[1][0]);
+
+        if ((key >= '0' && key <= '9') ||
+            (key >= 'a' && key <= 'z'))
+        {
+            key -= '0';
+            bind = &key_binds[key];
+        }
+    }
+    else
+    {
+        int i;
+
+        for (i = 2; i < STSIZE(key_names) ;i++)
+        {
+            if (!strcmp(key_names[i], argv[1]))
+            {
+                bind = &key_special_binds[i];
+                break;
+            }
+        }
+    }
+
+    if (NULL == bind)
+    {
+        /* FIXME -- print to console */
+        sys_printf("can\'t bind \"%s\"\n", argv[1]);
+        return;
+    }
+
+    if (NULL != bind->cmd)
+    {
+        mem_free(bind->cmd);
+        bind->cmd = NULL;
+    }
+
+    bind->cmd = mem_strdup_static(argv[2]);
+}
+
 /*
 =================
 key_set_repeat
@@ -128,49 +193,31 @@ void key_event (int printable, int printable_shift PUV, int normal, int mod, int
 {
     static int repeat = 0;
 
-    if (KEY_ENTER == normal && (mod & KEYMOD_ALT) && down)
+    if (down)
     {
-        video_fullscreen_toggle();
-    }
-
-    if (KEY_BACKQUOTE == normal && down)
-    {
-        repeat = !repeat;
-        key_set_repeat(repeat);
-        video_grab_toggle();
+        if (KEY_ENTER == normal && (mod & KEYMOD_ALT))
+        {
+            video_fullscreen_toggle();
+            return;
+        }
+        else if (KEY_BACKQUOTE == normal)
+        {
+            repeat = !repeat;
+            key_set_repeat(repeat);
+            video_grab_toggle();
+            return;
+        }
     }
 
     if (KEY_ALPHANUM == normal)
     {
-        sys_printf("normal %c\n", printable);
+        if (NULL != key_binds[printable - '0'].cmd)
+            cmdbuf_add(key_binds[printable - '0'].cmd, down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
     }
     else if (normal > 0 && normal < STSIZE(key_names))
     {
-        sys_printf("normal %s\n", key_names[normal]);
-    }
-
-    if (printable)
-    {
-        if (mod & KEYMOD_SHIFT)
-        {
-            sys_printf("printable %c\n", printable_shift);
-        }
-        else
-        {
-            sys_printf("printable %c\n", printable);
-        }
-
-        if (down)
-        {
-            if ('q' == printable)
-            {
-                cmdbuf_add("quit\n", CMD_SRC_USER);
-            }
-            else if ('s' == printable)
-            {
-                cmdbuf_add("screenshot_jpeg\n", CMD_SRC_USER);
-            }
-        }
+        if (NULL != key_special_binds[normal].cmd)
+            cmdbuf_add(key_special_binds[normal].cmd, down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
     }
 }
 
@@ -181,6 +228,14 @@ keyboard_init
 */
 int keyboard_init (void)
 {
+    mem_alloc_static_pool("keyboard", 0);
+
+    memset(key_binds,         0, sizeof(key_binds));
+    memset(key_special_binds, 0, sizeof(key_special_binds));
+
+    cmd_register("bind", NULL, &bind_f, 0);
+
+    keyboard_i = 1;
     sys_printf("+keyboard\n");
 
     return 0;
@@ -193,5 +248,10 @@ keyboard_shutdown
 */
 void keyboard_shutdown (void)
 {
+    if (!keyboard_i)
+        return;
+
+    mem_free_static_pool();
+
     sys_printf("-keyboard\n");
 }
