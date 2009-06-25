@@ -19,6 +19,9 @@
 
 #ifdef ENGINE_OS_IPHONE
 
+#include "common.h"
+
+int video_orientation;
 int video_width;
 int video_height;
 int video_fullscreen;
@@ -69,6 +72,9 @@ video_init
 */
 int video_init (void)
 {
+    /* FIXME -- take this from accelerometer? */
+    video_orientation = VIDEO_LANDSCAPE;
+
     return 0;
 }
 

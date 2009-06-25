@@ -34,7 +34,7 @@ static double oldtime = 0.0;
 init_time
 =================
 */
-static void init_time (void)
+void init_time (void)
 {
     struct timeval tp;
 
@@ -190,9 +190,6 @@ int SDL_main (int argc, char **argv)
     int res;
 
     signal(SIGFPE, SIG_IGN);
-
-    init_time();
-    sys_get_time();
     sys_arg_set(argc, argv);
     grab_signals();
 

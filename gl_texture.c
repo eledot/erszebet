@@ -104,7 +104,11 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
     {
         if (ext_gl_sgis_generate_mipmap && gl_sgis_generate_mipmap->i)
         {
+#ifdef ENGINE_OS_IPHONE
+            glGenerateMipmapOES(GL_TEXTURE_2D);
+#else
             glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+#endif
             GLERROR();
             GL_IMAGE_DATA2D(0, image);
             GLERROR();

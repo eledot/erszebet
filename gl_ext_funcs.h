@@ -25,7 +25,7 @@
 #define GLEXTNOFUNCS
 #endif /* !GLEXTPRIVATE */
 
-/* gl_arb_texture_compression */
+#ifdef GL_ARB_texture_compression
 GLEXTPRIVATE void (*eglCompressedTexImage3DARB)    (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
 GLEXTPRIVATE void (*eglCompressedTexImage2DARB)    (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
 GLEXTPRIVATE void (*eglCompressedTexImage1DARB)    (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *data);
@@ -33,16 +33,19 @@ GLEXTPRIVATE void (*eglCompressedTexSubImage3DARB) (GLenum target, GLint level, 
 GLEXTPRIVATE void (*eglCompressedTexSubImage2DARB) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
 GLEXTPRIVATE void (*eglCompressedTexSubImage1DARB) (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data);
 GLEXTPRIVATE void (*eglGetCompressedTexImageARB)   (GLenum target, GLint level, GLvoid *img);
+#endif
 
-/* gl_ext_polygon_offset */
+#ifdef GL_EXT_polygon_offset
 GLEXTPRIVATE void (*eglPolygonOffsetEXT) (GLfloat factor, GLfloat bias);
+#endif
 
-/* gl_arb_vertex_shader */
+#ifdef GL_ARB_vertex_shader
 GLEXTPRIVATE void  (*eglBindAttribLocationARB) (GLhandleARB programObj, GLuint index, const GLcharARB *name);
 GLEXTPRIVATE void  (*eglGetActiveAttribARB)    (GLhandleARB programObj, GLuint index, GLsizei maxLength, GLsizei *length, GLint *size, GLenum *type, GLcharARB *name);
 GLEXTPRIVATE GLint (*eglGetAttribLocationARB)  (GLhandleARB programObj, const GLcharARB *name);
+#endif
 
-/* gl_arb_vertex_program */
+#ifdef GL_ARB_vertex_program
 GLEXTPRIVATE void      (*eglVertexAttrib1dARB) (GLuint index, GLdouble x);
 GLEXTPRIVATE void      (*eglVertexAttrib1dvARB) (GLuint index, const GLdouble *v);
 GLEXTPRIVATE void      (*eglVertexAttrib1fARB) (GLuint index, GLfloat x);
@@ -105,26 +108,31 @@ GLEXTPRIVATE void      (*eglGetVertexAttribfvARB) (GLuint index, GLenum pname, G
 GLEXTPRIVATE void      (*eglGetVertexAttribivARB) (GLuint index, GLenum pname, GLint *params);
 GLEXTPRIVATE void      (*eglGetVertexAttribPointervARB) (GLuint index, GLenum pname, GLvoid* *pointer);
 GLEXTPRIVATE GLboolean (*eglIsProgramARB) (GLuint program);
+#endif
 
-/* glx_sgi_swap_control */
+#ifdef GLX_SGI_swap_control
 GLEXTPRIVATE int (*eglXSwapIntervalSGI) (int);
+#endif
 
-/* gl_ext_texture3d */
+#ifdef GL_EXT_texture3d
 GLEXTPRIVATE void      (*eglTexImage3DEXT) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 GLEXTPRIVATE void      (*eglTexSubImage3DEXT) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+#endif
 
-/* gl_ext_fog_coord */
+#ifdef GL_EXT_fog_coord
 GLEXTPRIVATE void (*eglFogCoordfEXT) (GLfloat coord);
 GLEXTPRIVATE void (*eglFogCoordfvEXT) (const GLfloat *coord);
 GLEXTPRIVATE void (*eglFogCoorddEXT) (GLdouble coord);
 GLEXTPRIVATE void (*eglFogCoorddvEXT) (const GLdouble *coord);
 GLEXTPRIVATE void (*eglFogCoordPointerEXT) (GLenum type, GLsizei stride, const GLvoid *pointer);
+#endif
 
-/* gl_arb_point_parameters */
+#ifdef GL_ARB_point_parameters
 GLEXTPRIVATE void (*eglPointParameterfARB) (GLenum pname, GLfloat param);
 GLEXTPRIVATE void (*eglPointParameterfvARB) (GLenum pname, const GLfloat *params);
+#endif
 
-/* gl_arb_occlusion_query */
+#ifdef GL_ARB_occlusion_query
 GLEXTPRIVATE void      (*eglGenQueriesARB) (GLsizei n, GLuint *ids);
 GLEXTPRIVATE void      (*eglDeleteQueriesARB) (GLsizei n, const GLuint *ids);
 GLEXTPRIVATE GLboolean (*eglIsQueryARB) (GLuint id);
@@ -133,12 +141,15 @@ GLEXTPRIVATE void      (*eglEndQueryARB) (GLenum target);
 GLEXTPRIVATE void      (*eglGetQueryivARB) (GLenum target, GLenum pname, GLint *params);
 GLEXTPRIVATE void      (*eglGetQueryObjectivARB) (GLuint id, GLenum pname, GLint *params);
 GLEXTPRIVATE void      (*eglGetQueryObjectuivARB) (GLuint id, GLenum pname, GLuint *params);
+#endif
 
-/* gl_ext_blend_func_separate */
+#ifdef GL_EXT_blend_func_separate
 GLEXTPRIVATE void (*eglBlendFuncSeparateEXT) (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+#endif
 
-/* gl_ext_blend_minmax */
+#ifdef GL_EXT_blend_minmax
 GLEXTPRIVATE void (*eglBlendEquationEXT) (GLenum mode);
+#endif
 
 typedef struct
 {
@@ -150,6 +161,7 @@ typedef struct
 
 static libgl_func_t gl_arb_texture_compression_funcs[] =
 {
+#ifdef GL_ARB_texture_compression
     { "glCompressedTexImage3DARB",    (void **)&eglCompressedTexImage3DARB    },
     { "glCompressedTexImage2DARB",    (void **)&eglCompressedTexImage2DARB    },
     { "glCompressedTexImage1DARB",    (void **)&eglCompressedTexImage1DARB    },
@@ -157,25 +169,31 @@ static libgl_func_t gl_arb_texture_compression_funcs[] =
     { "glCompressedTexSubImage2DARB", (void **)&eglCompressedTexSubImage2DARB },
     { "glCompressedTexSubImage1DARB", (void **)&eglCompressedTexSubImage1DARB },
     { "glGetCompressedTexImageARB",   (void **)&eglGetCompressedTexImageARB   },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_ext_polygon_offset_funcs[] =
 {
+#ifdef GL_EXT_polygon_offset
     { "glPolygonOffsetEXT", (void **)&eglPolygonOffsetEXT },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_arb_vertex_shader_funcs[] =
 {
+#ifdef GL_ARB_vertex_shader
     { "glBindAttribLocationARB", (void **)&eglBindAttribLocationARB },
     { "glGetActiveAttribARB",    (void **)&eglGetActiveAttribARB    },
     { "glGetAttribLocationARB",  (void **)&eglGetAttribLocationARB  },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_arb_vertex_program_funcs[] =
 {
+#ifdef GL_ARB_vertex_program
     { "glVertexAttrib1dARB",             (void **)&eglVertexAttrib1dARB             },
     { "glVertexAttrib1dvARB",            (void **)&eglVertexAttrib1dvARB            },
     { "glVertexAttrib1fARB",             (void **)&eglVertexAttrib1fARB             },
@@ -238,41 +256,51 @@ static libgl_func_t gl_arb_vertex_program_funcs[] =
     { "glGetVertexAttribivARB",          (void **)&eglGetVertexAttribivARB          },
     { "glGetVertexAttribPointervARB",    (void **)&eglGetVertexAttribPointervARB    },
     { "glIsProgramARB",                  (void **)&eglIsProgramARB                  },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t glx_sgi_swap_control_funcs[] =
 {
+#ifdef GLX_SGI_swap_control
     { "glXSwapIntervalSGI", (void **)&eglXSwapIntervalSGI },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_ext_texture3d_funcs[] =
 {
+#ifdef GL_EXT_texture3d
     { "glTexImage3DEXT",    (void **)&eglTexImage3DEXT    },
     { "glTexSubImage3DEXT", (void **)&eglTexSubImage3DEXT },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_ext_fog_coord_funcs[] =
 {
+#ifdef GL_EXT_fog_coord
     { "glFogCoordfEXT",       (void **)&eglFogCoordfEXT       },
     { "glFogCoordfvEXT",      (void **)&eglFogCoordfvEXT      },
     { "glFogCoorddEXT",       (void **)&eglFogCoorddEXT       },
     { "glFogCoorddvEXT",      (void **)&eglFogCoorddvEXT      },
     { "glFogCoordPointerEXT", (void **)&eglFogCoordPointerEXT },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_arb_point_parameters_funcs[] =
 {
+#ifdef GL_ARB_point_parameters
     { "glPointParameterfARB",  (void **)&eglPointParameterfARB  },
     { "glPointParameterfvARB", (void **)&eglPointParameterfvARB },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_arb_occlusion_query_funcs[] =
 {
+#ifdef GL_ARB_occlusion_query
     { "glGenQueriesARB",        (void **)&eglGenQueriesARB        },
     { "glDeleteQueriesARB",     (void **)&eglDeleteQueriesARB     },
     { "glIsQueryARB",           (void **)&eglIsQueryARB           },
@@ -281,18 +309,23 @@ static libgl_func_t gl_arb_occlusion_query_funcs[] =
     { "glGetQueryivARB",        (void **)&eglGetQueryivARB        },
     { "glGetQueryObjectivARB",  (void **)&eglGetQueryObjectivARB  },
     { "glGetQueryObjectuivARB", (void **)&eglGetQueryObjectuivARB },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_ext_blend_func_separate_funcs[] =
 {
+#ifdef GL_EXT_blend_func_separate
     { "glBlendFuncSeparateEXT", (void **)&eglBlendFuncSeparateEXT },
+#endif
     { NULL, NULL }
 };
 
 static libgl_func_t gl_ext_blend_minmax_funcs[] =
 {
+#ifdef GL_EXT_blend_minmax
     { "glBlendEquationEXT", (void **)&eglBlendEquationEXT },
+#endif
     { NULL, NULL }
 };
 

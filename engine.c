@@ -95,6 +95,9 @@ engine_init
 */
 int engine_init (void)
 {
+    init_time();
+    sys_get_time();
+
     INIT(cvar);
     INIT(cmd);
     INIT(cmdbuf);

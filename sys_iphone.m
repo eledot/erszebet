@@ -22,34 +22,38 @@
 #import "sys_iphone.h"
 #import "eagl_view.h"
 
-#include "common.h"
+#import "engine.h"
 
-@implementation application_delegate
+@implementation erszebet_iphoneAppDelegate
 
 @synthesize window;
 @synthesize glView;
 
-- (void) applicationDidFinishLaunching:(UIApllication *)application
+- (void) applicationDidFinishLaunching:(UIApplication *)application
 {
-    engine_init();
+    errno = 0;
 
-    glView.animationInterval = 1.0 / 60.0;
+    glView.animation_interval = 1.0 / 60.0;
+    [glView createFramebuffer];
     [glView startAnimation];
+
+    engine_init();
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
 {
-    glView.animationInterval = 1.0 / 5.0;
+    glView.animation_interval = 1.0 / 5.0;
 }
 
 - (void) applicationDidBecomeActive:(UIApplication *)application
 {
-    glview.animationInterval = 1.0 / 60.0;
+    glView.animation_interval = 1.0 / 60.0;
 }
 
 - (void) applicationWillTerminate:(UIApplication *)application
 {
     engine_stop();
+    [glView destroyFramebuffer];
 }
 
 - (void) dealloc
@@ -60,5 +64,22 @@
 }
 
 @end
+
+/*
+=================
+main
+=================
+*/
+int main (int argc, char **argv)
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    sys_arg_set(argc, argv);
+
+    int res = UIApplicationMain(argc, argv, nil, nil);
+    [pool release];
+
+    return res;
+}
 
 #endif /* ENGINE_OS_IPHONE */

@@ -24,7 +24,12 @@
 #include "g_entity.h"
 #include "g_physics.h"
 
+#ifndef ENGINE_OS_IPHONE
 #define GAME_MAIN_FILE "game/main.lua"
+#else
+#include "fs_helpers_apple.h"
+#define GAME_MAIN_FILE fs_get_resource_path("main.lua", mempool)
+#endif
 
 #define g_error(status, msg) g_error_real(status, msg, __FILE__, __LINE__, __FUNCTION__)
 
@@ -379,6 +384,19 @@ static int game_lua_execute (lua_State *lst)
 
 /*
 =================
+game_lua_set_orientation
+=================
+*/
+static int game_lua_set_orientation (lua_State *lst)
+{
+    /* FIXME -- this won't work for sdl */
+    video_orientation = luaL_checknumber(lst, 1);
+
+    return 0;
+}
+
+/*
+=================
 g_init_cmd
 =================
 */
@@ -395,8 +413,12 @@ static void g_init_cmd (void)
     g_set_integer("CMD_SRC_GAME", CMD_SRC_GAME);
     g_set_integer("CMD_SRC_REMOTE", CMD_SRC_REMOTE);
 
+    g_set_integer("VIDEO_LANDSCAPE", VIDEO_LANDSCAPE);
+    g_set_integer("VIDEO_PORTRAIT", VIDEO_PORTRAIT);
+
     lua_register(lst, "register_cmd", &game_lua_register_cmd);
     lua_register(lst, "execute", &game_lua_execute);
+    lua_register(lst, "set_orientation", &game_lua_set_orientation);
 }
 
 /*
@@ -406,6 +428,8 @@ g_init
 */
 int g_init (void)
 {
+    const char *file;
+
     mem_alloc_static_pool("game", 0);
 
     if (NULL == (lst = lua_open()))
@@ -423,7 +447,10 @@ int g_init (void)
 
     lua_register(lst, "set_gravity", &game_lua_set_gravity);
 
-    if (0 != g_error(luaL_loadfile(lst, GAME_MAIN_FILE), "failed to load " GAME_MAIN_FILE))
+    file = GAME_MAIN_FILE;
+    sys_printf("loading gamecode from \"%s\"\n", file);
+
+    if (0 != g_error(luaL_loadfile(lst, file), "failed to load gamecode"))
     {
         return -2;
     }

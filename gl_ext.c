@@ -312,7 +312,7 @@ void gl_init_extensions (const char *ext)
     GLERROR();
     sys_printf("opengl max texture size: %i\n", gl_max_texture_size);
 
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &gl_max_texture_units);
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &gl_max_texture_units);
     GLERROR();
     sys_printf("opengl max texture units: %i\n", gl_max_texture_units);
 

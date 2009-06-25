@@ -28,6 +28,14 @@
 #ifndef _VIDEO_H
 #define _VIDEO_H
 
+typedef enum
+{
+    VIDEO_LANDSCAPE = 0,
+    VIDEO_PORTRAIT
+}video_orientations_e;
+
+extern int video_orientation;
+
 /**
  * @brief Main surface width
  */

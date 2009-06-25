@@ -21,9 +21,11 @@
 #define _EAGL_VIEW_H
 
 #import <UIKit/UIKit.h>
-#import "gl_private.h"
+#import <OpenGLES/EAGL.h>
+#import <OpenGLES/ES1/gl.h>
+#import <OpenGLES/ES1/glext.h>
 
-@interface eagl_view : UIView
+@interface EAGLView : UIView
 {
 @private
 
@@ -44,4 +46,4 @@
 
 @end
 
-#endif /* !_EAGL_VIEW_H */
+#endif /* !_EAGLVIEW_H */

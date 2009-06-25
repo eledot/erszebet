@@ -20,8 +20,17 @@
 #ifndef _GL_PRIVATE_H
 #define _GL_PRIVATE_H
 
+#ifndef ENGINE_OS_IPHONE
 #include <gl.h>
 #include <glext.h>
+#else
+#include <OpenGLES/ES1/gl.h>
+#include <OpenGLES/ES1/glext.h>
+#define glClearDepth glClearDepthf
+#define glDepthRange glDepthRangef
+#define glFrustum    glFrustumf
+#define GLdouble GLfloat
+#endif
 
 #include "common.h"
 #include "gl_ext.h"

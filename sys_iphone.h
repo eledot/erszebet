@@ -22,15 +22,17 @@
 
 #import <UIKit/UIKit.h>
 
-@class eagl_view;
+@class EAGLView;
 
-@interface application_delegate : NSObject <UIApplicationDelegate>
+@interface erszebet_iphoneAppDelegate : NSObject <UIApplicationDelegate>
 {
-    UIWindow  *window;
-    eagl_view *glView;
+    UIWindow *window;
+    EAGLView *glView;
 }
 
-@property (nonatomic, retain) IBOutlet UIWindow  *window;
-@property (nonatomic, retain) IBOutlet eagl_view *glView;
+@property (nonatomic, retain) IBOutlet UIWindow *window;
+@property (nonatomic, retain) IBOutlet EAGLView *glView;
+
+@end
 
 #endif /* !_SYS_IPHONE_H */

@@ -33,6 +33,8 @@
  */
 extern double sys_time;
 
+void init_time (void);
+
 /**
  * @brief Func to get current time
  *

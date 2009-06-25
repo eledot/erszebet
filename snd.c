@@ -19,8 +19,13 @@
 
 #ifdef ENGINE_SND
 
+#ifdef ENGINE_OS_IPHONE
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#else
 #include <al.h>
 #include <alc.h>
+#endif
 
 #include "common.h"
 #include "snd_wav.h"

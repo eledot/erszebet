@@ -17,12 +17,45 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifdef ENGINE_OS_APPLE
+#if defined(ENGINE_OS_APPLE) || defined(ENGINE_OS_IPHONE)
 
 #include "common.h"
 #include "fs_private.h"
+#include "fs_helpers_apple.h"
 
 static CFBundleRef cg_main_bundle;
+
+/*
+=================
+fs_get_resource_path
+=================
+*/
+const char *fs_get_resource_path (const char *filename, mem_pool_t mempool)
+{
+    char       *buffer;
+    CFStringRef path;
+    CFURLRef    url;
+
+    if (NULL == (path = CFStringCreateWithCString(NULL, filename, kCFStringEncodingUTF8)))
+    {
+        sys_printf("CFStringCreateWithCString failed\n");
+        return NULL;
+    }
+
+    if (NULL == (url = CFBundleCopyResourceURL(cg_main_bundle, path, NULL, NULL)))
+    {
+        sys_printf("CFBundleCopyResourceURL failed\n");
+        CFRelease(path);
+        return NULL;
+    }
+
+    buffer = mem_alloc_static(MISC_MAX_FILENAME);
+    CFURLGetFileSystemRepresentation(url, true, buffer, MISC_MAX_FILENAME);
+    CFRelease(path);
+    CFRelease(url);
+
+    return buffer;
+}
 
 /*
 =================

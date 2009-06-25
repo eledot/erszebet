@@ -19,10 +19,13 @@
 
 #ifdef ENGINE_OS_IPHONE
 
+#import <QuartzCore/QuartzCore.h>
+#import <OpenGLES/EAGLDrawable.h>
 #import "eagl_view.h"
 #import "common.h"
+#import "gl_private.h"
 
-@interface eagl_view()
+@interface EAGLView()
 
 @property (nonatomic, retain) EAGLContext *context;
 @property (nonatomic, assign) NSTimer     *animation_timer;
@@ -76,11 +79,13 @@
     [EAGLContext setCurrentContext:context];
 
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, buffer_frame);
-    glViewport(0, 0, video_width, video_height);
+    GLERROR();
 
+    engine_frame();
 
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, buffer_render);
-    [context presentRenderbuffer:GL_RENDEBUFFER_OES];
+    GLERROR();
+    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
 - (void) layoutSubview
@@ -94,28 +99,46 @@
 - (BOOL) createFramebuffer
 {
     glGenFramebuffersOES(1, &buffer_frame);
+    GLERROR();
     glGenRenderbuffersOES(1, &buffer_render);
+    GLERROR();
 
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, buffer_frame);
+    GLERROR();
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, buffer_render);
+    GLERROR();
     [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
     glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES,
                                  GL_COLOR_ATTACHMENT0_OES,
                                  GL_RENDERBUFFER_OES,
                                  buffer_render);
+    GLERROR();
 
     glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES,  &video_width);
+    GLERROR();
     glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &video_height);
+    GLERROR();
+
+    sys_printf("== %i %i\n", video_width, video_height);
 
     glGenRenderbuffersOES(1, &buffer_depth);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, video_width, video_height);
+    GLERROR();
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, buffer_depth);
+    GLERROR();
     glRenderbufferStorageOES(GL_RENDERBUFFER_OES,
-                             GL_DEPTH_ATTACHMENT_OES,
-                             GL_RENDERBUFFER_OES,
-                             buffer_render);
+                             GL_DEPTH_COMPONENT16_OES,
+                             video_width,
+                             video_height);
+    GLERROR();
+    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES,
+                                 GL_DEPTH_ATTACHMENT_OES,
+                                 GL_RENDERBUFFER_OES,
+                                 buffer_depth);
+    GLERROR();
 
     if (GL_FRAMEBUFFER_COMPLETE_OES != glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES))
     {
+        GLERROR();
         sys_printf("failed to create framebuffer object\n");
         return NO;
     }
@@ -126,8 +149,11 @@
 - (void) destroyFramebuffer
 {
     glDeleteFramebuffersOES(1, &buffer_frame);
+    GLERROR();
     glDeleteRenderbuffersOES(1, &buffer_render);
+    GLERROR();
     glDeleteRenderbuffersOES(1, &buffer_depth);
+    GLERROR();
 
     buffer_frame = 0;
     buffer_render = 0;

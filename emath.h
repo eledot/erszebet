@@ -32,8 +32,18 @@
 #define M_PI 3.14159265358979323846
 #endif /* !M_PI */
 
-#define MIN(a, b)          ((a) < (b) ? (a) : (b))
-#define MAX(a, b)          ((a) > (b) ? (a) : (b))
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifdef CLAMP
+#undef CLAMP
+#endif
+
 #define CLAMP(v, min, max) (MAX(MIN((v), (max)), (min)))
 #define IS_PWROV2(n)       (!((n) & ((n) - 1)))
 

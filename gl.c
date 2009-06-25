@@ -137,12 +137,23 @@ void gl_draw_stretched (int gltex)
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
 
+#ifndef ENGINE_OS_IPHONE
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex2f(0, 0);
     glTexCoord2f(1, 0); glVertex2f(video_width, 0);
     glTexCoord2f(1, 1); glVertex2f(video_width, video_height);
     glTexCoord2f(0, 1); glVertex2f(0, video_height);
     glEnd();
+#else
+    {
+        GLfloat square[] = { 0, 0, video_width, 0, 0, video_height, video_width, video_height };
+        GLfloat texcoords[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
+        glVertexPointer(2, GL_FLOAT, 0, square);
+        glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+#endif
     GLERROR();
 }
 
@@ -177,12 +188,19 @@ void gl_draw_line2d_loop (const float *coords, int num)
 {
     int i;
 
+#ifndef ENGINE_OS_IPHONE
     glBegin(GL_LINE_LOOP);
 
     for(i = 0; i < num; i++)
         glVertex2f(coords[(i << 1) + 0], coords[(i << 1) + 1]);
 
     glEnd();
+#else
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, coords);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDrawArrays(GL_LINE_LOOP, 0, num);
+#endif
     GLERROR();
 }
 
@@ -193,10 +211,19 @@ gl_draw_line2d
 */
 void gl_draw_line2d (float x0, float y0, float x1, float y1)
 {
+#ifndef ENGINE_OS_IPHONE
     glBegin(GL_LINES);
     glVertex2f(x0, y0);
     glVertex2f(x1, y1);
     glEnd();
+#else
+    {
+        GLfloat coords[] = { x0, y0, x1, y1 };
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        glVertexPointer(2, GL_FLOAT, 0, coords);
+        glDrawArrays(GL_LINE_LOOP, 0, 2);
+    }
+#endif
     GLERROR();
 }
 
@@ -221,6 +248,7 @@ void gl_draw_text (const char *text, float x, float y)
     eglBindTexture(GL_TEXTURE_2D, internal_font);
     GLERROR();
 
+#ifndef ENGINE_OS_IPHONE
     glBegin(GL_QUADS);
 
     for (; *text && x < video_width ;text++, x += GL_INTERNAL_FONT_CW)
@@ -248,6 +276,10 @@ void gl_draw_text (const char *text, float x, float y)
     }
 
     glEnd();
+#else
+    /* FIXME */
+#endif
+
     GLERROR();
 }
 
@@ -278,12 +310,21 @@ void gl_switch_2d (void)
     GLERROR();
     glLoadIdentity();
     GLERROR();
-    glOrtho(0, video_width, 0, video_height, -1, 1);
+#ifndef ENGINE_OS_IPHONE
+    glOrtho(0.0f, video_width, 0.0f, video_height, -1.0f, 1.0f);
+#else
+    glOrthof(video_width - 1.0f, -1.0f, video_height, 0.0f, -1.0f, 1.0f);
+#endif
     GLERROR();
     glMatrixMode(GL_MODELVIEW);
     GLERROR();
     glLoadIdentity();
     GLERROR();
+
+#ifdef ENGINE_OS_IPHONE
+    glRotatef(90, 0, 0, 1);
+    glTranslatef(0, - video_width + 1.0f, 0);
+#endif
 
     eglDepthMask(GL_FALSE);
     GLERROR();
@@ -441,8 +482,10 @@ int gl_init (void)
     GLERROR();
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     GLERROR();
+#ifdef GL_POLYGON_SMOOTH_HINT
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     GLERROR();
+#endif
     glHint(GL_FOG_HINT, GL_NICEST);
     GLERROR();
 
@@ -462,6 +505,10 @@ int gl_init (void)
     GLERROR();
     glClearDepth(1.0f);
     GLERROR();
+
+#ifdef ENGINE_OS_IPHONE
+    glEnableClientState(GL_VERTEX_ARRAY);
+#endif
 
     gl_set_viewport(0, 0, video_width, video_height);
 

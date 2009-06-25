@@ -37,6 +37,7 @@ static cvar_t *r_fullscreen;
 
 static int nograb;
 
+int video_orientation;
 int video_width;
 int video_height;
 int video_fullscreen;
@@ -233,6 +234,8 @@ int video_init (void)
         sys_printf("SDL_Init failed\n");
         return -1;
     }
+
+    video_orientation = VIDEO_LANDSCAPE;
 
     video_i = 1;
 

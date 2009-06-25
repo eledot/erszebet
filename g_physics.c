@@ -498,7 +498,7 @@ void g_physics_frame (void)
     int     i;
     cpFloat dt = (g_time - phys_last_update) / (cpFloat)PHYS_STEPS;
 
-    if (dt <= 0.0)
+    if (dt <= 0.0f)
         return;
 
     phys_last_update = g_time;
