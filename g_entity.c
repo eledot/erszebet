@@ -299,7 +299,7 @@ static g_entity_t *g_entity_create (void)
     ent->rotation    = 0.0;
     ent->gravity     = 0.0;
     ent->elasticity  = 0.0;
-    ent->friction    = 1.0;
+    ent->friction    = 0.6;
     ent->mass        = 1.0;
     ent->inertia     = 100.0;
 

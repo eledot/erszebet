@@ -83,7 +83,7 @@ phys_set_body(ent3, BODY_CIRCLE, 10)
 ent3.classname = "shit"
 ent3.origin = {550, 100}
 ent3.velocity = { -450, 0 }
-ent3.mass = 10
+ent3.mass = 5
 ent3.elasticity = 1
 ent3.gravity = -300
 ent3.touch = function (self, other, origin, normal)
@@ -93,12 +93,12 @@ ent3.touch = function (self, other, origin, normal)
                 return 1
              end
 
-spawn_Tb(275, 190)
-spawn_Tb(275, 90)
-spawn_Tb(195, 190)
-spawn_Tb(195, 90)
-spawn_Tb(115, 190)
-spawn_Tb(115, 90)
+spawn_T(275, 190)
+spawn_T(275, 90)
+spawn_T(195, 190)
+spawn_T(195, 90)
+spawn_T(115, 190)
+spawn_T(115, 90)
 
 function funccc(cmd, src, argc, argv)
    print(cmd, src, argc, argv)

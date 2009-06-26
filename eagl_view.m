@@ -69,6 +69,7 @@
         }
 
         animation_interval = 1.0 / 60.0;
+        [self setMultipleTouchEnabled:YES];
     }
 
     return self;

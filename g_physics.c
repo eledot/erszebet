@@ -22,7 +22,7 @@
 #include "g_physics.h"
 #include "3rd/chipmunk/chipmunk.h"
 
-#define PHYS_STEPS 1
+#define PHYS_STEPS 3
 
 static mem_pool_t mempool;
 
