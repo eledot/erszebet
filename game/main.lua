@@ -54,6 +54,8 @@ end
 
 local S = 10
 
+phys_set_speed(0.25)
+
 function spawn_T(x, y)
    local ent1 = spawn()
    ent1.classname = "T"

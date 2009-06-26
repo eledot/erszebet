@@ -338,9 +338,23 @@ game_lua_set_gravity
 */
 static int game_lua_set_gravity (lua_State *lst)
 {
-    double gravity = luaL_checknumber(lst, -1);
+    double gravity = luaL_checknumber(lst, 1);
 
     g_physics_set_gravity(gravity);
+
+    return 0;
+}
+
+/*
+=================
+game_lua_set_speed
+=================
+*/
+static int game_lua_set_speed (lua_State *lst)
+{
+    double speed = luaL_checknumber(lst, 1);
+
+    g_physics_set_speed(speed);
 
     return 0;
 }
@@ -445,7 +459,8 @@ int g_init (void)
     g_physics_init(mempool);
     g_entity_init(lst, mempool);
 
-    lua_register(lst, "set_gravity", &game_lua_set_gravity);
+    lua_register(lst, "phys_set_gravity", &game_lua_set_gravity);
+    lua_register(lst, "phys_set_speed", &game_lua_set_speed);
 
     file = GAME_MAIN_FILE;
     sys_printf("loading gamecode from \"%s\"\n", file);

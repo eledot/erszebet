@@ -30,6 +30,7 @@ static cpSpace *phys_space;
 static cpBody  *phys_world;
 static cpShape *phys_world_shape;
 static double   phys_last_update;
+static double   phys_speed;
 
 /*
 =================
@@ -505,7 +506,7 @@ void g_physics_frame (void)
 
     for (i = 0; i < PHYS_STEPS ;i++)
     {
-        cpSpaceStep(phys_space, dt);
+        cpSpaceStep(phys_space, dt * phys_speed);
     }
 }
 
@@ -517,6 +518,17 @@ g_physics_set_gravity
 void g_physics_set_gravity (double gravity)
 {
     phys_space->gravity = cpv(0.0f, -gravity);
+}
+
+/*
+=================
+g_physics_set_speed
+=================
+*/
+void g_physics_set_speed (double speed)
+{
+    if (speed >= 0.01)
+        phys_speed = speed;
 }
 
 /*
@@ -585,6 +597,7 @@ void g_physics_init (mem_pool_t pool)
     cpInitChipmunk();
 
     phys_last_update = g_time;
+    phys_speed = 1.0;
 
     phys_space = cpSpaceNew();
     phys_space->gravity = cpv(0.0f, -900.0f);
