@@ -65,19 +65,18 @@ function spawn_T(x, y)
    ent1.origin = {x, y}
 end
 
-function spawn_Tb(x, y)
-   local ent1 = spawn()
-   ent1.classname = "T.1"
-   phys_set_body(ent1, BODY_POLYGON_CENTERED,
-                 { -3*S, 3*S, 3*S, 3*S, 3*S, 1*S, -3*S, 1*S })
-   ent1.origin = {x, y + 40}
+local Z = 10
 
-   local ent2 = spawn()
-   ent2.classname = "T.2"
-   phys_set_body(ent2, BODY_POLYGON_CENTERED,
-                 { -1*S, 1*S, 1*S, 1*S, 1*S, -5*S, -1*S, -5*S })
-   ent2.origin = {x, y}
-   phys_attach_pin(ent1, ent2)
+function spawn_star(x, y)
+   local s = spawn()
+   s.classname = "star"
+   phys_set_body(s, BODY_POLYGON,
+                 { Z*0, Z*3, Z*1, Z*0, -Z*1, Z*0 },
+                 { -Z*3, Z*0.5, Z*3, Z*0.5, Z*0, -Z*1.5 },
+                 { -Z*1, Z*0, Z*0, -Z*1.5, -Z*2, -Z*3 },
+                 { Z*0, -Z*1.5, Z*1, Z*0, Z*2, -Z*3 })
+   s.origin = { x, y }
+   s.mass = 8
 end
 
 local ent3 = spawn()
@@ -101,6 +100,11 @@ spawn_T(195, 190)
 spawn_T(195, 90)
 spawn_T(115, 190)
 spawn_T(115, 90)
+
+spawn_star(195, 300)
+spawn_star(195, 350)
+spawn_star(195, 400)
+spawn_star(195, 450)
 
 function funccc(cmd, src, argc, argv)
    print(cmd, src, argc, argv)
