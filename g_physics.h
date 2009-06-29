@@ -43,7 +43,9 @@ void g_physics_draw_collisions (void);
 void g_physics_frame (void);
 
 void g_physics_set_gravity (double gravity);
+double g_physics_get_gravity (void);
 void g_physics_set_speed (double speed);
+double g_physics_get_speed (void);
 
 void g_physics_init (mem_pool_t pool);
 void g_physics_shutdown (void);

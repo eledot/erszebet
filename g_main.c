@@ -92,7 +92,7 @@ g_destroy_cmd
 */
 void g_destroy_cmd (cmd_t *cmd)
 {
-    if (NULL == lst)
+    if (!g_i)
         return;
 
     if (cmd->lua_func)
@@ -347,6 +347,18 @@ static int game_lua_set_gravity (lua_State *lst)
 
 /*
 =================
+game_lua_get_gravity
+=================
+*/
+static int game_lua_get_gravity (lua_State *lst)
+{
+    lua_pushnumber(lst, g_physics_get_gravity());
+
+    return 1;
+}
+
+/*
+=================
 game_lua_set_speed
 =================
 */
@@ -357,6 +369,18 @@ static int game_lua_set_speed (lua_State *lst)
     g_physics_set_speed(speed);
 
     return 0;
+}
+
+/*
+=================
+game_lua_get_speed
+=================
+*/
+static int game_lua_get_speed (lua_State *lst)
+{
+    lua_pushnumber(lst, g_physics_get_speed());
+
+    return 1;
 }
 
 /*
@@ -460,7 +484,9 @@ int g_init (void)
     g_entity_init(lst, mempool);
 
     lua_register(lst, "phys_set_gravity", &game_lua_set_gravity);
+    lua_register(lst, "phys_get_gravity", &game_lua_get_gravity);
     lua_register(lst, "phys_set_speed", &game_lua_set_speed);
+    lua_register(lst, "phys_get_speed", &game_lua_get_speed);
 
     file = GAME_MAIN_FILE;
     sys_printf("loading gamecode from \"%s\"\n", file);

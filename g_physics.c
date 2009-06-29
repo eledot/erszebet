@@ -522,6 +522,16 @@ void g_physics_set_gravity (double gravity)
 
 /*
 =================
+g_physics_get_gravity
+=================
+*/
+double g_physics_get_gravity (void)
+{
+    return -phys_space->gravity.y;
+}
+
+/*
+=================
 g_physics_set_speed
 =================
 */
@@ -529,6 +539,16 @@ void g_physics_set_speed (double speed)
 {
     if (speed >= 0.01)
         phys_speed = speed;
+}
+
+/*
+=================
+g_physics_get_speed
+=================
+*/
+double g_physics_get_speed (void)
+{
+    return phys_speed;
 }
 
 /*

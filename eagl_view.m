@@ -193,6 +193,37 @@
     }
 }
 
+static void apply_touches (NSSet *touches, int down)
+{
+    NSEnumerator *e = [touches objectEnumerator];
+    UITouch      *touch;
+
+    while (nil != (touch = [e nextObject]))
+    {
+        CGPoint point = [touch locationInView: [touch view]];
+        g_call_func("g_touchpad_event", "iidd", 1, down, (double)point.x, (double)point.y);
+        sys_printf("touch %i - %i %i\n", down, (int)point.x, (int)point.y);
+    }
+}
+
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    apply_touches(touches, 1);
+    event = nil;    
+}
+
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{    
+    apply_touches(touches, 0);
+    event = nil;
+}
+
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    apply_touches(touches, -1);
+    event = nil;    
+}
+
 - (void) dealloc
 {
     [self stopAnimation];

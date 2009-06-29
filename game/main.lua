@@ -8,7 +8,7 @@ print("initializing...")
 jump = {}
 
 function g_mouse_event(button, down, x, y)
-   if button == 1 then
+   if button == 3 then
       if down > 0 then
          local ents = phys_point_query({x, y})
          if ents[1] then
@@ -23,7 +23,7 @@ function g_mouse_event(button, down, x, y)
                             {jump[2] - jump[1].origin_x, jump[3] - jump[1].origin_y},
                             {3 * (x - jump[2]), 3 * (y - jump[3])})
       end
-   elseif button == 3 then
+   elseif button == 1 then
       if down > 0 then
          local ents = phys_point_query({x, y})
          if ents[1] then
@@ -36,6 +36,14 @@ function g_mouse_event(button, down, x, y)
          print("spawn")
          spawn_T(x, y)
       end
+   end
+end
+
+function g_touchpad_event(button, down, x, y)
+   if down < 0 then
+      print("moving to", y, x)
+   else
+      g_mouse_event(button, down, y, x)
    end
 end
 
