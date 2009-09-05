@@ -19,55 +19,70 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../chipmunk.h"
 #include "util.h"
 
 static void
-preStep(cpGearJoint *joint, cpFloat dt, cpFloat dt_inv)
+preStep(cpRatchetJoint *joint, cpFloat dt, cpFloat dt_inv)
 {
 	cpBody *a = joint->constraint.a;
 	cpBody *b = joint->constraint.b;
 	
+	cpFloat dir = joint->direction;
+	cpFloat angle = joint->angle;
+	
+	cpFloat delta = b->a - a->a;
+	cpFloat diff = angle - delta;
+	cpFloat pdist = (diff*dir > 0.0f ? diff : 0.0);
+	joint->angle = dir*cpfmax(delta*dir, angle*dir);
+	
 	// calculate moment of inertia coefficient.
-	joint->iSum = 1.0f/(a->i_inv*joint->ratio_inv + joint->ratio*b->i_inv);
+	joint->iSum = 1.0f/(a->i_inv + b->i_inv);
 	
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
-	joint->bias = cpfclamp(-joint->constraint.biasCoef*dt_inv*(b->a*joint->ratio - a->a - joint->phase), -maxBias, maxBias);
+	joint->bias = cpfclamp(-joint->constraint.biasCoef*dt_inv*pdist, -maxBias, maxBias);
 	
 	// compute max impulse
 	joint->jMax = J_MAX(joint, dt);
 
+	// If the bias is 0, the joint is not at a limit. Reset the impulse.
+	if(!joint->bias)
+		joint->jAcc = 0.0f;
+
 	// apply joint torque
-	cpFloat j = joint->jAcc;
-	a->w -= j*a->i_inv*joint->ratio_inv;
-	b->w += j*b->i_inv;
+	a->w -= joint->jAcc*a->i_inv;
+	b->w += joint->jAcc*b->i_inv;
 }
 
 static void
-applyImpulse(cpGearJoint *joint)
+applyImpulse(cpRatchetJoint *joint)
 {
+	if(!joint->bias) return; // early exit
+
 	cpBody *a = joint->constraint.a;
 	cpBody *b = joint->constraint.b;
 	
 	// compute relative rotational velocity
-	cpFloat wr = b->w*joint->ratio - a->w;
+	cpFloat wr = b->w - a->w;
+	cpFloat dir = joint->direction;
 	
 	// compute normal impulse	
-	cpFloat j = (joint->bias - wr)*joint->iSum;
+	cpFloat j = -(joint->bias + wr)*joint->iSum;
 	cpFloat jOld = joint->jAcc;
-	joint->jAcc = cpfclamp(jOld + j, -joint->jMax, joint->jMax);
+	joint->jAcc = cpfclamp((jOld + j)*dir, 0.0f, joint->jMax)*dir;
 	j = joint->jAcc - jOld;
 	
 	// apply impulse
-	a->w -= j*a->i_inv*joint->ratio_inv;
+	a->w -= j*a->i_inv;
 	b->w += j*b->i_inv;
 }
 
 static cpFloat
-getImpulse(cpGearJoint *joint)
+getImpulse(cpRatchetJoint *joint)
 {
 	return cpfabs(joint->jAcc);
 }
@@ -77,38 +92,29 @@ static const cpConstraintClass klass = {
 	(cpConstraintApplyImpulseFunction)applyImpulse,
 	(cpConstraintGetImpulseFunction)getImpulse,
 };
-CP_DefineClassGetter(cpGearJoint)
+CP_DefineClassGetter(cpRatchetJoint)
 
-cpGearJoint *
-cpGearJointAlloc(void)
+cpRatchetJoint *
+cpRatchetJointAlloc(void)
 {
-	return (cpGearJoint *)malloc(sizeof(cpGearJoint));
+	return (cpRatchetJoint *)malloc(sizeof(cpRatchetJoint));
 }
 
-cpGearJoint *
-cpGearJointInit(cpGearJoint *joint, cpBody *a, cpBody *b, cpFloat phase, cpFloat ratio)
+cpRatchetJoint *
+cpRatchetJointInit(cpRatchetJoint *joint, cpBody *a, cpBody *b, cpFloat direction)
 {
 	cpConstraintInit((cpConstraint *)joint, &klass, a, b);
 	
-	joint->phase = phase;
-	joint->ratio = ratio;
-	joint->ratio_inv = 1.0f/ratio;
+	joint->angle = 0.0f;
+	joint->direction  = direction;
 	
-	joint->jAcc = 0.0f;
+	joint->angle = b->a - a->a;
 	
 	return joint;
 }
 
 cpConstraint *
-cpGearJointNew(cpBody *a, cpBody *b, cpFloat phase, cpFloat ratio)
+cpRatchetJointNew(cpBody *a, cpBody *b, cpFloat direction)
 {
-	return (cpConstraint *)cpGearJointInit(cpGearJointAlloc(), a, b, phase, ratio);
-}
-
-void
-cpGearJointSetRatio(cpConstraint *constraint, cpFloat value)
-{
-	cpConstraintCheckCast(constraint, cpGearJointGetClass());
-	((cpGearJoint *)constraint)->ratio = value;
-	((cpGearJoint *)constraint)->ratio_inv = 1.0f/value;
+	return (cpConstraint *)cpRatchetJointInit(cpRatchetJointAlloc(), a, b, direction);
 }

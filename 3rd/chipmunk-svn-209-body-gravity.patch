@@ -1,6 +1,7 @@
---- chipmunk-old/cpBody.c	2009-06-12 16:20:49.000000000 +0300
-+++ chipmunk/cpBody.c	2009-06-12 16:28:33.000000000 +0300
-@@ -46,6 +46,7 @@
+diff -ruiN chip_209/cpBody.c chip/cpBody.c
+--- chip_209/cpBody.c	2009-09-05 12:35:44.000000000 +0300
++++ chip/cpBody.c	2009-09-05 12:36:03.000000000 +0300
+@@ -49,6 +49,7 @@
  	cpBodySetAngle(body, 0.0f);
  	body->w = 0.0f;
  	body->t = 0.0f;
@@ -8,9 +9,10 @@
  	
  	body->v_bias = cpvzero;
  	body->w_bias = 0.0f;
---- chipmunk-old/cpBody.h	2009-06-12 16:20:49.000000000 +0300
-+++ chipmunk/cpBody.h	2009-06-12 16:25:31.000000000 +0300
-@@ -51,11 +51,13 @@
+diff -ruiN chip_209/cpBody.h chip/cpBody.h
+--- chip_209/cpBody.h	2009-09-05 12:35:44.000000000 +0300
++++ chip/cpBody.h	2009-09-05 12:36:03.000000000 +0300
+@@ -53,11 +53,13 @@
  	// Angular components of motion (angle, angular velocity, and torque)
  	// Always use cpBodySetAngle() to set the angle of the body as a and rot must agree.
  	cpFloat a, w, t;
@@ -25,9 +27,10 @@
  	// *** User Definable Fields
  	
  	// User defined data pointer.
---- chipmunk-old/cpSpace.c	2009-06-12 16:20:49.000000000 +0300
-+++ chipmunk/cpSpace.c	2009-06-12 16:28:39.000000000 +0300
-@@ -542,7 +542,8 @@
+diff -ruiN chip_209/cpSpace.c chip/cpSpace.c
+--- chip_209/cpSpace.c	2009-09-05 12:35:44.000000000 +0300
++++ chip/cpSpace.c	2009-09-05 12:36:03.000000000 +0300
+@@ -550,7 +550,8 @@
  	cpFloat damping = cpfpow(1.0f/space->damping, -dt);
  	for(int i=0; i<bodies->num; i++){
  		cpBody *body = (cpBody *)bodies->arr[i];

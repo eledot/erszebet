@@ -19,23 +19,21 @@
  * SOFTWARE.
  */
 
-const cpConstraintClass *cpGearJointGetClass();
+const cpConstraintClass *cpRatchetJointGetClass();
 
-typedef struct cpGearJoint {
+typedef struct cpRatchetJoint {
 	cpConstraint constraint;
-	cpFloat phase, ratio;
-	cpFloat ratio_inv;
+	cpFloat angle, direction;
 	
 	cpFloat iSum;
 		
 	cpFloat bias;
 	cpFloat jAcc, jMax;
-} cpGearJoint;
+} cpRatchetJoint;
 
-cpGearJoint *cpGearJointAlloc(void);
-cpGearJoint *cpGearJointInit(cpGearJoint *joint, cpBody *a, cpBody *b, cpFloat phase, cpFloat ratio);
-cpConstraint *cpGearJointNew(cpBody *a, cpBody *b, cpFloat phase, cpFloat ratio);
+cpRatchetJoint *cpRatchetJointAlloc(void);
+cpRatchetJoint *cpRatchetJointInit(cpRatchetJoint *joint, cpBody *a, cpBody *b, cpFloat direction);
+cpConstraint *cpRatchetJointNew(cpBody *a, cpBody *b, cpFloat direction);
 
-CP_DefineConstraintProperty(cpGearJoint, cpFloat, phase, Phase);
-CP_DefineConstraintGetter(cpGearJoint, cpFloat, ratio, Ratio);
-void cpGearJointSetRatio(cpConstraint *constraint, cpFloat value);
+CP_DefineConstraintProperty(cpRatchetJoint, cpFloat, angle, Angle);
+CP_DefineConstraintProperty(cpRatchetJoint, cpFloat, direction, Direction);
