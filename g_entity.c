@@ -41,7 +41,8 @@ typedef enum
     ENT_F_VECTOR
 }ent_fields_types_e;
 
-struct
+/* entity field offsets */
+static const struct
 {
     const char *field;
     int         offset;
@@ -52,7 +53,6 @@ struct
     { #str, ((const void *)&((const g_entity_t *)NULL)->str - (const void *)NULL), type }
 #define DOFF2(str, field, type)                                         \
     { #str, ((const void *)&((const g_entity_t *)NULL)->field - (const void *)NULL), type }
-
     DOFF(classname,  ENT_F_STRING),
     DOFF(flags,      ENT_F_INTEGER),
     DOFF(nextthink,  ENT_F_DOUBLE),
@@ -69,6 +69,17 @@ struct
     DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE),
     DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE),
     DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE)
+#undef DOFF
+#undef DOFF2
+};
+
+/* entity field offsets for strings that must be freed */
+static const int ent_entity_fields_free[] =
+{
+#define DOFF(str)                                                       \
+    ((const void *)&((const g_entity_t *)NULL)->str - (const void *)NULL)
+    DOFF(classname)
+#undef DOFF
 };
 
 static mem_pool_t mempool;
@@ -144,7 +155,10 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
             switch (ent_entity_fields[i].type)
             {
             case ENT_F_STRING:
-                *(const char **)data = luaL_checkstring(lst, index);
+                if (NULL != *(char **)data)
+                    mem_free(*(char **)data);
+
+                *(const char **)data = mem_strdup_static(luaL_checkstring(lst, index));
                 break;
 
             case ENT_F_INTEGER:
@@ -336,6 +350,26 @@ static void g_entity_delete (g_entity_t *ent)
 
     lua_unref(lst, ent->ref);
     lua_unref(lst, ent->dataref);
+}
+
+/*
+=================
+g_entity_mem_free
+=================
+*/
+static void g_entity_mem_free (g_entity_t *ent)
+{
+    int i;
+
+    for (i = 0; i < STSIZE(ent_entity_fields_free) ;i++)
+    {
+        char *data = *(char **)((void *)ent + ent_entity_fields[i].offset);
+
+        if (NULL != data)
+            mem_free(data);
+    }
+
+    mem_free(ent);
 }
 
 /*
@@ -609,7 +643,7 @@ void g_entity_frame (void)
     {
         ent = remove_entities->next;
         g_physics_free_obj(remove_entities);
-        mem_free(remove_entities);
+        g_entity_mem_free(remove_entities);
         remove_entities = ent;
     }
 

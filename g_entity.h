@@ -36,7 +36,7 @@ typedef enum
 
 typedef struct g_entity_s
 {
-    const char *classname;
+    char *classname;
 
     int cflags;
     int flags;

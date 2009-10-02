@@ -57,6 +57,7 @@ function remove(e)
    if e.remove then
       e.remove(e)
    end
+   print(e)
    ent_remove(e)
 end
 
