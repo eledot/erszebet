@@ -186,26 +186,91 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
 
 /*
 =================
+ent_flags_to_string
+=================
+*/
+static const char *ent_flags_string (const g_entity_t *ent)
+{
+    static char flags[128];
+    const int s = sizeof(flags);
+    int unknown = ent->flags - (ent->flags & (ENT_FL_STATIC | ENT_FL_NON_SOLID));
+    int len;
+
+    flags[0] = 0;
+
+    if (ent->flags & ENT_FL_STATIC)
+        strlcat(flags, "static ", s);
+
+    if (ent->flags & ENT_FL_NON_SOLID)
+        strlcat(flags, "non_solid ", s);
+
+    if (ent->cflags & ENT_CFL_THINK)
+        strlcat(flags, "think ", s);
+
+    if (ent->cflags & ENT_CFL_TOUCH)
+        strlcat(flags, "touch ", s);
+
+    if (ent->cflags & ENT_CFL_BLOCK)
+        strlcat(flags, "block ", s);
+
+    if (ent->cflags & ENT_CFL_PHYS_STATIC)
+        strlcat(flags, "phys_static ", s);
+
+    if (unknown)
+    {
+        len = strlen(flags);
+        snprintf(flags + len, s - len, "%i", unknown);
+    }
+
+    return flags;
+}
+
+/*
+=================
 ent_lua_tostring
 =================
 */
 static int ent_lua_tostring (lua_State *lst)
 {
-    char        tmp[256];
+    char        tmp[512];
     g_entity_t *ent;
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
-    snprintf(tmp, sizeof(tmp), "entity: %p classname=\"%s\" flags=%i origin={ %-2.2lf %-2.2lf } velocity={ %-2.2lf %-2.2lf } angle=%-2.2lf rotation=%-2.2lf",
+
+    snprintf(tmp,
+             sizeof(tmp),
+             "entity: %p "
+             "classname=\"%s\" "
+             "flags=( %s) "
+             "nextthink=%-2.2lf "
+             "lastthink=%-2.2lf "
+             "origin={ %-2.2lf %-2.2lf } "
+             "velocity={ %-2.2lf %-2.2lf } "
+             "angle=%-2.2lf "
+             "rotation=%-2.2lf "
+             "gravity=%-2.2lf "
+             "elasticity=%-2.2lf "
+             "friction=%-2.2lf "
+             "mass=%-2.2lf "
+             "inertia=%-2.2lf",
              ent,
              ent->classname ? ent->classname : "-noname-",
-             ent->flags,
+             ent_flags_string(ent),
+             ent->nextthink,
+             ent->lastthink,
              ent->origin[0],
              ent->origin[1],
              ent->velocity[0],
              ent->velocity[1],
              ent->angle,
-             ent->rotation);
+             ent->rotation,
+             ent->gravity,
+             ent->elasticity,
+             ent->friction,
+             ent->mass,
+             ent->inertia);
+
     lua_pushstring(lst, tmp);
 
     return 1;
