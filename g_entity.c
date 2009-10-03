@@ -109,7 +109,10 @@ static int ent_get_field (const g_entity_t *ent, const char *field)
             switch (ent_entity_fields[i].type)
             {
             case ENT_F_STRING:
-                lua_pushstring(lst, *(const char **)data);
+                if (NULL == *(char **)data)
+                    lua_pushstring(lst, "");
+                else
+                    lua_pushstring(lst, *(const char **)data);
                 break;
 
             case ENT_F_INTEGER:
@@ -158,7 +161,7 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                 if (NULL != *(char **)data)
                     mem_free(*(char **)data);
 
-                *(const char **)data = mem_strdup_static(luaL_checkstring(lst, index));
+                *(char **)data = mem_strdup_static(luaL_checkstring(lst, index));
                 break;
 
             case ENT_F_INTEGER:
