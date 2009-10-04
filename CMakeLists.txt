@@ -45,7 +45,7 @@ option(DEBUG_SND "debug sound" ON)
 option(DEBUG_GL  "debug opengl" ON)
 option(DEBUG_MEM "debug memory manager" ON)
 
-add_definitions(-W -Wall -std=c99 -DGAME_NAME="${P}")
+set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -DGAME_NAME=\\\"${P}\\\"")
 
 if(DEBUG)
   message(">>> DEBUG enabled")

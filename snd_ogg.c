@@ -19,6 +19,7 @@
 
 #ifdef ENGINE_SND_OGG
 
+#define OV_EXCLUDE_STATIC_CALLBACKS
 #include <vorbisfile.h>
 
 #include "common.h"

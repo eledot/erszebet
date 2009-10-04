@@ -25,11 +25,11 @@
 
 #define GL_ADD_EXT_VAR(cvar)                                   \
     cvar_t *cvar;                                              \
-    int ext_##cvar = 0;
+    int ext_##cvar = 0
 
 #define GL_ADD_EXT_VAR2(cvar)                                   \
-    GL_ADD_EXT_VAR(cvar)                                        \
-    static libgl_func_t *cvar##_funcs = NULL;
+    GL_ADD_EXT_VAR(cvar);                                       \
+    static libgl_func_t *cvar##_funcs = NULL
 
 static const char *extensions;
 
