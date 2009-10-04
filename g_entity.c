@@ -479,7 +479,7 @@ static int ent_lua_remove (lua_State *lst)
 
     if (NULL == ent)
     {
-        sys_printf("called \"remove_entity\" without entity\n");
+        sys_printf("called \"ent_remove\" without entity\n");
         return 0;
     }
 
@@ -500,8 +500,20 @@ static int ent_lua_attach_pin (lua_State *lst)
     lua_getfield(lst, 1, "__ref");
     a = (g_entity_t *)lua_touserdata(lst, -1);
 
+    if (NULL == a)
+    {
+        sys_printf("called \"phys_attach_pin\" without entity\n");
+        return 0;
+    }
+
     lua_getfield(lst, 2, "__ref");
     b = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == b)
+    {
+        sys_printf("called \"phys_attach_pin\" without entity\n");
+        return 0;
+    }
 
     g_physics_attach_pin(a, b);
 
@@ -520,6 +532,12 @@ static int ent_lua_detach (lua_State *lst)
 
     lua_getfield(lst, 1, "__ref");
     a = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == a)
+    {
+        sys_printf("called \"phys_detach\" without entity\n");
+        return 0;
+    }
 
     if (top > 1)
     {
@@ -580,6 +598,12 @@ static int ent_lua_apply_impulse (lua_State *lst)
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"phys_apply_impulse\" without entity\n");
+        return 0;
+    }
 
     g_pop_vector(2, point, 2);
     g_pop_vector(3, impulse, 2);
