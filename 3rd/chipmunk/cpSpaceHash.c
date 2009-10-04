@@ -96,7 +96,7 @@ handleSetEql(void *obj, void *elt)
 
 // Transformation function for the handleset.
 static void *
-handleSetTrans(void *obj, void *unused)
+handleSetTrans(void *obj, GNUC_UNUSED void *unused)
 {
 	cpHandle *hand = cpHandleNew(obj);
 	cpHandleRetain(hand);
@@ -166,7 +166,7 @@ freeBins(cpSpaceHash *hash)
 
 // Hashset iterator function to free the handles.
 static void
-handleFreeWrap(void *elt, void *unused)
+handleFreeWrap(void *elt, GNUC_UNUSED void *unused)
 {
 	cpHandle *hand = (cpHandle *)elt;
 	cpHandleFree(hand);

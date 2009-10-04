@@ -31,7 +31,7 @@ defaultSpringTorque(cpDampedRotarySpring *spring, cpFloat relativeAngle){
 }
 
 static void
-preStep(cpDampedRotarySpring *spring, cpFloat dt, cpFloat dt_inv)
+preStep(cpDampedRotarySpring *spring, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
 {
 	cpBody *a = spring->constraint.a;
 	cpBody *b = spring->constraint.b;
@@ -68,7 +68,7 @@ applyImpulse(cpDampedRotarySpring *spring)
 }
 
 static cpFloat
-getImpulse(cpConstraint *constraint)
+getImpulse(GNUC_UNUSED cpConstraint *constraint)
 {
 	return 0.0f;
 }

@@ -1,0 +1,244 @@
+diff -r 060b8f72d47f 3rd/chipmunk/chipmunk.h
+--- a/3rd/chipmunk/chipmunk.h	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/chipmunk.h	Sun Oct 04 15:43:32 2009 +0300
+@@ -26,7 +26,9 @@
+ extern "C" {
+ #endif
+ 
++#include <math.h>
+ #include "chipmunk_types.h"
++#include "../../gnuc.h"
+ 	
+ static inline cpFloat
+ cpfmax(cpFloat a, cpFloat b)
+@@ -51,20 +53,6 @@
+ 	return cpfmin(cpfmax(f, min), max);
+ }
+ 
+-#ifndef INFINITY
+-	#ifdef _MSC_VER
+-		union MSVC_EVIL_FLOAT_HACK
+-		{
+-			unsigned __int8 Bytes[4];
+-			float Value;
+-		};
+-		static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = {{0x00, 0x00, 0x80, 0x7F}};
+-		#define INFINITY (INFINITY_HACK.Value)
+-	#else
+-		#define INFINITY (1e1000)
+-	#endif
+-#endif
+-
+ #include "cpVect.h"
+ #include "cpBB.h"
+ #include "cpBody.h"
+diff -r 060b8f72d47f 3rd/chipmunk/constraints/cpConstraint.c
+--- a/3rd/chipmunk/constraints/cpConstraint.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/constraints/cpConstraint.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -29,7 +29,7 @@
+ 
+ cpFloat cp_constraint_bias_coef = 0.1f;
+ 
+-void cpConstraintDestroy(cpConstraint *constraint){}
++void cpConstraintDestroy(GNUC_UNUSED cpConstraint *constraint){}
+ 
+ void
+ cpConstraintFree(cpConstraint *constraint)
+diff -r 060b8f72d47f 3rd/chipmunk/constraints/cpDampedRotarySpring.c
+--- a/3rd/chipmunk/constraints/cpDampedRotarySpring.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/constraints/cpDampedRotarySpring.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -31,7 +31,7 @@
+ }
+ 
+ static void
+-preStep(cpDampedRotarySpring *spring, cpFloat dt, cpFloat dt_inv)
++preStep(cpDampedRotarySpring *spring, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
+ {
+ 	cpBody *a = spring->constraint.a;
+ 	cpBody *b = spring->constraint.b;
+@@ -68,7 +68,7 @@
+ }
+ 
+ static cpFloat
+-getImpulse(cpConstraint *constraint)
++getImpulse(GNUC_UNUSED cpConstraint *constraint)
+ {
+ 	return 0.0f;
+ }
+diff -r 060b8f72d47f 3rd/chipmunk/constraints/cpDampedSpring.c
+--- a/3rd/chipmunk/constraints/cpDampedSpring.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/constraints/cpDampedSpring.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -31,7 +31,7 @@
+ }
+ 
+ static void
+-preStep(cpDampedSpring *spring, cpFloat dt, cpFloat dt_inv)
++preStep(cpDampedSpring *spring, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
+ {
+ 	cpBody *a = spring->constraint.a;
+ 	cpBody *b = spring->constraint.b;
+@@ -76,7 +76,7 @@
+ }
+ 
+ static cpFloat
+-getImpulse(cpConstraint *constraint)
++getImpulse(GNUC_UNUSED cpConstraint *constraint)
+ {
+ 	return 0.0f;
+ }
+diff -r 060b8f72d47f 3rd/chipmunk/constraints/cpSimpleMotor.c
+--- a/3rd/chipmunk/constraints/cpSimpleMotor.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/constraints/cpSimpleMotor.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -25,7 +25,7 @@
+ #include "util.h"
+ 
+ static void
+-preStep(cpSimpleMotor *joint, cpFloat dt, cpFloat dt_inv)
++preStep(cpSimpleMotor *joint, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
+ {
+ 	cpBody *a = joint->constraint.a;
+ 	cpBody *b = joint->constraint.b;
+diff -r 060b8f72d47f 3rd/chipmunk/cpBody.c
+--- a/3rd/chipmunk/cpBody.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/cpBody.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -66,7 +66,7 @@
+ 	return cpBodyInit(cpBodyAlloc(), m, i);
+ }
+ 
+-void cpBodyDestroy(cpBody *body){}
++void cpBodyDestroy(GNUC_UNUSED cpBody *body){}
+ 
+ void
+ cpBodyFree(cpBody *body)
+diff -r 060b8f72d47f 3rd/chipmunk/cpSpace.c
+--- a/3rd/chipmunk/cpSpace.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/cpSpace.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -32,8 +32,6 @@
+ 
+ int cp_contact_persistence = 3;
+ 
+-#pragma mark Contact Set Helpers
+-
+ // Equal function for contactSet.
+ static int
+ contactSetEql(cpShape **shapes, cpArbiter *arb)
+@@ -54,8 +52,6 @@
+ 	return cpArbiterNew(a, b, space->stamp);
+ }
+ 
+-#pragma mark Collision Pair Function Helpers
+-
+ // Collision pair function wrapper struct.
+ typedef struct collFuncData {
+ 	cpCollFunc func;
+@@ -85,11 +81,9 @@
+ 	return pair;
+ }
+ 
+-#pragma mark Misc Helper Funcs
+-
+ // Default collision pair function.
+ static int
+-alwaysCollide(cpShape *a, cpShape *b, cpContact *arr, int numCon, cpFloat normal_coef, void *data)
++alwaysCollide(GNUC_UNUSED cpShape *a, GNUC_UNUSED cpShape *b, GNUC_UNUSED cpContact *arr, GNUC_UNUSED int numCon, GNUC_UNUSED cpFloat normal_coef, GNUC_UNUSED void *data)
+ {
+ 	return 1;
+ }
+@@ -98,13 +92,11 @@
+ static cpBB shapeBBFunc(cpShape *shape){return shape->bb;}
+ 
+ // Iterator functions for destructors.
+-static void             freeWrap(void         *ptr, void *unused){            free(ptr);}
+-static void        shapeFreeWrap(cpShape      *ptr, void *unused){     cpShapeFree(ptr);}
+-static void      arbiterFreeWrap(cpArbiter    *ptr, void *unused){   cpArbiterFree(ptr);}
+-static void         bodyFreeWrap(cpBody       *ptr, void *unused){      cpBodyFree(ptr);}
+-static void   constraintFreeWrap(cpConstraint *ptr, void *unused){cpConstraintFree(ptr);}
+-
+-#pragma mark Memory Management Functions
++static void             freeWrap(void         *ptr, GNUC_UNUSED void *unused){            free(ptr);}
++static void        shapeFreeWrap(cpShape      *ptr, GNUC_UNUSED void *unused){     cpShapeFree(ptr);}
++static void      arbiterFreeWrap(cpArbiter    *ptr, GNUC_UNUSED void *unused){   cpArbiterFree(ptr);}
++static void         bodyFreeWrap(cpBody       *ptr, GNUC_UNUSED void *unused){      cpBodyFree(ptr);}
++static void   constraintFreeWrap(cpConstraint *ptr, GNUC_UNUSED void *unused){cpConstraintFree(ptr);}
+ 
+ cpSpace*
+ cpSpaceAlloc(void)
+@@ -189,8 +181,6 @@
+ 	cpArrayEach(space->constraints,      (cpArrayIter)&constraintFreeWrap,    NULL);
+ }
+ 
+-#pragma mark Collision Pair Function Management
+-
+ void
+ cpSpaceAddCollisionPairFunc(cpSpace *space, cpCollisionType a, cpCollisionType b, cpCollFunc func, void *data)
+ {
+@@ -219,8 +209,6 @@
+ 	space->defaultPairFunc = pairFunc;
+ }
+ 
+-#pragma mark Body, Shape, and Joint Management
+-
+ cpShape *
+ cpSpaceAddShape(cpSpace *space, cpShape *shape)
+ {
+@@ -305,8 +293,6 @@
+ 	cpArrayDeleteObj(space->constraints, constraint);
+ }
+ 
+-#pragma mark Point Query Functions
+-
+ typedef struct pointQueryContext {
+ 	cpLayers layers;
+ 	cpGroup group;
+@@ -353,11 +339,9 @@
+ 		func((cpBody *)bodies->arr[i], data);
+ }
+ 
+-#pragma mark Spatial Hash Management
+-
+ // Iterator function used for updating shape BBoxes.
+ static void
+-updateBBCache(cpShape *shape, void *unused)
++updateBBCache(cpShape *shape, GNUC_UNUSED void *unused)
+ {
+ 	cpShapeCacheBB(shape);
+ }
+@@ -382,8 +366,6 @@
+ 	cpSpaceHashRehash(space->staticShapes);
+ }
+ 
+-#pragma mark Collision Detection Functions
+-
+ static inline int
+ queryReject(cpShape *a, cpShape *b)
+ {
+@@ -494,8 +476,6 @@
+ 	}
+ }
+ 
+-#pragma mark All Important cpSpaceStep() Function
+-
+ void
+ cpSpaceStep(cpSpace *space, cpFloat dt)
+ {
+diff -r 060b8f72d47f 3rd/chipmunk/cpSpaceHash.c
+--- a/3rd/chipmunk/cpSpaceHash.c	Sat Oct 03 13:40:48 2009 +0300
++++ b/3rd/chipmunk/cpSpaceHash.c	Sun Oct 04 15:43:32 2009 +0300
+@@ -96,7 +96,7 @@
+ 
+ // Transformation function for the handleset.
+ static void *
+-handleSetTrans(void *obj, void *unused)
++handleSetTrans(void *obj, GNUC_UNUSED void *unused)
+ {
+ 	cpHandle *hand = cpHandleNew(obj);
+ 	cpHandleRetain(hand);
+@@ -166,7 +166,7 @@
+ 
+ // Hashset iterator function to free the handles.
+ static void
+-handleFreeWrap(void *elt, void *unused)
++handleFreeWrap(void *elt, GNUC_UNUSED void *unused)
+ {
+ 	cpHandle *hand = (cpHandle *)elt;
+ 	cpHandleFree(hand);

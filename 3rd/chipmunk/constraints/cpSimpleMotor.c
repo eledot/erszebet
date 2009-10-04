@@ -25,7 +25,7 @@
 #include "util.h"
 
 static void
-preStep(cpSimpleMotor *joint, cpFloat dt, cpFloat dt_inv)
+preStep(cpSimpleMotor *joint, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
 {
 	cpBody *a = joint->constraint.a;
 	cpBody *b = joint->constraint.b;

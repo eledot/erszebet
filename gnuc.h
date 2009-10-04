@@ -17,47 +17,15 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _GNUC_H
+#define _GNUC_H
 
-#ifdef __cplusplus
-extern "C"
-{
+#if __GNUC__ > 2
+#define GNUC_CONST  __attribute__((__const__))
+#define GNUC_UNUSED __attribute__((__unused__))
+#else
+#define GNUC_CONST
+#define GNUC_UNUSED
 #endif
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <errno.h>
-
-#include "gnuc.h"
-#include "misc.h"
-#include "mem.h"
-#include "cmd.h"
-#include "cmdbuf.h"
-#include "cvar.h"
-#include "fs.h"
-#include "fs_helpers.h"
-#include "fs_helpers_apple.h"
-#include "gl.h"
-#include "image.h"
-#include "keyboard.h"
-#include "emath.h"
-#include "mouse.h"
-#include "r_main.h"
-#include "snd.h"
-#include "strlcat.h"
-#include "strlcpy.h"
-#include "sys_arg.h"
-#include "sys.h"
-#include "video.h"
-#include "g_main.h"
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* !_COMMON_H */
+#endif /* !_GNUC_H */

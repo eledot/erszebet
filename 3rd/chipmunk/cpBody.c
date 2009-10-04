@@ -66,7 +66,7 @@ cpBodyNew(cpFloat m, cpFloat i)
 	return cpBodyInit(cpBodyAlloc(), m, i);
 }
 
-void cpBodyDestroy(cpBody *body){}
+void cpBodyDestroy(GNUC_UNUSED cpBody *body){}
 
 void
 cpBodyFree(cpBody *body)

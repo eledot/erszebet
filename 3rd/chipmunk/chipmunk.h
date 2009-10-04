@@ -26,7 +26,9 @@
 extern "C" {
 #endif
 
+#include <math.h>
 #include "chipmunk_types.h"
+#include "../../gnuc.h"
 	
 static inline cpFloat
 cpfmax(cpFloat a, cpFloat b)
@@ -50,20 +52,6 @@ static inline cpFloat
 cpfclamp(cpFloat f, cpFloat min, cpFloat max){
 	return cpfmin(cpfmax(f, min), max);
 }
-
-#ifndef INFINITY
-	#ifdef _MSC_VER
-		union MSVC_EVIL_FLOAT_HACK
-		{
-			unsigned __int8 Bytes[4];
-			float Value;
-		};
-		static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = {{0x00, 0x00, 0x80, 0x7F}};
-		#define INFINITY (INFINITY_HACK.Value)
-	#else
-		#define INFINITY (1e1000)
-	#endif
-#endif
 
 #include "cpVect.h"
 #include "cpBB.h"

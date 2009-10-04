@@ -31,7 +31,7 @@ defaultSpringForce(cpDampedSpring *spring, cpFloat dist){
 }
 
 static void
-preStep(cpDampedSpring *spring, cpFloat dt, cpFloat dt_inv)
+preStep(cpDampedSpring *spring, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
 {
 	cpBody *a = spring->constraint.a;
 	cpBody *b = spring->constraint.b;
@@ -76,7 +76,7 @@ applyImpulse(cpDampedSpring *spring)
 }
 
 static cpFloat
-getImpulse(cpConstraint *constraint)
+getImpulse(GNUC_UNUSED cpConstraint *constraint)
 {
 	return 0.0f;
 }

@@ -32,8 +32,6 @@
 
 int cp_contact_persistence = 3;
 
-#pragma mark Contact Set Helpers
-
 // Equal function for contactSet.
 static int
 contactSetEql(cpShape **shapes, cpArbiter *arb)
@@ -53,8 +51,6 @@ contactSetTrans(cpShape **shapes, cpSpace *space)
 	
 	return cpArbiterNew(a, b, space->stamp);
 }
-
-#pragma mark Collision Pair Function Helpers
 
 // Collision pair function wrapper struct.
 typedef struct collFuncData {
@@ -85,11 +81,9 @@ collFuncSetTrans(cpCollisionType *ids, collFuncData *funcData)
 	return pair;
 }
 
-#pragma mark Misc Helper Funcs
-
 // Default collision pair function.
 static int
-alwaysCollide(cpShape *a, cpShape *b, cpContact *arr, int numCon, cpFloat normal_coef, void *data)
+alwaysCollide(GNUC_UNUSED cpShape *a, GNUC_UNUSED cpShape *b, GNUC_UNUSED cpContact *arr, GNUC_UNUSED int numCon, GNUC_UNUSED cpFloat normal_coef, GNUC_UNUSED void *data)
 {
 	return 1;
 }
@@ -98,13 +92,11 @@ alwaysCollide(cpShape *a, cpShape *b, cpContact *arr, int numCon, cpFloat normal
 static cpBB shapeBBFunc(cpShape *shape){return shape->bb;}
 
 // Iterator functions for destructors.
-static void             freeWrap(void         *ptr, void *unused){            free(ptr);}
-static void        shapeFreeWrap(cpShape      *ptr, void *unused){     cpShapeFree(ptr);}
-static void      arbiterFreeWrap(cpArbiter    *ptr, void *unused){   cpArbiterFree(ptr);}
-static void         bodyFreeWrap(cpBody       *ptr, void *unused){      cpBodyFree(ptr);}
-static void   constraintFreeWrap(cpConstraint *ptr, void *unused){cpConstraintFree(ptr);}
-
-#pragma mark Memory Management Functions
+static void             freeWrap(void         *ptr, GNUC_UNUSED void *unused){            free(ptr);}
+static void        shapeFreeWrap(cpShape      *ptr, GNUC_UNUSED void *unused){     cpShapeFree(ptr);}
+static void      arbiterFreeWrap(cpArbiter    *ptr, GNUC_UNUSED void *unused){   cpArbiterFree(ptr);}
+static void         bodyFreeWrap(cpBody       *ptr, GNUC_UNUSED void *unused){      cpBodyFree(ptr);}
+static void   constraintFreeWrap(cpConstraint *ptr, GNUC_UNUSED void *unused){cpConstraintFree(ptr);}
 
 cpSpace*
 cpSpaceAlloc(void)
@@ -189,8 +181,6 @@ cpSpaceFreeChildren(cpSpace *space)
 	cpArrayEach(space->constraints,      (cpArrayIter)&constraintFreeWrap,    NULL);
 }
 
-#pragma mark Collision Pair Function Management
-
 void
 cpSpaceAddCollisionPairFunc(cpSpace *space, cpCollisionType a, cpCollisionType b, cpCollFunc func, void *data)
 {
@@ -218,8 +208,6 @@ cpSpaceSetDefaultCollisionPairFunc(cpSpace *space, cpCollFunc func, void *data)
 	cpCollPairFunc pairFunc = {0, 0, (func ? func : alwaysCollide), (func ? data : NULL)};
 	space->defaultPairFunc = pairFunc;
 }
-
-#pragma mark Body, Shape, and Joint Management
 
 cpShape *
 cpSpaceAddShape(cpSpace *space, cpShape *shape)
@@ -305,8 +293,6 @@ cpSpaceRemoveConstraint(cpSpace *space, cpConstraint *constraint)
 	cpArrayDeleteObj(space->constraints, constraint);
 }
 
-#pragma mark Point Query Functions
-
 typedef struct pointQueryContext {
 	cpLayers layers;
 	cpGroup group;
@@ -353,11 +339,9 @@ cpSpaceEachBody(cpSpace *space, cpSpaceBodyIterator func, void *data)
 		func((cpBody *)bodies->arr[i], data);
 }
 
-#pragma mark Spatial Hash Management
-
 // Iterator function used for updating shape BBoxes.
 static void
-updateBBCache(cpShape *shape, void *unused)
+updateBBCache(cpShape *shape, GNUC_UNUSED void *unused)
 {
 	cpShapeCacheBB(shape);
 }
@@ -381,8 +365,6 @@ cpSpaceRehashStatic(cpSpace *space)
 	cpSpaceHashEach(space->staticShapes, (cpSpaceHashIterator)&updateBBCache, NULL);
 	cpSpaceHashRehash(space->staticShapes);
 }
-
-#pragma mark Collision Detection Functions
 
 static inline int
 queryReject(cpShape *a, cpShape *b)
@@ -493,8 +475,6 @@ filterArbiterByCallback(cpSpace *space)
 		}
 	}
 }
-
-#pragma mark All Important cpSpaceStep() Function
 
 void
 cpSpaceStep(cpSpace *space, cpFloat dt)

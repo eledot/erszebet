@@ -29,7 +29,7 @@
 
 cpFloat cp_constraint_bias_coef = 0.1f;
 
-void cpConstraintDestroy(cpConstraint *constraint){}
+void cpConstraintDestroy(GNUC_UNUSED cpConstraint *constraint){}
 
 void
 cpConstraintFree(cpConstraint *constraint)
