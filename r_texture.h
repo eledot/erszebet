@@ -31,9 +31,12 @@ typedef struct r_texture_s
     int mask;
     int type;
     int gltex;
+    int ref;
 
     struct r_texture_s *next;
     struct r_texture_s *prev;
+
+    char name[0];
 }r_texture_t;
 
 int r_texture_load (const char *name, int mask, int type, r_texture_t **tex);

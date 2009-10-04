@@ -37,7 +37,7 @@ r_texture_load
 */
 int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
 {
-    int     gltex;
+    int     gltex, nlen;
     char    tmp[MISC_MAX_FILENAME];
     image_t image;
 
@@ -52,6 +52,16 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
     if (!filename_is_valid(name))
         return -2;
 
+    /* check if it was loaded earlier */
+    for (*tex = textures; NULL != *tex ;*tex = (*tex)->next)
+    {
+        if (!strcmp((*tex)->name, name))
+        {
+            (*tex)->ref++;
+            return 0;
+        }
+    }
+
     snprintf(tmp, sizeof(tmp), "tex/%s", name);
 
     if (0 != image_load(tmp, &image))
@@ -62,7 +72,9 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
 
     mem_free(image.data);
 
-    if (NULL == (*tex = mem_alloc_static(sizeof(r_texture_t))))
+    nlen = strlen(name);
+
+    if (NULL == (*tex = mem_alloc_static(sizeof(r_texture_t) + nlen)))
     {
         gl_texture_delete(gltex);
         return -5;
@@ -71,7 +83,9 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
     (*tex)->mask  = mask;
     (*tex)->type  = type;
     (*tex)->gltex = gltex;
+    (*tex)->ref = 1;
     (*tex)->next  = textures;
+    strlcpy((*tex)->name, name, nlen);
 
     if (NULL != textures)
         textures->prev = *tex;
@@ -94,6 +108,10 @@ void r_texture_unload (r_texture_t *tex)
 
     /* internal textures shouldn't be unloaded */
     if (!tex->mask)
+        return;
+
+    /* check the reference counter */
+    if (--tex->ref > 0)
         return;
 
     if (NULL != tex->next)
