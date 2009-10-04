@@ -490,6 +490,52 @@ static int ent_lua_remove (lua_State *lst)
 
 /*
 =================
+ent_lua_set_sprite
+=================
+*/
+static int ent_lua_set_sprite (lua_State *lst)
+{
+    g_entity_t *ent;
+
+    lua_getfield(lst, -1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_sprite\" without entity\n");
+        return 0;
+    }
+
+    /* FIXME */
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_set_model
+=================
+*/
+static int ent_lua_set_model (lua_State *lst)
+{
+    g_entity_t *ent;
+
+    lua_getfield(lst, -1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_model\" without entity\n");
+        return 0;
+    }
+
+    /* FIXME */
+
+    return 0;
+}
+
+/*
+=================
 ent_lua_attach_pin
 =================
 */
@@ -792,6 +838,8 @@ void g_entity_init (void *_lst, mem_pool_t pool)
     /* register funcs to work with entity */
     lua_register(lst, "ent_spawn", &ent_lua_spawn);
     lua_register(lst, "ent_remove", &ent_lua_remove);
+    lua_register(lst, "ent_set_sprite", &ent_lua_set_sprite);
+    lua_register(lst, "ent_set_model", &ent_lua_set_model);
     lua_register(lst, "phys_set_body", &ent_lua_set_body);
     lua_register(lst, "phys_attach_pin", &ent_lua_attach_pin);
     lua_register(lst, "phys_detach", &ent_lua_detach);
