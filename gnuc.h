@@ -21,9 +21,11 @@
 #define _GNUC_H
 
 #if __GNUC__ > 2
-#define GNUC_CONST  __attribute__((__const__))
+#define GNUC_MALLOC __attribute__((__malloc__))
+#define GNUC_CONST __attribute__((__const__))
 #define GNUC_UNUSED __attribute__((__unused__))
 #else
+#define GNUC_MALLOC
 #define GNUC_CONST
 #define GNUC_UNUSED
 #endif
