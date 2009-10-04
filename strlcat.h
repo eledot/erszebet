@@ -21,7 +21,7 @@
 #define _STRLCAT_H
 
 /**
- * @brief More safe and usefull strncat
+ * @brief More safe and useful strncat
  *
  * @param dst Destination buffer
  * @param src Source buffer

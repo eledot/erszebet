@@ -21,7 +21,7 @@
 #define _STRLCPY_H
 
 /**
- * @brief More safe and usefull strncpy
+ * @brief More safe and useful strncpy
  *
  * @param dst Destination buffer
  * @param src Source buffer
