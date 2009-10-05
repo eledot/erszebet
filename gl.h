@@ -29,6 +29,12 @@ void gl_clear (void);
 int gl_get_screen_rgb (image_t *image);
 void gl_color (float r, float g, float b, float a);
 void gl_draw_stretched (int gltex);
+void gl_draw_texture (int gltex,
+                      double centerx,
+                      double centery,
+                      double width,
+                      double height,
+                      double angle);
 void gl_disable_textures (void);
 void gl_enable_textures (void);
 void gl_draw_line2d_loop (const float *coords, int num);
