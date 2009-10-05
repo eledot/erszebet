@@ -48,6 +48,7 @@ option(DEBUG_MEM "debug memory manager" ON)
 set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -DGAME_NAME=\\\"${P}\\\"")
 
 if(DEBUG)
+  set(CMAKE_C_FLAGS "-g -ggdb ${CMAKE_C_FLAGS}")
   message(">>> DEBUG enabled")
   add_definitions(-DDEBUG=1)
   if(DEBUG_SYS_PRINTF)
