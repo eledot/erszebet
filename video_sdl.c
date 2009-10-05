@@ -99,6 +99,9 @@ void video_frame (void)
     SDL_Event ev;
     int       mod, sym;
 
+    if (!video_i)
+        return;
+
     SDL_GL_SwapBuffers();
 
     while (SDL_PollEvent(&ev))
