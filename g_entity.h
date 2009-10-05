@@ -25,7 +25,8 @@ typedef enum
     ENT_CFL_THINK       = (1 << 0),
     ENT_CFL_TOUCH       = (1 << 1),
     ENT_CFL_BLOCK       = (1 << 2),
-    ENT_CFL_PHYS_STATIC = (1 << 3)
+    ENT_CFL_PHYS_STATIC = (1 << 3),
+    ENT_CFL_DRAW        = (1 << 4)
 }g_entity_cflags_e;
 
 typedef enum
@@ -67,12 +68,20 @@ typedef struct g_entity_s
     void  *body;
     void **shapes;
     int    shapes_num;
+
+    /* graphics stuff */
+    double scale;
+    int    frame;
+    int    frames_num;
+    int    render_type;
+    void  *render_data;
 }g_entity_t;
 
 extern g_entity_t *entities;
 
 int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, const double *normal);
 
+void g_entity_draw_entities (int draw2d);
 void g_entity_frame (void);
 
 void g_entity_init (void *lst, mem_pool_t pool);

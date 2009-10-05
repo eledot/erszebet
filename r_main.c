@@ -137,9 +137,12 @@ r_frame
 */
 void r_frame (void)
 {
+    gl_enable_textures();
     gl_clear();
+    //g_entity_draw_entities(0);
     //gl_switch_3d();
     gl_switch_2d();
+    g_entity_draw_entities(1);
 
     if (r_show_collisions->i)
     {

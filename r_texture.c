@@ -37,7 +37,7 @@ r_texture_load
 */
 int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
 {
-    int     gltex, nlen;
+    int     gltex, nlen, w, h;
     char    tmp[MISC_MAX_FILENAME];
     image_t image;
 
@@ -67,12 +67,15 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
     if (0 != image_load(tmp, &image))
         return -3;
 
+    w = image.width;
+    h = image.height;
+
     if (0 != gl_texture_create(&image, types[type], &gltex))
         return -4;
 
     mem_free(image.data);
 
-    nlen = strlen(name);
+    nlen = strlen(name) + 1;
 
     if (NULL == (*tex = mem_alloc_static(sizeof(r_texture_t) + nlen)))
     {
@@ -84,6 +87,8 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
     (*tex)->type  = type;
     (*tex)->gltex = gltex;
     (*tex)->ref = 1;
+    (*tex)->w = w;
+    (*tex)->h = h;
     (*tex)->next  = textures;
     strlcpy((*tex)->name, name, nlen);
 

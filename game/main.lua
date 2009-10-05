@@ -5,36 +5,15 @@ end
 
 print("initializing...")
 
-jump = {}
-
 function g_mouse_event(button, down, x, y)
-   if button == 3 then
+   if button == 1 then
       if down > 0 then
          local ents = phys_point_query({x, y})
          if ents[1] then
-            print("grabbed")
-            jump = {ents[1], x, y}
-         else
-            jump = {}
+            print("clicked!")
          end
-      elseif jump[1] then
-         print("jumped")
-         phys_apply_impulse(jump[1],
-                            {jump[2] - jump[1].origin_x, jump[3] - jump[1].origin_y},
-                            {3 * (x - jump[2]), 3 * (y - jump[3])})
-      end
-   elseif button == 1 then
-      if down > 0 then
-         local ents = phys_point_query({x, y})
-         if ents[1] then
-            print("boom!")
-            remove(ents[1])
-         end
-      end
-   elseif button == 2 then
-      if down > 0 then
-         print("spawn")
-         spawn_T(x, y)
+      else
+         print("!")
       end
    end
 end
@@ -61,65 +40,33 @@ function remove(e)
    ent_remove(e)
 end
 
-local S = 10
-
+phys_set_gravity(0.0)
 phys_set_speed(0.25)
 
-function spawn_T(x, y)
-   local ent1 = spawn()
-   ent1.classname = "T"
-   phys_set_body(ent1, BODY_POLYGON,
-                 { -3*S, 3*S, 3*S, 3*S, 3*S, 1*S, -3*S, 1*S },
-                 { -1*S, 1*S, 1*S, 1*S, 1*S, -5*S, -1*S, -5*S })
-   ent1.origin = {x, y}
-end
-
-local Z = 10
-
-function spawn_star(x, y)
-   local s = spawn()
-   s.classname = "star"
-   phys_set_body(s, BODY_POLYGON,
-                 { Z*0, Z*3, Z*1, Z*0, -Z*1, Z*0 },
-                 { -Z*3, Z*0.5, Z*3, Z*0.5, Z*0, -Z*1.5 },
-                 { -Z*1, Z*0, Z*0, -Z*1.5, -Z*2, -Z*3 },
-                 { Z*0, -Z*1.5, Z*1, Z*0, Z*2, -Z*3 })
-   s.origin = { x, y }
-   s.mass = 8
-end
-
-local ent3 = spawn()
-phys_set_body(ent3, BODY_CIRCLE, 10)
-ent3.classname = "shit"
-ent3.origin = {550, 100}
-ent3.velocity = { -450, 0 }
-ent3.mass = 5
-ent3.elasticity = 1
-ent3.gravity = -300
-ent3.touch = function (self, other, origin, normal)
-                if other then
-                   phys_detach(other)
-                end
-                return 1
+function spawn_base(origin, team)
+   local b = spawn()
+   phys_set_body(b, BODY_CIRCLE, 20)
+   b.classname = "base"
+   b.mass = 1
+   b.gravity = 0
+   b.team = team
+   ent_set_sprite(b, "base")
+   b.touch = function (self, other, origin, normal)
+                return 0
              end
 
-spawn_T(275, 190)
-spawn_T(275, 90)
-spawn_T(195, 190)
-spawn_T(195, 90)
-spawn_T(115, 190)
-spawn_T(115, 90)
+   b.think = function (self)
+                b.frame = b.frame + 1
+                b.nextthink = time + 0.01
+             end
 
-spawn_star(195, 300)
-spawn_star(195, 350)
-spawn_star(195, 400)
-spawn_star(195, 450)
+   b.draw = function (self)
+            end
 
-function funccc(cmd, src, argc, argv)
-   print(cmd, src, argc, argv)
+   b.nextthink = time + 0.1
+   b.origin = origin
 end
 
-register_cmd("fffuuu", funccc, 0)
-execute("bind b fffuuu")
+spawn_base({ 190, 160 }, 0)
 
 print("done")

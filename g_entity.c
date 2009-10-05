@@ -23,6 +23,9 @@
 #include "3rd/lua/lauxlib.h"
 #include "g_entity.h"
 #include "g_physics.h"
+#include "r_sprite.h"
+
+#define G_SPRITES_MASK 0x10000
 
 typedef enum
 {
@@ -41,6 +44,8 @@ typedef enum
     ENT_F_VECTOR
 }ent_fields_types_e;
 
+#define FOFF(f) ((const void *)&((const g_entity_t *)NULL)->f - (const void *)NULL)
+
 /* entity field offsets */
 static const struct
 {
@@ -49,10 +54,11 @@ static const struct
     int         type;
 }ent_entity_fields[] =
 {
-#define DOFF(str, type)                                                 \
-    { #str, ((const void *)&((const g_entity_t *)NULL)->str - (const void *)NULL), type }
-#define DOFF2(str, field, type)                                         \
-    { #str, ((const void *)&((const g_entity_t *)NULL)->field - (const void *)NULL), type }
+#define DOFF(str, type)                         \
+    { #str, FOFF(str), type }
+#define DOFF2(str, field, type)                 \
+    { #str, FOFF(field), type }
+    DOFF(frame,      ENT_F_INTEGER),
     DOFF(classname,  ENT_F_STRING),
     DOFF(flags,      ENT_F_INTEGER),
     DOFF(nextthink,  ENT_F_DOUBLE),
@@ -65,6 +71,7 @@ static const struct
     DOFF(friction,   ENT_F_DOUBLE),
     DOFF(mass,       ENT_F_DOUBLE),
     DOFF(inertia,    ENT_F_DOUBLE),
+    DOFF(scale,      ENT_F_DOUBLE),
     DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE),
     DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE),
     DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE),
@@ -73,13 +80,33 @@ static const struct
 #undef DOFF2
 };
 
+static const int ent_offset_frame = FOFF(frame);
+static const int ent_offset_frames_num = FOFF(frames_num);
+
 /* entity field offsets for strings that must be freed */
 static const int ent_entity_fields_free[] =
 {
-#define DOFF(str)                                                       \
-    ((const void *)&((const g_entity_t *)NULL)->str - (const void *)NULL)
-    DOFF(classname)
-#undef DOFF
+    FOFF(classname)
+};
+
+#undef FOFF
+
+static int ent_render_load_sprite (const char *name, int parm, void **data);
+static void ent_render_unload_sprite (void *data);
+static int ent_render_get_frames_num_sprite (const void *data);
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED int parm, GNUC_UNUSED void **data);
+static void ent_render_unload_model (GNUC_UNUSED void *data);
+static int ent_render_get_frames_num_model (GNUC_UNUSED const void *data);
+
+static const struct
+{
+    int (*load) (const char *name, int parm, void **data);
+    void (*unload) (void *data);
+    int (*get_frames_num) (const void *data);
+}ent_render_load_unload_funcs[] =
+{
+    { &ent_render_load_sprite, &ent_render_unload_sprite, &ent_render_get_frames_num_sprite },
+    { &ent_render_load_model,  &ent_render_unload_model,  &ent_render_get_frames_num_model  }
 };
 
 static mem_pool_t mempool;
@@ -88,6 +115,73 @@ g_entity_t        *entities;
 static g_entity_t *remove_entities;
 static lua_State  *lst;
 static int         point_query_shapes_num;
+
+/*
+=================
+ent_render_load_sprite
+=================
+*/
+static int ent_render_load_sprite (const char *name, int parm, void **data)
+{
+    return r_sprite_load(name,
+                         G_SPRITES_MASK,
+                         parm ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
+                         (r_sprite_t **)data);
+}
+
+/*
+=================
+ent_render_unload_sprite
+=================
+*/
+static void ent_render_unload_sprite (void *data)
+{
+    r_sprite_unload(data);
+}
+
+/*
+=================
+ent_render_get_frames_num_sprite
+=================
+*/
+static int ent_render_get_frames_num_sprite (const void *data)
+{
+    const r_sprite_t *sprite = data;
+
+    return sprite->frames_num;
+}
+
+/*
+=================
+ent_render_load_model
+=================
+*/
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED int parm, GNUC_UNUSED void **data)
+{
+    /* FIXME */
+    return 1;
+}
+
+/*
+=================
+ent_render_unload_model
+=================
+*/
+static void ent_render_unload_model (GNUC_UNUSED void *data)
+{
+    /* FIXME */
+}
+
+/*
+=================
+ent_render_get_frames_num_model
+=================
+*/
+static int ent_render_get_frames_num_model (GNUC_UNUSED const void *data)
+{
+    /* FIXME */
+    return 0;
+}
 
 /*
 =================
@@ -165,7 +259,13 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                 break;
 
             case ENT_F_INTEGER:
-                *(int *)data = lua_tointeger(lst, index);
+                if (ent_offset_frames_num != ent_entity_fields[i].offset)
+                {
+                    *(int *)data = lua_tointeger(lst, index);
+                    if (ent_offset_frame == ent_entity_fields[i].offset &&
+                        ent->frame >= ent->frames_num)
+                        ent->frame = ent->frame % ent->frames_num;
+                }
                 break;
 
             case ENT_F_DOUBLE:
@@ -219,6 +319,9 @@ static const char *ent_flags_string (const g_entity_t *ent)
     if (ent->cflags & ENT_CFL_PHYS_STATIC)
         strlcat(flags, "phys_static ", s);
 
+    if (ent->cflags & ENT_CFL_DRAW)
+        strlcat(flags, "draw ", s);
+
     if (unknown)
     {
         len = strlen(flags);
@@ -256,7 +359,10 @@ static int ent_lua_tostring (lua_State *lst)
              "elasticity=%-2.2lf "
              "friction=%-2.2lf "
              "mass=%-2.2lf "
-             "inertia=%-2.2lf",
+             "inertia=%-2.2lf "
+             "scale=%-2.2lf "
+             "frame=%i "
+             "frames_num=%i",
              ent,
              ent->classname ? ent->classname : "-noname-",
              ent_flags_string(ent),
@@ -272,7 +378,10 @@ static int ent_lua_tostring (lua_State *lst)
              ent->elasticity,
              ent->friction,
              ent->mass,
-             ent->inertia);
+             ent->inertia,
+             ent->scale,
+             ent->frame,
+             ent->frames_num);
 
     lua_pushstring(lst, tmp);
 
@@ -320,7 +429,8 @@ static int ent_lua_newindex (lua_State *lst)
          {
              { "think", ENT_CFL_THINK },
              { "touch", ENT_CFL_TOUCH },
-             { "block", ENT_CFL_BLOCK }
+             { "block", ENT_CFL_BLOCK },
+             { "draw",  ENT_CFL_DRAW  }
          };
 
     lua_getfield(lst, 1, "__ref");
@@ -384,6 +494,11 @@ static g_entity_t *g_entity_create (void)
     ent->friction    = 0.6;
     ent->mass        = 1.0;
     ent->inertia     = 100.0;
+    ent->scale       = 1.0;
+    ent->frame       = 0;
+    ent->frames_num  = 0;
+    ent->render_type = -1;
+    ent->render_data = NULL;
 
     if (NULL != entities)
         entities->prev = ent;
@@ -414,7 +529,7 @@ static void g_entity_delete (g_entity_t *ent)
     remove_entities = ent;
 
     /* remove all handlers, mark invalid */
-    ent->flags -= ent->flags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK);
+    ent->flags -= ent->flags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
 
     lua_unref(lst, ent->ref);
     lua_unref(lst, ent->dataref);
@@ -436,6 +551,9 @@ static void g_entity_mem_free (g_entity_t *ent)
         if (NULL != data)
             mem_free(data);
     }
+
+    if (NULL != ent->render_data)
+        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
 
     mem_free(ent);
 }
@@ -496,8 +614,10 @@ ent_lua_set_sprite
 static int ent_lua_set_sprite (lua_State *lst)
 {
     g_entity_t *ent;
+    const char *name;
+    int parm;
 
-    lua_getfield(lst, -1, "__ref");
+    lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
 
     if (NULL == ent)
@@ -506,7 +626,22 @@ static int ent_lua_set_sprite (lua_State *lst)
         return 0;
     }
 
-    /* FIXME */
+    if (NULL != ent->render_data)
+    {
+        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
+        ent->render_data = NULL;
+        ent->render_type = -1;
+    }
+
+    name = luaL_checkstring(lst, 2);
+    parm = lua_tointeger(lst, 3);
+
+    if (0 == ent_render_load_unload_funcs[0].load(name, parm, &ent->render_data))
+    {
+        ent->render_type = 0;
+        ent->frame = 0;
+        ent->frames_num = ent_render_load_unload_funcs[0].get_frames_num(ent->render_data);
+    }
 
     return 0;
 }
@@ -527,6 +662,12 @@ static int ent_lua_set_model (lua_State *lst)
     {
         sys_printf("called \"set_model\" without entity\n");
         return 0;
+    }
+
+    if (NULL != ent->render_data)
+    {
+        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
+        ent->render_data = NULL;
     }
 
     /* FIXME */
@@ -766,6 +907,66 @@ int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, c
     lua_pop(lst, 2);
 
     return ret;
+}
+
+/*
+=================
+g_entity_draw_entities
+=================
+*/
+void g_entity_draw_entities (int draw2d)
+{
+    g_entity_t *ent;
+    r_sprite_t *sprite;
+    r_texture_t *tex;
+
+    if (draw2d)
+    {
+        for (ent = entities; NULL != ent ;ent = ent->next)
+        {
+            if (NULL != ent->render_data)
+            {
+                switch (ent->render_type)
+                {
+                case 0:
+                    /* 2d sprite */
+                    sprite = ent->render_data;
+                    if (ent->frame < sprite->frames_num && ent->frame >= 0)
+                    {
+                        tex = sprite->frames[ent->frame];
+                        gl_draw_texture(tex->gltex,
+                                        ent->origin[0],
+                                        ent->origin[1],
+                                        tex->w * ent->scale,
+                                        tex->h * ent->scale,
+                                        ent->angle);
+                    }
+                    break;
+
+                case 1:
+                    /* 3d model */
+                    /* FIXME */
+                    break;
+
+                default:
+                    break;
+                }
+            }
+
+            if (ent->cflags & ENT_CFL_DRAW && LUA_REFNIL != ent->ref)
+            {
+                lua_getref(lst, ent->dataref);
+                lua_getfield(lst, -1, "draw");
+                lua_getref(lst, ent->ref);
+                lua_pcall(lst, 1, 0, 0);
+                lua_pop(lst, 1);
+            }
+        }
+    }
+    else
+    {
+        /* FIXME */
+    }
 }
 
 /*

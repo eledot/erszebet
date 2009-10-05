@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "r_texture.h"
+#include "r_sprite.h"
 
 extern mem_pool_t mempool;
 

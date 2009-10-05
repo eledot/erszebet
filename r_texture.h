@@ -20,6 +20,8 @@
 #ifndef _R_TEXTURE_H
 #define _R_TEXTURE_H
 
+#include "image.h"
+
 typedef enum
 {
     R_TEX_DEFAULT = 0,
@@ -32,6 +34,8 @@ typedef struct r_texture_s
     int type;
     int gltex;
     int ref;
+
+    int w, h;
 
     struct r_texture_s *next;
     struct r_texture_s *prev;
