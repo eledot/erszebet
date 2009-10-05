@@ -36,7 +36,7 @@ option(WITH_SND_WAV     "WAV audio format support" ON)
 option(WITH_SND_OGG     "OGG VORBIS audio format support" ON)
 option(WITH_SND_FLAC    "FLAC audio format support" ON)
 
-option(DEBUG                 "debug build" OFF)
+option(DEBUG                 "debug build" ON)
 option(DEBUG_SYS_PRINTF      "print debug messages" ON)
 option(DEBUG_SYS_PRINTF_LOC  "print location in debug messages" ON)
 option(DEBUG_SYS_PRINTF_TIME "print timestamp in debug messages" OFF)
