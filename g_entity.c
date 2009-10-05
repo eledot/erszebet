@@ -266,7 +266,7 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                         ent->frames_num &&
                         ent->frame >= ent->frames_num)
                     {
-                        ent->frame = ent->frame % ent->frames_num;
+                        ent->frame %= ent->frames_num;
                     }
                 }
                 break;
