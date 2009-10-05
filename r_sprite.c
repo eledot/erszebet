@@ -35,8 +35,8 @@ int r_sprite_load (const char *name,
 {
     char tmp[MISC_MAX_FILENAME];
     int i, nlen, num, size;
-    r_sprite_t *s;
-    void *data;
+    r_sprite_t *s = NULL;
+    void *data = NULL;
     char *d;
     const char *frames_names[MAX_FRAMES];
 
@@ -88,28 +88,52 @@ int r_sprite_load (const char *name,
 
     nlen = strlen(name) + 1;
 
-    if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
+    /* one-line sprite */
+    if (num == 2 && *frames_names[0] == '*')
     {
-        mem_free(data);
-        return -3;
-    }
+        num = strtol(frames_names[0] + 1, NULL, 0);
 
-    for (i = 0; i < num ;i++)
-    {
-        if (0 != r_texture_load(frames_names[i], mask, type, &s->frames[i]))
+        if (num < 1 || num > MAX_FRAMES)
         {
-            sys_printf("failed to load frame %i (\"%s\")\n", i, frames_names[i]);
-
-            for (i--; i >= 0 ;i--)
-                r_texture_unload(s->frames[i]);
-
-            mem_free(data);
-            mem_free(s);
-            return -4;
+            sys_printf("bad number of frames (%i) in \"%s\"\n", num, name);
+            goto error;
         }
+
+        if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
+            goto error;
+
+        if (0 != r_texture_load(frames_names[1], mask, type, s->frames))
+        {
+            sys_printf("failed to load texture for sprite \"%s\"\n", name);
+            goto error;
+        }
+
+        s->type = R_SPRITE_TYPE_LINE;
+        s->name = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
+        s->inc = 1.0f / (float)num;
+    }
+    else
+    {
+        if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
+            goto error;
+
+        for (i = 0; i < num ;i++)
+        {
+            if (0 != r_texture_load(frames_names[i], mask, type, &s->frames[i]))
+            {
+                sys_printf("failed to load frame %i (\"%s\")\n", i, frames_names[i]);
+
+                for (i--; i >= 0 ;i--)
+                    r_texture_unload(s->frames[i]);
+
+                goto error;
+            }
+        }
+
+        s->type = R_SPRITE_TYPE_TEXTURES;
+        s->name = (char *)s + sizeof(r_sprite_t) + num * sizeof(r_texture_t *);
     }
 
-    s->name = (char *)s + sizeof(r_sprite_t) + num * sizeof(r_texture_t *);
     strlcpy(s->name, name, nlen);
     s->ref = 1;
     s->frames_num = num;
@@ -123,6 +147,16 @@ int r_sprite_load (const char *name,
     mem_free(data);
 
     return 0;
+
+error:
+
+    if (NULL != s)
+        mem_free(s);
+
+    if (NULL != data)
+        mem_free(data);
+
+    return -3;
 }
 
 /*
@@ -155,6 +189,49 @@ void r_sprite_unload (r_sprite_t *sprite)
         sprites = sprite->next;
 
     mem_free(sprite);
+}
+
+/*
+=================
+r_sprite_draw
+=================
+*/
+void r_sprite_draw (const r_sprite_t *sprite,
+                    int frame,
+                    double centerx,
+                    double centery,
+                    double width,
+                    double height,
+                    double angle)
+{
+    const r_texture_t *tex;
+    float vt[8];
+
+    if (NULL == sprite)
+    {
+        sys_printf("bad args (sprite=%p, frame=%i, centerx=%-2.2lf, centery=%-2.2lf"
+                   ", width=%-2.2lf, height=%-2.2lf, angle=%-2.2lf)\n",
+                   sprite, frame, centerx, centery, width, height, angle);
+        return;
+    }
+
+    if (frame >= sprite->frames_num || frame < 0)
+        return;
+
+    if (R_SPRITE_TYPE_TEXTURES == sprite->type)
+    {
+        tex = sprite->frames[frame];
+        gl_draw_texture(tex->gltex, centerx, centery, width, height, angle);
+    }
+    else
+    {
+        tex = sprite->frames[0];
+        vt[0] = vt[6] = frame * sprite->inc;
+        vt[1] = vt[3] = 0.0f;
+        vt[5] = vt[7] = 1.0f;
+        vt[4] = vt[2] = vt[0] + sprite->inc;
+        gl_draw_texture2(tex->gltex, centerx, centery, width, height, angle, vt);
+    }
 }
 
 /*

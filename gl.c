@@ -176,7 +176,7 @@ void gl_draw_texture (int gltex,
     GLERROR();
     glTranslatef(centerx, centery, 0);
     GLERROR();
-    glRotatef(angle * 180 / 3.14592, 0, 0, 1);
+    glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
     GLERROR();
 
 #ifndef ENGINE_OS_IPHONE
@@ -193,6 +193,55 @@ void gl_draw_texture (int gltex,
                              width/2, height/2,
                              -width/2, height/2 };
         GLfloat texcoords[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
+        glVertexPointer(2, GL_FLOAT, 0, square);
+        glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+#endif
+    GLERROR();
+
+    glPopMatrix();
+    GLERROR();
+}
+
+/*
+=================
+gl_draw_texture2
+=================
+*/
+void gl_draw_texture2 (int gltex,
+                       double centerx,
+                       double centery,
+                       double width,
+                       double height,
+                       double angle,
+                       const float *vt)
+{
+    eglBindTexture(GL_TEXTURE_2D, gltex);
+    GLERROR();
+
+    glPushMatrix();
+    GLERROR();
+    glTranslatef(centerx, centery, 0);
+    GLERROR();
+    glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
+    GLERROR();
+
+#ifndef ENGINE_OS_IPHONE
+    glBegin(GL_QUADS);
+    glTexCoord2f(vt[0], vt[1]); glVertex2f(-width/2, height/2);
+    glTexCoord2f(vt[2], vt[3]); glVertex2f(width/2, height/2);
+    glTexCoord2f(vt[4], vt[5]); glVertex2f(width/2, -height/2);
+    glTexCoord2f(vt[6], vt[7]); glVertex2f(-width/2, -height/2);
+    glEnd();
+#else
+    {
+        GLfloat square[] = { -width/2, -height/2,
+                             width/2, -height,
+                             width/2, height/2,
+                             -width/2, height/2 };
+        GLfloat texcoords[] = { vt[0], vt[1], vt[2], vt[3], vt[6], vt[7], vt[4], vt[5] };
         glVertexPointer(2, GL_FLOAT, 0, square);
         glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);

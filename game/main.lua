@@ -67,6 +67,31 @@ function spawn_base(origin, team)
    b.origin = origin
 end
 
+function spawn_squad(origin, team)
+   local s = spawn()
+   phys_set_body(s, BODY_CIRCLE, 10)
+   s.classname = "squad"
+   s.mass = 1
+   s.scale = 1
+   s.team = team
+   ent_set_sprite(s, "squad", 1)
+   s.touch = function (self, other, origin, normal)
+                return 0
+             end
+
+   s.think = function (self)
+                s.frame = s.frame + 1
+                s.nextthink = time + 0.1
+             end
+
+   s.draw = function (self)
+            end
+
+   s.nextthink = time + 0.1
+   s.origin = origin
+end
+
 spawn_base({ 190, 160 }, 0)
+spawn_squad({ 220, 32 }, 0)
 
 print("done")

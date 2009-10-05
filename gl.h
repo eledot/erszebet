@@ -35,6 +35,13 @@ void gl_draw_texture (int gltex,
                       double width,
                       double height,
                       double angle);
+void gl_draw_texture2 (int gltex,
+                       double centerx,
+                       double centery,
+                       double width,
+                       double height,
+                       double angle,
+                       const float *vt);
 void gl_disable_textures (void);
 void gl_enable_textures (void);
 void gl_draw_line2d_loop (const float *coords, int num);

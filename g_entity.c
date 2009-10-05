@@ -920,7 +920,6 @@ void g_entity_draw_entities (int draw2d)
 {
     g_entity_t *ent;
     r_sprite_t *sprite;
-    r_texture_t *tex;
 
     if (draw2d)
     {
@@ -933,16 +932,14 @@ void g_entity_draw_entities (int draw2d)
                 case 0:
                     /* 2d sprite */
                     sprite = ent->render_data;
-                    if (ent->frame < sprite->frames_num && ent->frame >= 0)
-                    {
-                        tex = sprite->frames[ent->frame];
-                        gl_draw_texture(tex->gltex,
-                                        ent->origin[0],
-                                        ent->origin[1],
-                                        tex->w * ent->scale,
-                                        tex->h * ent->scale,
-                                        ent->angle);
-                    }
+                    /* FIXME 64 64 */
+                    r_sprite_draw(sprite,
+                                  ent->frame,
+                                  ent->origin[0],
+                                  ent->origin[1],
+                                  64 * ent->scale,
+                                  64 * ent->scale,
+                                  ent->angle);
                     break;
 
                 case 1:

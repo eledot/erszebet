@@ -22,11 +22,19 @@
 
 #include "r_texture.h"
 
+typedef enum
+{
+    R_SPRITE_TYPE_TEXTURES = 0,
+    R_SPRITE_TYPE_LINE
+}r_sprite_type_e;
+
 typedef struct r_sprite_s
 {
-    char        *name;
-    int          ref;
-    int          frames_num;
+    char *name;
+    int   ref;
+    int   frames_num;
+    int   type;
+    float inc;
 
     struct r_sprite_s *next;
     struct r_sprite_s *prev;
@@ -39,6 +47,14 @@ int r_sprite_load (const char *name,
                    int type,
                    r_sprite_t **sprite);
 void r_sprite_unload (r_sprite_t *sprite);
+
+void r_sprite_draw (const r_sprite_t *sprite,
+                    int frame,
+                    double centerx,
+                    double centery,
+                    double width,
+                    double height,
+                    double angle);
 
 int r_sprite_init (void);
 void r_sprite_shutdown (void);

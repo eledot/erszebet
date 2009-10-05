@@ -181,6 +181,9 @@ int r_init (void)
     if (0 != r_texture_init())
         return -1;
 
+    if (0 != r_sprite_init())
+        return -1;
+
     r_i = 1;
 
     sys_printf("+r\n");
@@ -198,6 +201,7 @@ void r_shutdown (void)
     if (!r_i)
         return;
 
+    r_sprite_shutdown();
     r_texture_shutdown();
 
     r_i = 0;
