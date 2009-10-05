@@ -37,7 +37,7 @@
  * @param pool Memory pool to use for buffer allocation
  * @param shout Non-zero to shout about failures
  *
- * @return 0 on success
+ * @return Size of data on success, <0 on failure
  */
 int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, int shout);
 
@@ -49,7 +49,7 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
  * @param size Buffer size
  * @param shout Non-zero to shout about failures
  *
- * @return 0 on success
+ * @return Size of written data on success, <0 on failure
  */
 int fs_open_write_close (const char *name, const void *buffer, int size, int shout);
 
