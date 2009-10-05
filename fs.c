@@ -147,6 +147,11 @@ fs_file_t fs_open (const char *name_, int mode, int *size, int shout)
 
     errno = 0;
 
+    if (NULL == file && shout)
+    {
+        sys_printf("failed to open \"%s\"\n", name_);
+    }
+
     return file;
 }
 
