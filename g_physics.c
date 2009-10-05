@@ -561,7 +561,7 @@ static int g_default_coll_func (cpShape   *a,
                                 cpContact *contacts,
                                 int        num_contacts,
                                 cpFloat    normal_coef,
-                                void      *data UV)
+                                GNUC_UNUSED void *data)
 {
     int i;
     int afl = 0, bfl = 0;

@@ -121,7 +121,7 @@ static bind_t key_special_binds[STSIZE(key_names)];
 bind_f
 =================
 */
-static void bind_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv)
+static void bind_f (GNUC_UNUSED const struct cmd_s *cmd, GNUC_UNUSED int source, int argc, const char **argv)
 {
     bind_t *bind = NULL;
 
@@ -189,7 +189,7 @@ void key_set_repeat (int repeat)
 key_event
 =================
 */
-void key_event (int printable, int printable_shift PUV, int normal, int mod, int down)
+void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int mod, int down)
 {
     static int repeat = 0;
 

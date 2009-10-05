@@ -248,7 +248,7 @@ int snd_get_stream_format (int bps, int channels)
 snd_load
 =================
 */
-snd_sound_t snd_load (const char *name, int flags UV)
+snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
 {
     int      i, streaming;
     sound_t *sound;
@@ -468,11 +468,11 @@ void snd_shutdown (void)
 
 #include "common.h"
 
-void snd_set_listener_pos (const float *pos UV) { }
-void snd_set_listener_velocity (const float *vel UV) { }
-int snd_get_stream_format (int bps UV, int channels UV) { return -1; }
-snd_sound_t snd_load (const char *name UV, int flags UV) { return NULL; }
-void snd_unload (snd_sound_t *sound UV) { }
+void snd_set_listener_pos (GNUC_UNUSED const float *pos) { }
+void snd_set_listener_velocity (GNUC_UNUSED const float *vel) { }
+int snd_get_stream_format (GNUC_UNUSED int bps, GNUC_UNUSED int channels) { return -1; }
+snd_sound_t snd_load (GNUC_UNUSED const char *name, GNUC_UNUSED int flags) { return NULL; }
+void snd_unload (GNUC_UNUSED snd_sound_t *sound) { }
 void snd_frame (void) { }
 
 int snd_init (void) { return 0; }

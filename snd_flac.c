@@ -32,10 +32,10 @@ static int snd_flac_i = 0;
 eflac_decoder_read
 =================
 */
-static FLAC__StreamDecoderReadStatus eflac_decoder_read (const FLAC__StreamDecoder *decoder UV,
-                                                         FLAC__byte                 buffer[],
-                                                         size_t                    *bytes,
-                                                         void                      *client_data)
+static FLAC__StreamDecoderReadStatus eflac_decoder_read (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
+                                                         FLAC__byte buffer[],
+                                                         size_t *bytes,
+                                                         void *client_data)
 {
     snd_stream_t *s = client_data;
 
@@ -57,9 +57,9 @@ static FLAC__StreamDecoderReadStatus eflac_decoder_read (const FLAC__StreamDecod
 eflac_decoder_seek
 =================
 */
-static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (const FLAC__StreamDecoder *decoder UV,
-                                                         FLAC__uint64               abs_offset,
-                                                         void                      *client_data)
+static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
+                                                         FLAC__uint64 abs_offset,
+                                                         void *client_data)
 {
     snd_stream_t *s = client_data;
     int           offset = (int)abs_offset;
@@ -75,9 +75,9 @@ static FLAC__StreamDecoderSeekStatus eflac_decoder_seek (const FLAC__StreamDecod
 eflac_decoder_tell
 =================
 */
-static FLAC__StreamDecoderTellStatus eflac_decoder_tell (const FLAC__StreamDecoder *decoder UV,
-                                                         FLAC__uint64              *abs_offset,
-                                                         void                      *client_data)
+static FLAC__StreamDecoderTellStatus eflac_decoder_tell (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
+                                                         FLAC__uint64 *abs_offset,
+                                                         void *client_data)
 {
     snd_stream_t *s = client_data;
     int           offset;
@@ -96,9 +96,9 @@ static FLAC__StreamDecoderTellStatus eflac_decoder_tell (const FLAC__StreamDecod
 eflac_decoder_length
 =================
 */
-static FLAC__StreamDecoderLengthStatus eflac_decoder_length (const FLAC__StreamDecoder *decoder UV,
-                                                             FLAC__uint64              *stream_length,
-                                                             void                      *client_data)
+static FLAC__StreamDecoderLengthStatus eflac_decoder_length (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
+                                                             FLAC__uint64 *stream_length,
+                                                             void *client_data)
 {
     snd_stream_t *s = client_data;
     int           size;
@@ -117,7 +117,7 @@ static FLAC__StreamDecoderLengthStatus eflac_decoder_length (const FLAC__StreamD
 eflac_decoder_eof
 =================
 */
-static FLAC__bool eflac_decoder_eof (const FLAC__StreamDecoder *decoder UV, void *client_data)
+static FLAC__bool eflac_decoder_eof (GNUC_UNUSED const FLAC__StreamDecoder *decoder, void *client_data)
 {
     snd_stream_t *s = client_data;
 
@@ -129,10 +129,10 @@ static FLAC__bool eflac_decoder_eof (const FLAC__StreamDecoder *decoder UV, void
 flac_decoder_write
 =================
 */
-static FLAC__StreamDecoderWriteStatus eflac_decoder_write (const FLAC__StreamDecoder *decoder UV,
-                                                           const FLAC__Frame         *frame,
-                                                           const FLAC__int32 *const   buffer[],
-                                                           void                      *client_data)
+static FLAC__StreamDecoderWriteStatus eflac_decoder_write (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
+                                                           const FLAC__Frame *frame,
+                                                           const FLAC__int32 *const buffer[],
+                                                           void *client_data)
 {
     snd_stream_t *s = client_data;
     unsigned int  i, j;
@@ -204,9 +204,9 @@ static FLAC__StreamDecoderWriteStatus eflac_decoder_write (const FLAC__StreamDec
 eflac_decoder_metadata
 =================
 */
-static void eflac_decoder_metadata (const FLAC__StreamDecoder  *decoder UV,
+static void eflac_decoder_metadata (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
                                     const FLAC__StreamMetadata *metadata,
-                                    void                       *client_data)
+                                    void *client_data)
 {
     snd_stream_t                          *s = client_data;
     const FLAC__StreamMetadata_StreamInfo *si = &metadata->data.stream_info;
@@ -256,9 +256,9 @@ static void eflac_decoder_metadata (const FLAC__StreamDecoder  *decoder UV,
 eflac_decoder_error
 =================
 */
-static void eflac_decoder_error (const FLAC__StreamDecoder     *decoder UV,
+static void eflac_decoder_error (GNUC_UNUSED const FLAC__StreamDecoder *decoder,
                                  FLAC__StreamDecoderErrorStatus status,
-                                 void                          *client_data UV)
+                                 GNUC_UNUSED void *client_data)
 {
     switch (status)
     {
@@ -319,8 +319,9 @@ static void eflac_decoder_print_init_status (FLAC__StreamDecoderInitStatus s)
 snd_flac_stream_unload
 =================
 */
-static void snd_flac_stream_unload (snd_stream_t *stream UV)
+static void snd_flac_stream_unload (GNUC_UNUSED snd_stream_t *stream)
 {
+    /* FIXME */
 }
 
 /*
@@ -328,8 +329,9 @@ static void snd_flac_stream_unload (snd_stream_t *stream UV)
 snd_flac_stream_func
 =================
 */
-static int snd_flac_stream_func (snd_stream_t *stream UV, int flags UV, snd_feed_callback_t feed UV)
+static int snd_flac_stream_func (GNUC_UNUSED snd_stream_t *stream, GNUC_UNUSED int flags, GNUC_UNUSED snd_feed_callback_t feed)
 {
+    /* FIXME */
     return SND_STREAM_RET_OK;
 }
 
@@ -494,10 +496,10 @@ void snd_flac_shutdown (void)
 
 #include "common.h"
 
-int snd_flac_load (const char   *name UV,
-                   snd_stream_t *stream UV,
-                   int          *streaming UV,
-                   mem_pool_t    pool UV)
+int snd_flac_load (GNUC_UNUSED const char *name,
+                   GNUC_UNUSED snd_stream_t *stream,
+                   GNUC_UNUSED int *streaming,
+                   GNUC_UNUSED mem_pool_t pool)
 {
     return -1;
 }

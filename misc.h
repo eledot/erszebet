@@ -31,10 +31,8 @@
 #ifdef ENGINE_SYS_PRINTF
 #define PUV
 #else
-#define PUV __attribute__((unused))
+#define PUV GNUC_UNUSED
 #endif
-
-#define UV  __attribute__((unused))
 
 /**
  * @brief Maximal filename length (passed to fs_* funcs) including \0

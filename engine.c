@@ -34,7 +34,10 @@ static int engine_quit_flag = 0;
 quit_f
 =================
 */
-static void quit_f (const struct cmd_s *cmd UV, int source UV, int argc UV, const char **argv UV)
+static void quit_f (GNUC_UNUSED const struct cmd_s *cmd,
+                    GNUC_UNUSED int source,
+                    GNUC_UNUSED int argc,
+                    GNUC_UNUSED const char **argv)
 {
     engine_quit_flag = 1;
 }
@@ -44,7 +47,10 @@ static void quit_f (const struct cmd_s *cmd UV, int source UV, int argc UV, cons
 echo_f
 =================
 */
-static void echo_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv PUV)
+static void echo_f (GNUC_UNUSED const struct cmd_s *cmd,
+                    GNUC_UNUSED int source,
+                    int argc,
+                    PUV const char **argv)
 {
     if (argc < 2)
         return;
@@ -59,7 +65,10 @@ static void echo_f (const struct cmd_s *cmd UV, int source UV, int argc, const c
 exec_f
 =================
 */
-static void exec_f (const struct cmd_s *cmd UV, int source UV, int argc, const char **argv)
+static void exec_f (GNUC_UNUSED const struct cmd_s *cmd,
+                    GNUC_UNUSED int source,
+                    int argc,
+                    const char **argv)
 {
     if (argc < 2)
         return;

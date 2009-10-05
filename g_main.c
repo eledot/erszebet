@@ -47,10 +47,10 @@ g_error
 =================
 */
 static int g_error_real (int         status,
-                         const char *msg PUV,
-                         const char *file PUV,
-                         int         line PUV,
-                         const char *func PUV)
+                         PUV const char *msg,
+                         PUV const char *file,
+                         PUV int         line,
+                         PUV const char *func)
 {
     const char *err;
 

@@ -49,7 +49,7 @@ static void epng_read (png_structp png_ptr, png_bytep data, png_size_t length)
 epng_error
 =================
 */
-static void epng_error (png_structp png_ptr, png_const_charp msg PUV)
+static void epng_error (png_structp png_ptr, PUV png_const_charp msg)
 {
     sys_printf("libpng error: %s\n", msg);
 
@@ -61,7 +61,7 @@ static void epng_error (png_structp png_ptr, png_const_charp msg PUV)
 epng_warn
 =================
 */
-static void epng_warn (png_structp png_ptr UV, png_const_charp msg UV)
+static void epng_warn (GNUC_UNUSED png_structp png_ptr, GNUC_UNUSED png_const_charp msg)
 {
     /* shut up warnings */
 }
@@ -82,7 +82,7 @@ static void epng_write (png_structp png_ptr, png_bytep data, png_size_t length)
 epng_flush
 =================
 */
-static void epng_flush (png_structp png_ptr UV)
+static void epng_flush (GNUC_UNUSED png_structp png_ptr)
 {
     /* do nothing */
 }
@@ -309,8 +309,19 @@ void image_png_shutdown (void)
 
 #include "common.h"
 
-int image_png_load (const char *name UV, image_t *im UV, mem_pool_t pool UV) { return -1; }
-int image_png_save (const char *name UV, image_t *im UV) { sys_printf("png support was not compiled in\n"); return -1; }
+int image_png_load (GNUC_UNUSED const char *name,
+                    GNUC_UNUSED image_t *im,
+                    GNUC_UNUSED mem_pool_t pool)
+{
+    return -1;
+}
+
+int image_png_save (GNUC_UNUSED const char *name,
+                    GNUC_UNUSED image_t *im)
+{
+    sys_printf("png support was not compiled in\n");
+    return -1;
+}
 
 int image_png_init (void) { return -1; }
 void image_png_shutdown (void) { }

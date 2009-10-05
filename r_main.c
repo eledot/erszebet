@@ -39,7 +39,7 @@ cvar_t *r_fov;
 screenshot_f
 =================
 */
-static void screenshot_f (const struct cmd_s *cmd, int source UV, int argc, const char **argv)
+static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int argc, const char **argv)
 {
     char        tmp[MISC_MAX_FILENAME];
     const char *ext;

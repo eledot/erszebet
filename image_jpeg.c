@@ -51,7 +51,7 @@ static void ejpeg_error_exit (j_common_ptr cinfo)
 ejpeg_emit_message
 =================
 */
-static void ejpeg_emit_message (j_common_ptr cinfo UV, int msg_level UV)
+static void ejpeg_emit_message (GNUC_UNUSED j_common_ptr cinfo, GNUC_UNUSED int msg_level)
 {
     /* shut up warnings */
 /*
@@ -111,7 +111,7 @@ static void ejpeg_source_mgr_skip_input_data (j_decompress_ptr cinfo, long num_b
 ejpeg_source_mgr_term_source
 =================
 */
-static void ejpeg_source_mgr_term_source (j_decompress_ptr cinfo UV)
+static void ejpeg_source_mgr_term_source (GNUC_UNUSED j_decompress_ptr cinfo)
 {
 }
 
@@ -394,8 +394,19 @@ void image_jpeg_shutdown (void)
 
 #include "common.h"
 
-int image_jpeg_load (const char *name UV, image_t *im UV, mem_pool_t pool UV) { return -1; }
-int image_jpeg_save (const char *name UV, image_t *im UV) { sys_printf("jpeg support was not compiled in\n"); return -1; }
+int image_jpeg_load (GNUC_UNUSED const char *name,
+                     GNUC_UNUSED image_t *im,
+                     GNUC_UNUSED mem_pool_t pool)
+{
+    return -1;
+}
+
+int image_jpeg_save (GNUC_UNUSED const char *name,
+                     GNUC_UNUSED image_t *im)
+{
+    sys_printf("jpeg support was not compiled in\n");
+    return -1;
+}
 
 int image_jpeg_init (void) { return -1; }
 void image_jpeg_shutdown (void) { }

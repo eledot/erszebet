@@ -141,7 +141,7 @@ int sys_unlink (const char *filename)
 signal_handler
 =================
 */
-static void signal_handler (int sig UV)
+static void signal_handler (GNUC_UNUSED int sig)
 {
     static int in_signal = 0;
 

@@ -77,11 +77,11 @@ int gl_max_clip_planes;
 gl_add_extension
 =================
 */
-static int gl_add_extension (const char   *name UV,
-                             cvar_t      **cvar UV,
-                             const char   *cvar_name UV,
-                             libgl_func_t *funcs UV,
-                             int         (*init_func) (int ok) UV)
+static int gl_add_extension (GNUC_UNUSED const char   *name,
+                             GNUC_UNUSED cvar_t      **cvar,
+                             GNUC_UNUSED const char   *cvar_name,
+                             GNUC_UNUSED libgl_func_t *funcs,
+                             GNUC_UNUSED int         (*init_func) (int ok))
 {
 #if 0
     const char *s;

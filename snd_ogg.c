@@ -92,7 +92,7 @@ static const ov_callbacks callbacks =
 snd_ogg_stream_unload
 =================
 */
-static void snd_ogg_stream_unload (snd_stream_t *stream UV)
+static void snd_ogg_stream_unload (GNUC_UNUSED snd_stream_t *stream)
 {
     /* FIXME */
 }
@@ -102,7 +102,9 @@ static void snd_ogg_stream_unload (snd_stream_t *stream UV)
 snd_ogg_stream_func
 =================
 */
-static int snd_ogg_stream_func (snd_stream_t *stream UV, int flags UV, snd_feed_callback_t feed UV)
+static int snd_ogg_stream_func (GNUC_UNUSED snd_stream_t *stream,
+                                GNUC_UNUSED int flags,
+                                GNUC_UNUSED snd_feed_callback_t feed)
 {
     /* FIXME */
 
@@ -284,10 +286,10 @@ void snd_ogg_shutdown (void)
 
 #include "common.h"
 
-int snd_ogg_load (const char   *name UV,
-                  snd_stream_t *stream UV,
-                  int          *streaming UV,
-                  mem_pool_t    pool UV)
+int snd_ogg_load (GNUC_UNUSED const char *name,
+                  GNUC_UNUSED snd_stream_t *stream,
+                  GNUC_UNUSED int *streaming,
+                  GNUC_UNUSED mem_pool_t pool)
 {
     return -1;
 }

@@ -163,7 +163,12 @@ void image_cg_shutdown (void)
 
 #include "common.h"
 
-int image_cg_load (const char *name UV, image_t *im UV, mem_pool_t pool UV) { return -1; }
+int image_cg_load (GNUC_UNUSED const char *name,
+                   GNUC_UNUSED image_t *im,
+                   GNUC_UNUSED mem_pool_t pool)
+{
+    return -1;
+}
 
 int image_cg_init (void) { return -1; }
 void image_cg_shutdown (void) { }
