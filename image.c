@@ -102,6 +102,8 @@ int image_load (const char *name, image_t *image)
         return -2;
 
     image->teximage2d = NULL;
+    image->format = 0;
+    image->miplevels = 0;
 
     for (i = 0; i < STSIZE(loaders) ;i++)
     {
@@ -137,7 +139,7 @@ int image_mipmap (image_t *image)
     }
 
     if (image->width < 2 || image->height < 2 || image->format || image->miplevels)
-        return 0;
+        return 1;
 
     in = out = image->data;
     row = image->width << 2;

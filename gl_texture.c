@@ -86,6 +86,8 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         sh = ceil_pwrov2(sh);
     }
 
+    sh = sw;
+
     if (0 != image_resize(image, sw, sh))
         return -1;
 
@@ -120,10 +122,16 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
 
             for (mip = 1; image->width > 1 || image->height > 1 ;mip++)
             {
-                if (0 != image_mipmap(image))
+                int status;
+
+                if (0 > (status = image_mipmap(image)))
                 {
                     sys_printf("mipmap failed\n");
                     goto error;
+                }
+                else if (status > 0)
+                {
+                    break;
                 }
 
                 GL_IMAGE_DATA2D(mip, image);
