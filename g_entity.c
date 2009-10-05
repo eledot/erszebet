@@ -263,8 +263,11 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                 {
                     *(int *)data = lua_tointeger(lst, index);
                     if (ent_offset_frame == ent_entity_fields[i].offset &&
+                        ent->frames_num &&
                         ent->frame >= ent->frames_num)
+                    {
                         ent->frame = ent->frame % ent->frames_num;
+                    }
                 }
                 break;
 
