@@ -50,11 +50,13 @@ int sys_unlink (const char *filename);
 
 void sys_printf_real (const char *file, int line, const char *func, const char *format, ...);
 #define sys_printf(a...) sys_printf_real(__FILE__, __LINE__, __FUNCTION__, a)
+#define TRACE sys_printf("------ trace ------\n")
 
 #else /* !ENGINE_SYS_PRINTF */
 
 #define sys_printf(a...)
 #define sys_printf_real(a...)
+#define TRACE
 
 #endif /* ENGINE_SYS_PRINTF */
 
