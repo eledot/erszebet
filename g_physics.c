@@ -27,8 +27,6 @@
 static mem_pool_t mempool;
 
 static cpSpace *phys_space;
-static cpBody  *phys_world;
-static cpShape *phys_world_shape;
 static double   phys_last_update;
 static double   phys_speed;
 
@@ -517,7 +515,7 @@ g_physics_set_gravity
 */
 void g_physics_set_gravity (double gravity)
 {
-    phys_space->gravity = cpv(0.0f, -gravity);
+    phys_space->gravity = cpv(0.0, -gravity);
 }
 
 /*
@@ -622,15 +620,6 @@ void g_physics_init (mem_pool_t pool)
     phys_space = cpSpaceNew();
     phys_space->gravity = cpv(0.0f, -900.0f);
 
-    phys_world = cpBodyNew(INFINITY, INFINITY);
-    phys_world_shape = cpSegmentShapeNew(phys_world,
-                                         cpv(-4096.0, -29.0),
-                                         cpv(4096.0, -29.0),
-                                         30.0f);
-    phys_world_shape->e = 0.9;
-    phys_world_shape->u = 0.7;
-
-    cpSpaceAddStaticShape(phys_space, phys_world_shape);
     cpSpaceSetDefaultCollisionPairFunc(phys_space, g_default_coll_func, NULL);
 
     sys_printf("+g_physics\n");
@@ -643,7 +632,6 @@ g_physics_shutdown
 */
 void g_physics_shutdown (void)
 {
-    cpBodyFree(phys_world);
     cpSpaceFree(phys_space);
 
     sys_printf("-g_physics\n");
