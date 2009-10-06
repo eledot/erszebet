@@ -393,26 +393,20 @@ static const char *ent_flags_string (const g_entity_t *ent)
 
 /*
 =================
-ent_lua_tostring
+ent_entity_string
 =================
 */
-static int ent_lua_tostring (lua_State *lst)
+static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
 {
-    char        tmp[512];
-    g_entity_t *ent;
-
-    lua_getfield(lst, 1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    snprintf(tmp,
-             sizeof(tmp),
+    snprintf(buffer,
+             size,
              "entity: %p "
              "classname=\"%s\" "
              "flags=( %s) "
              "nextthink=%-2.2lf "
              "lastthink=%-2.2lf "
-             "origin={ %-2.2lf %-2.2lf } "
-             "velocity={ %-2.2lf %-2.2lf } "
+             "origin={ %-2.2lf %-2.2lf %-2.2lf } "
+             "velocity={ %-2.2lf %-2.2lf %-2.2lf } "
              "angle=%-2.2lf "
              "rotation=%-2.2lf "
              "gravity=%-2.2lf "
@@ -430,8 +424,10 @@ static int ent_lua_tostring (lua_State *lst)
              ent->lastthink,
              ent->origin[0],
              ent->origin[1],
+             ent->origin[2],
              ent->velocity[0],
              ent->velocity[1],
+             ent->velocity[2],
              ent->angle,
              ent->rotation,
              ent->gravity,
@@ -442,7 +438,21 @@ static int ent_lua_tostring (lua_State *lst)
              ent->scale,
              ent->frame,
              ent->frames_num);
+}
 
+/*
+=================
+ent_lua_tostring
+=================
+*/
+static int ent_lua_tostring (lua_State *lst)
+{
+    char tmp[512];
+    const g_entity_t *ent;
+
+    lua_getfield(lst, 1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+    ent_entity_string(ent, tmp, sizeof(tmp));
     lua_pushstring(lst, tmp);
 
     return 1;
