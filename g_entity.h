@@ -45,8 +45,8 @@ typedef struct g_entity_s
     double nextthink;
     double lastthink;
 
-    double origin[2];
-    double velocity[2];
+    double origin[3];
+    double velocity[3];
     double angle;
     double rotation;
     double gravity;

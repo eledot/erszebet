@@ -46,42 +46,45 @@ typedef enum
 
 #define FOFF(f) ((const void *)&((const g_entity_t *)NULL)->f - (const void *)NULL)
 
+static void ent_set_frame_callback (g_entity_t *ent);
+static void ent_set_origin_callback (g_entity_t *ent);
+
 /* entity field offsets */
 static const struct
 {
     const char *field;
     int         offset;
     int         type;
+    void      (*callback) (g_entity_t *ent);
 }ent_entity_fields[] =
 {
-#define DOFF(str, type)                         \
-    { #str, FOFF(str), type }
-#define DOFF2(str, field, type)                 \
-    { #str, FOFF(field), type }
-    DOFF(frame,      ENT_F_INTEGER),
-    DOFF(classname,  ENT_F_STRING),
-    DOFF(flags,      ENT_F_INTEGER),
-    DOFF(nextthink,  ENT_F_DOUBLE),
-    DOFF(origin,     ENT_F_VECTOR),
-    DOFF(velocity,   ENT_F_VECTOR),
-    DOFF(angle,      ENT_F_DOUBLE),
-    DOFF(rotation,   ENT_F_DOUBLE),
-    DOFF(gravity,    ENT_F_DOUBLE),
-    DOFF(elasticity, ENT_F_DOUBLE),
-    DOFF(friction,   ENT_F_DOUBLE),
-    DOFF(mass,       ENT_F_DOUBLE),
-    DOFF(inertia,    ENT_F_DOUBLE),
-    DOFF(scale,      ENT_F_DOUBLE),
-    DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE),
-    DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE),
-    DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE),
-    DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE)
+#define DOFF(str, type, callback)               \
+    { #str, FOFF(str), type, callback }
+#define DOFF2(str, field, type, callback)       \
+    { #str, FOFF(field), type, callback }
+    DOFF(frame,      ENT_F_INTEGER, &ent_set_frame_callback),
+    DOFF(classname,  ENT_F_STRING,  NULL),
+    DOFF(flags,      ENT_F_INTEGER, NULL),
+    DOFF(nextthink,  ENT_F_DOUBLE,  NULL),
+    DOFF(origin,     ENT_F_VECTOR,  &ent_set_origin_callback),
+    DOFF(velocity,   ENT_F_VECTOR,  NULL),
+    DOFF(angle,      ENT_F_DOUBLE,  NULL),
+    DOFF(rotation,   ENT_F_DOUBLE,  NULL),
+    DOFF(gravity,    ENT_F_DOUBLE,  NULL),
+    DOFF(elasticity, ENT_F_DOUBLE,  NULL),
+    DOFF(friction,   ENT_F_DOUBLE,  NULL),
+    DOFF(mass,       ENT_F_DOUBLE,  NULL),
+    DOFF(inertia,    ENT_F_DOUBLE,  NULL),
+    DOFF(scale,      ENT_F_DOUBLE,  NULL),
+    DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE, NULL),
+    DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE, NULL),
+    DOFF2(origin_z,   origin[2],   ENT_F_DOUBLE, &ent_set_origin_callback),
+    DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE, NULL),
+    DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE, NULL),
+    DOFF2(velocity_z, velocity[2], ENT_F_DOUBLE, NULL)
 #undef DOFF
 #undef DOFF2
 };
-
-static const int ent_offset_frame = FOFF(frame);
-static const int ent_offset_frames_num = FOFF(frames_num);
 
 /* entity field offsets for strings that must be freed */
 static const int ent_entity_fields_free[] =
@@ -218,7 +221,7 @@ static int ent_get_field (const g_entity_t *ent, const char *field)
                 break;
 
             case ENT_F_VECTOR:
-                g_push_vector((const double *)data, 2);
+                g_push_vector((const double *)data, 3);
                 break;
 
             default:
@@ -230,6 +233,66 @@ static int ent_get_field (const g_entity_t *ent, const char *field)
     }
 
     return 0;
+}
+
+/*
+=================
+ent_set_frame_callback
+=================
+*/
+static void ent_set_frame_callback (g_entity_t *ent)
+{
+    if (ent->frames_num)
+        ent->frame %= ent->frames_num;
+}
+
+/*
+=================
+ent_set_origin_callback
+=================
+*/
+static void ent_set_origin_callback (g_entity_t *ent)
+{
+    g_entity_t *e, *prev;
+
+    if (NULL != ent->prev)
+        ent->prev->next = ent->next;
+
+    if (NULL != ent->next)
+        ent->next->prev = ent->prev;
+
+    if (entities == ent)
+        entities = ent->next;
+
+    for (prev = NULL, e = entities; NULL != e ;prev = e, e = e->next)
+        if (e->origin[2] > ent->origin[2])
+            break;
+
+    if (NULL == e)
+    {
+        if (NULL == prev)
+        {
+            ent->prev = NULL;
+            ent->next = entities;
+            entities = ent;
+        }
+        else
+        {
+            prev->next = ent;
+            ent->prev = prev;
+            ent->next = NULL;
+        }
+
+        return;
+    }
+
+    ent->prev = e->prev;
+    ent->next = e;
+
+    if (NULL != ent->prev)
+        ent->prev->next = ent;
+
+    e->prev = ent;
 }
 
 /*
@@ -259,15 +322,7 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                 break;
 
             case ENT_F_INTEGER:
-                if (ent_offset_frames_num != ent_entity_fields[i].offset)
-                {
-                    *(int *)data = lua_tointeger(lst, index);
-                    if (ent_offset_frame == ent_entity_fields[i].offset &&
-                        ent->frames_num)
-                    {
-                        ent->frame %= ent->frames_num;
-                    }
-                }
+                *(int *)data = lua_tointeger(lst, index);
                 break;
 
             case ENT_F_DOUBLE:
@@ -275,12 +330,15 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
                 break;
 
             case ENT_F_VECTOR:
-                g_pop_vector(index, (double *)data, 2);
+                g_pop_vector(index, (double *)data, 3);
                 break;
 
             default:
                 return 0;
             }
+
+            if (NULL != ent_entity_fields[i].callback)
+                ent_entity_fields[i].callback(ent);
 
             return 1;
         }
@@ -487,9 +545,11 @@ static g_entity_t *g_entity_create (void)
 
     ent->origin[0]   = 0.0;
     ent->origin[1]   = 0.0;
+    ent->origin[2]   = 0.0;
     ent->angle       = 0.0;
     ent->velocity[0] = 0.0;
     ent->velocity[1] = 0.0;
+    ent->velocity[2] = 0.0;
     ent->rotation    = 0.0;
     ent->gravity     = 0.0;
     ent->elasticity  = 0.0;
@@ -502,11 +562,8 @@ static g_entity_t *g_entity_create (void)
     ent->render_type = -1;
     ent->render_data = NULL;
 
-    if (NULL != entities)
-        entities->prev = ent;
-
-    ent->next = entities;
-    entities = ent;
+    /* put to entities, taking into account zorder */
+    ent_set_origin_callback(ent);
 
     return ent;
 }
@@ -764,11 +821,11 @@ ent_lua_point_query
 */
 static int ent_lua_point_query (lua_State *lst)
 {
-    double point[2];
+    double point[3];
 
     point_query_shapes_num = 0;
 
-    g_pop_vector(1, point, 2);
+    g_pop_vector(1, point, 3);
     lua_newtable(lst);
     g_physics_point_query(point, &ent_lua_point_query_callback);
 
