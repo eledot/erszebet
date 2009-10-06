@@ -170,7 +170,7 @@ r_init
 int r_init (void)
 {
     r_show_fps = cvar_get("r_show_fps", "0", 0);
-    r_show_collisions = cvar_get("r_show_collisions", "1", 0);
+    r_show_collisions = cvar_get("r_show_collisions", "0", 0);
     r_fov = cvar_get("r_fov", "90", 0);
 
     cmd_register("screenshot_jpeg", NULL, &screenshot_f, 0);
