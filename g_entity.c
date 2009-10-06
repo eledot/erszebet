@@ -1077,6 +1077,31 @@ void g_entity_frame (void)
 
 /*
 =================
+g_list_entities_f
+=================
+*/
+static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
+                               int source,
+                               GNUC_UNUSED int argc,
+                               GNUC_UNUSED const char **argv)
+{
+    char tmp[512];
+    const g_entity_t *e;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- entities list -----------\n");
+
+    for (e = entities; NULL != e ;e = e->next)
+    {
+        ent_entity_string(e, tmp, sizeof(tmp));
+        sys_printf("%s\n", tmp);
+    }
+}
+
+/*
+=================
 g_entity_init
 =================
 */
@@ -1101,6 +1126,8 @@ void g_entity_init (void *_lst, mem_pool_t pool)
     lua_setfield(lst, -2, "__index");
     luaL_register(lst, NULL, entity_metamap);
     lua_pop(lst, 1);
+
+    cmd_register("g_list_entities", NULL, &g_list_entities_f, 0);
 
     /* register funcs to work with entity */
     lua_register(lst, "ent_spawn", &ent_lua_spawn);
