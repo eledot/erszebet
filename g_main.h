@@ -36,6 +36,11 @@ void g_push_strings (const char **strings, int num);
 
 void g_frame (void);
 
+int g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func);
+#define g_lua_call(args, ret) g_lua_call_real(args, ret, __FILE__, __LINE__, __FUNCTION__)
+
+#define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
+
 int g_init (void);
 void g_shutdown (void);
 

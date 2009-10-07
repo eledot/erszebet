@@ -971,9 +971,10 @@ int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, c
     g_push_vector(origin, 2);
     g_push_vector(normal, 2);
 
-    lua_pcall(lst, 4, 1, 0);
-    ret = lua_toboolean(lst, -1);
-    lua_pop(lst, 2);
+    g_lua_call(4, 1);
+    lua_pop(lst, 1);
+    ret = lua_tointeger(lst, 0);
+    lua_pop(lst, 1);
 
     return ret;
 }
@@ -1024,7 +1025,7 @@ void g_entity_draw_entities (int draw2d)
                 lua_getref(lst, ent->dataref);
                 lua_getfield(lst, -1, "draw");
                 lua_getref(lst, ent->ref);
-                lua_pcall(lst, 1, 0, 0);
+                g_lua_call(1, 0);
                 lua_pop(lst, 1);
             }
         }
@@ -1069,7 +1070,7 @@ void g_entity_frame (void)
             lua_getref(lst, ent->dataref);
             lua_getfield(lst, -1, "think");
             lua_getref(lst, ent->ref);
-            lua_pcall(lst, 1, 0, 0);
+            g_lua_call(1, 0);
             lua_pop(lst, 1);
         }
     }

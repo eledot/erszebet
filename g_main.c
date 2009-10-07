@@ -31,8 +31,6 @@
 #define GAME_MAIN_FILE fs_get_resource_path("main.lua", mempool)
 #endif
 
-#define g_error(status, msg) g_error_real(status, msg, __FILE__, __LINE__, __FUNCTION__)
-
 static int g_i = 0;
 
 static mem_pool_t mempool;
@@ -41,12 +39,14 @@ static lua_State *lst = NULL;
 static double     g_start_time;
 double            g_time;
 
+#define g_error(status, msg) g_error_real(status, msg, __FILE__, __LINE__, __FUNCTION__)
+
 /*
 =================
 g_error
 =================
 */
-static int g_error_real (int         status,
+static int g_error_real (int             status,
                          PUV const char *msg,
                          PUV const char *file,
                          PUV int         line,
@@ -68,6 +68,41 @@ static int g_error_real (int         status,
 
 /*
 =================
+g_lua_traceback
+=================
+*/
+static int g_lua_traceback (lua_State *lst)
+{
+    if (!lua_isstring(lst, 1))
+        return 1;
+
+    lua_getfield(lst, LUA_GLOBALSINDEX, "debug");
+
+    if (!lua_istable(lst, -1))
+    {
+        lua_pop(lst, 1);
+        return 1;
+    }
+
+    lua_getfield(lst, -1, "traceback");
+
+    if (!lua_isfunction(lst, -1))
+    {
+        lua_pop(lst, 2);
+        return 1;
+    }
+
+    lua_pushvalue(lst, 1);
+    lua_pushinteger(lst, 2);
+    lua_call(lst, 2, 1);
+
+    sys_printf("%s\n", luaL_checkstring(lst, -1));
+
+    return 1;
+}
+
+/*
+=================
 g_call_cmd
 =================
 */
@@ -79,10 +114,8 @@ void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv)
     lua_pushinteger(lst, argc);
     g_push_strings(argv, argc);
 
-    if (0 != g_error(lua_pcall(lst, 4, 0, 0), "lua_pcall failed"))
-    {
-        sys_printf("tried to call %s with 4 arg(s)\n", cmd->lua_func);
-    }
+    g_lua_call(4, 0);
+    lua_pop(lst, 1);
 }
 
 /*
@@ -107,7 +140,7 @@ g_call_func
 void g_call_func (const char *func, const char *types, ...)
 {
     va_list args;
-    int     args_num, res_num;
+    int     args_num, res_num, pop;
 
     if (NULL == func || NULL == types)
     {
@@ -158,13 +191,9 @@ void g_call_func (const char *func, const char *types, ...)
 done:
 
     res_num = strlen(types);
+    lua_pcall(lst, args_num, res_num, 0);
 
-    if (0 != g_error(lua_pcall(lst, args_num, res_num, 0), "lua_pcall failed"))
-    {
-        sys_printf("tried to call %s with %i arg(s) and %i result(s)\n", func, args_num, res_num);
-        return;
-    }
-
+    pop = res_num;
     res_num = -res_num;
 
     while (*types)
@@ -205,6 +234,8 @@ done:
 
         res_num++;
     }
+
+    lua_pop(lst, pop);
 
     va_end(args);
 }
@@ -329,6 +360,22 @@ void g_frame (void)
     g_set_double("time", g_time);
     g_entity_frame();
     g_physics_frame();
+}
+
+/*
+=================
+g_lua_call_real
+=================
+*/
+int g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
+{
+    int base = lua_gettop(lst) - args;
+    lua_pushcfunction(lst, g_lua_traceback);
+    lua_insert(lst, base);
+    g_error_real(lua_pcall(lst, args, ret, base), "lua_pcall failed", file, line, func);
+    lua_remove(lst, base);
+
+    return 0;
 }
 
 /*
@@ -496,7 +543,7 @@ int g_init (void)
         return -2;
     }
 
-    g_error(lua_pcall(lst, 0, LUA_MULTRET, 0), "lua_pcall failed");
+    g_lua_call(0, LUA_MULTRET);
     lua_pop(lst, 1);
 
     g_i = 1;
