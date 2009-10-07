@@ -582,13 +582,15 @@ static int g_default_coll_func (cpShape   *a,
     {
         int atouch_blocked = 1;
         int btouch_blocked = 1;
-        double origin[2];
-        double normal[2];
+        double origin[3];
+        double normal[3];
 
         origin[0] = contacts[i].p.x;
         origin[1] = contacts[i].p.y;
+        origin[2] = 0.0;
         normal[0] = normal_coef * contacts[i].n.x;
         normal[1] = normal_coef * contacts[i].n.y;
+        normal[2] = 0.0;
 
         if (acfl & ENT_CFL_TOUCH && !(bfl & ENT_FL_NON_SOLID))
             atouch_blocked = g_entity_touch(ae, be, origin, normal);

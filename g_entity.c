@@ -598,7 +598,8 @@ static void g_entity_delete (g_entity_t *ent)
     remove_entities = ent;
 
     /* remove all handlers, mark invalid */
-    ent->flags -= ent->flags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
+    ent->cflags -= ent->flags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
+    ent->flags |= ENT_FL_NON_SOLID;
 
     lua_unref(lst, ent->ref);
     lua_unref(lst, ent->dataref);
@@ -968,12 +969,12 @@ int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, c
     else
         lua_getref(lst, other->ref);
 
-    g_push_vector(origin, 2);
-    g_push_vector(normal, 2);
+    g_push_vector(origin, 3);
+    g_push_vector(normal, 3);
 
     g_lua_call(4, 1);
     lua_pop(lst, 1);
-    ret = lua_tointeger(lst, 0);
+    ret = lua_toboolean(lst, 0);
     lua_pop(lst, 1);
 
     return ret;
