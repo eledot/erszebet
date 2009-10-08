@@ -128,7 +128,7 @@ static int ent_render_load_sprite (const char *name, const double *parms, void *
 {
     return r_sprite_load(name,
                          G_SPRITES_MASK,
-                         ((int)parms[0]) ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
+                         ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
                          (r_sprite_t **)data);
 }
 
