@@ -39,6 +39,16 @@ static lua_State *lst = NULL;
 static double     g_start_time;
 double            g_time;
 
+enum
+{
+    VIDEO_INFO_WIDTH = 1,
+    VIDEO_INFO_HEIGHT,
+    VIDEO_INFO_FULLSCREEN,
+    VIDEO_INFO_GRABBED,
+    VIDEO_INFO_ORIENTATION,
+    VIDEO_INFO_LAST
+};
+
 #define g_error(status, msg) g_error_real(status, msg, __FILE__, __LINE__, __FUNCTION__)
 
 /*
@@ -492,20 +502,20 @@ game_lua_get_video_info
 */
 static int game_lua_get_video_info (lua_State *lst)
 {
-    lua_createtable(lst, 5, 0);
-    lua_pushinteger(lst, 1);
+    lua_createtable(lst, VIDEO_INFO_LAST - 1, 0);
+    lua_pushinteger(lst, VIDEO_INFO_WIDTH);
     lua_pushinteger(lst, video_width);
     lua_settable(lst, -3);
-    lua_pushinteger(lst, 2);
+    lua_pushinteger(lst, VIDEO_INFO_HEIGHT);
     lua_pushinteger(lst, video_height);
     lua_settable(lst, -3);
-    lua_pushinteger(lst, 3);
+    lua_pushinteger(lst, VIDEO_INFO_FULLSCREEN);
     lua_pushboolean(lst, video_fullscreen);
     lua_settable(lst, -3);
-    lua_pushinteger(lst, 4);
+    lua_pushinteger(lst, VIDEO_INFO_GRABBED);
     lua_pushboolean(lst, video_grabbed);
     lua_settable(lst, -3);
-    lua_pushinteger(lst, 5);
+    lua_pushinteger(lst, VIDEO_INFO_ORIENTATION);
     lua_pushboolean(lst, video_orientation);
     lua_settable(lst, -3);
 
@@ -543,6 +553,12 @@ static void g_init_video (void)
 {
     g_set_integer("VIDEO_LANDSCAPE", VIDEO_LANDSCAPE);
     g_set_integer("VIDEO_PORTRAIT", VIDEO_PORTRAIT);
+
+    g_set_integer("VIDEO_INFO_WIDTH", VIDEO_INFO_WIDTH);
+    g_set_integer("VIDEO_INFO_HEIGHT", VIDEO_INFO_HEIGHT);
+    g_set_integer("VIDEO_INFO_FULLSCREEN", VIDEO_INFO_FULLSCREEN);
+    g_set_integer("VIDEO_INFO_GRABBED", VIDEO_INFO_GRABBED);
+    g_set_integer("VIDEO_INFO_ORIENTATION", VIDEO_INFO_ORIENTATION);
 
     lua_register(lst, "set_orientation", &game_lua_set_orientation);
     lua_register(lst, "get_video_info", &game_lua_get_video_info);
