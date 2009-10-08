@@ -482,6 +482,33 @@ static int game_lua_set_orientation (lua_State *lst)
 
 /*
 =================
+game_lua_get_video_info
+=================
+*/
+static int game_lua_get_video_info (lua_State *lst)
+{
+    lua_createtable(lst, 5, 0);
+    lua_pushinteger(lst, 1);
+    lua_pushinteger(lst, video_width);
+    lua_settable(lst, -3);
+    lua_pushinteger(lst, 2);
+    lua_pushinteger(lst, video_height);
+    lua_settable(lst, -3);
+    lua_pushinteger(lst, 3);
+    lua_pushboolean(lst, video_fullscreen);
+    lua_settable(lst, -3);
+    lua_pushinteger(lst, 4);
+    lua_pushboolean(lst, video_grabbed);
+    lua_settable(lst, -3);
+    lua_pushinteger(lst, 5);
+    lua_pushboolean(lst, video_orientation);
+    lua_settable(lst, -3);
+
+    return 1;
+}
+
+/*
+=================
 g_init_cmd
 =================
 */
@@ -498,12 +525,22 @@ static void g_init_cmd (void)
     g_set_integer("CMD_SRC_GAME", CMD_SRC_GAME);
     g_set_integer("CMD_SRC_REMOTE", CMD_SRC_REMOTE);
 
+    lua_register(lst, "register_cmd", &game_lua_register_cmd);
+    lua_register(lst, "execute", &game_lua_execute);
+}
+
+/*
+=================
+g_init_video
+=================
+*/
+static void g_init_video (void)
+{
     g_set_integer("VIDEO_LANDSCAPE", VIDEO_LANDSCAPE);
     g_set_integer("VIDEO_PORTRAIT", VIDEO_PORTRAIT);
 
-    lua_register(lst, "register_cmd", &game_lua_register_cmd);
-    lua_register(lst, "execute", &game_lua_execute);
     lua_register(lst, "set_orientation", &game_lua_set_orientation);
+    lua_register(lst, "get_video_info", &game_lua_get_video_info);
 }
 
 /*
@@ -526,6 +563,7 @@ int g_init (void)
     luaL_openlibs(lst);
 
     g_init_cmd();
+    g_init_video();
     g_set_double("time", g_time);
     g_physics_init(mempool);
     g_entity_init(lst, mempool);

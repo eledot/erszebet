@@ -185,10 +185,11 @@ int filename_is_valid (const char *name)
     for (i = 1; i < len ;i++)
     {
         if ((name[i] < 'a' || name[i] > 'z') &&
+            (name[i] < 'A' || name[i] > 'Z') &&
             (name[i] != '_' && name[i] != '.' && name[i] != '/' &&
              (name[i] < '0' || name[i] > '9')))
         {
-            sys_printf("invalid name (contains invalid chars)\n");
+            sys_printf("invalid name (contains invalid chars (0x%02x))\n", name[i]);
             return 0;
         }
 
