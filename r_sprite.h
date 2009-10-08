@@ -28,11 +28,20 @@ typedef enum
     R_SPRITE_TYPE_LINE
 }r_sprite_type_e;
 
+typedef enum
+{
+    SPRITE_ALIGN_LEFT   = (1 << 0),
+    SPRITE_ALIGN_RIGHT  = (1 << 1),
+    SPRITE_ALIGN_TOP    = (1 << 2),
+    SPRITE_ALIGN_BOTTOM = (1 << 3)
+}r_sprite_align_e;
+
 typedef struct r_sprite_s
 {
     char *name;
     int   ref;
     int   frames_num;
+    int   align;
     int   type;
     float inc;
 
