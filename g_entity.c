@@ -94,16 +94,16 @@ static const int ent_entity_fields_free[] =
 
 #undef FOFF
 
-static int ent_render_load_sprite (const char *name, int parm, void **data);
+static int ent_render_load_sprite (const char *name, const double *parms, void **data);
 static void ent_render_unload_sprite (void *data);
 static int ent_render_get_frames_num_sprite (const void *data);
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED int parm, GNUC_UNUSED void **data);
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED void **data);
 static void ent_render_unload_model (GNUC_UNUSED void *data);
 static int ent_render_get_frames_num_model (GNUC_UNUSED const void *data);
 
 static const struct
 {
-    int (*load) (const char *name, int parm, void **data);
+    int (*load) (const char *name, const double *parms, void **data);
     void (*unload) (void *data);
     int (*get_frames_num) (const void *data);
 }ent_render_load_unload_funcs[] =
@@ -124,11 +124,11 @@ static int         point_query_shapes_num;
 ent_render_load_sprite
 =================
 */
-static int ent_render_load_sprite (const char *name, int parm, void **data)
+static int ent_render_load_sprite (const char *name, const double *parms, void **data)
 {
     return r_sprite_load(name,
                          G_SPRITES_MASK,
-                         parm ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
+                         ((int)parms[0]) ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
                          (r_sprite_t **)data);
 }
 
@@ -159,7 +159,7 @@ static int ent_render_get_frames_num_sprite (const void *data)
 ent_render_load_model
 =================
 */
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED int parm, GNUC_UNUSED void **data)
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED void **data)
 {
     /* FIXME */
     return 1;
@@ -569,6 +569,8 @@ static g_entity_t *g_entity_create (void)
     ent->scale       = 1.0;
     ent->frame       = 0;
     ent->frames_num  = 0;
+    ent->width       = 0.0;
+    ent->height      = 0.0;
     ent->render_type = -1;
     ent->render_data = NULL;
 
@@ -685,7 +687,7 @@ static int ent_lua_set_sprite (lua_State *lst)
 {
     g_entity_t *ent;
     const char *name;
-    int parm;
+    double parms[3] = { 0.0, 0.0, 0.0 };
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
@@ -704,13 +706,15 @@ static int ent_lua_set_sprite (lua_State *lst)
     }
 
     name = luaL_checkstring(lst, 2);
-    parm = lua_tointeger(lst, 3);
+    g_pop_vector(3, parms, 3);
 
-    if (0 == ent_render_load_unload_funcs[0].load(name, parm, &ent->render_data))
+    if (0 == ent_render_load_unload_funcs[0].load(name, parms, &ent->render_data))
     {
         ent->render_type = 0;
         ent->frame = 0;
         ent->frames_num = ent_render_load_unload_funcs[0].get_frames_num(ent->render_data);
+        ent->width = parms[1];
+        ent->height = parms[2];
     }
 
     return 0;
@@ -988,7 +992,6 @@ g_entity_draw_entities
 void g_entity_draw_entities (int draw2d)
 {
     g_entity_t *ent;
-    r_sprite_t *sprite;
 
     if (draw2d)
     {
@@ -1000,14 +1003,13 @@ void g_entity_draw_entities (int draw2d)
                 {
                 case 0:
                     /* 2d sprite */
-                    sprite = ent->render_data;
-                    /* FIXME 64 64 */
-                    r_sprite_draw(sprite,
+                    r_sprite_draw(ent->render_data,
                                   ent->frame,
                                   ent->origin[0],
                                   ent->origin[1],
-                                  64 * ent->scale,
-                                  64 * ent->scale,
+                                  ent->width,
+                                  ent->height,
+                                  ent->scale,
                                   ent->angle);
                     break;
 

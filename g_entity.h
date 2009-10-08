@@ -73,6 +73,8 @@ typedef struct g_entity_s
     double scale;
     int    frame;
     int    frames_num;
+    double width;
+    double height;
     int    render_type;
     void  *render_data;
 }g_entity_t;

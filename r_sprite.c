@@ -202,6 +202,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
                     double centery,
                     double width,
                     double height,
+                    double scale,
                     double angle)
 {
     const r_texture_t *tex;
@@ -221,16 +222,41 @@ void r_sprite_draw (const r_sprite_t *sprite,
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
         tex = sprite->frames[frame];
-        gl_draw_texture(tex->gltex, centerx, centery, width, height, angle);
+
+        if (!width)
+            width = tex->w;
+
+        if (!height)
+            height = tex->h;
+
+        gl_draw_texture(tex->gltex,
+                        centerx,
+                        centery,
+                        width * scale,
+                        height * scale,
+                        angle);
     }
     else
     {
         tex = sprite->frames[0];
+
+        if (!width)
+            width = tex->w * sprite->inc;
+
+        if (!height)
+            height = tex->h;
+
         vt[0] = vt[6] = frame * sprite->inc;
         vt[1] = vt[3] = 0.0f;
         vt[5] = vt[7] = 1.0f;
         vt[4] = vt[2] = vt[0] + sprite->inc;
-        gl_draw_texture2(tex->gltex, centerx, centery, width, height, angle, vt);
+        gl_draw_texture2(tex->gltex,
+                         centerx,
+                         centery,
+                         width * scale,
+                         height * scale,
+                         angle,
+                         vt);
     }
 }
 

@@ -54,6 +54,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
                     double centery,
                     double width,
                     double height,
+                    double scale,
                     double angle);
 
 int r_sprite_init (void);
