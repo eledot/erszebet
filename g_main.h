@@ -31,7 +31,7 @@ void g_set_integer (const char *name, int value);
 void g_set_string (const char *name, const char *value);
 
 void g_push_vector (const double *vector, int num);
-void g_pop_vector (int index, double *vector, int num);
+int g_pop_vector (int index, double *vector, int num);
 void g_push_strings (const char **strings, int num);
 
 void g_frame (void);

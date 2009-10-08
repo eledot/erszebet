@@ -840,7 +840,12 @@ static int ent_lua_point_query (lua_State *lst)
 
     point_query_shapes_num = 0;
 
-    g_pop_vector(1, point, 3);
+    if (0 != g_pop_vector(1, point, 3))
+    {
+        sys_printf("called phys_point_query without origin\n");
+        return 0;
+    }
+
     lua_newtable(lst);
     g_physics_point_query(point, &ent_lua_point_query_callback);
 
@@ -866,8 +871,17 @@ static int ent_lua_apply_impulse (lua_State *lst)
         return 0;
     }
 
-    g_pop_vector(2, point, 2);
-    g_pop_vector(3, impulse, 2);
+    if (0 != g_pop_vector(2, point, 2))
+    {
+        sys_printf("called phys_apply_impulse without point\n");
+        return 0;
+    }
+
+    if (0 != g_pop_vector(3, impulse, 2))
+    {
+        sys_printf("called phys_apply_impulse without impulse\n");
+        return 0;
+    }
 
     g_physics_apply_impulse(ent, point, impulse);
 

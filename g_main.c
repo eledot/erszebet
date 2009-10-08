@@ -315,9 +315,12 @@ void g_push_vector (const double *vector, int num)
 g_pop_vector
 =================
 */
-void g_pop_vector (int index, double *vector, int num)
+int g_pop_vector (int index, double *vector, int num)
 {
     int i;
+
+    if (!lua_istable(lst, index))
+        return -1;
 
     lua_pushnil(lst);
 
@@ -328,6 +331,8 @@ void g_pop_vector (int index, double *vector, int num)
     }
 
     lua_pop(lst, 1);
+
+    return 0;
 }
 
 /*
