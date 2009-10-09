@@ -484,6 +484,60 @@ static int game_lua_execute (lua_State *lst)
 
 /*
 =================
+game_lua_get_cvar_string
+=================
+*/
+static int game_lua_get_cvar_string (lua_State *lst)
+{
+    const char *name = luaL_checkstring(lst, -1);
+    cvar_t *cvar = cvar_find(name);
+
+    if (NULL == cvar)
+        lua_pushnil(lst);
+    else
+        lua_pushstring(lst, cvar->s);
+
+    return 1;
+}
+
+/*
+=================
+game_lua_get_cvar_integer
+=================
+*/
+static int game_lua_get_cvar_integer (lua_State *lst)
+{
+    const char *name = luaL_checkstring(lst, -1);
+    cvar_t *cvar = cvar_find(name);
+
+    if (NULL == cvar)
+        lua_pushnil(lst);
+    else
+        lua_pushinteger(lst, cvar->i);
+
+    return 1;
+}
+
+/*
+=================
+game_lua_get_cvar_number
+=================
+*/
+static int game_lua_get_cvar_number (lua_State *lst)
+{
+    const char *name = luaL_checkstring(lst, -1);
+    cvar_t *cvar = cvar_find(name);
+
+    if (NULL == cvar)
+        lua_pushnil(lst);
+    else
+        lua_pushnumber(lst, cvar->f);
+
+    return 1;
+}
+
+/*
+=================
 game_lua_set_orientation
 =================
 */
@@ -546,6 +600,18 @@ static void g_init_cmd (void)
 
 /*
 =================
+g_init_cvar
+=================
+*/
+static void g_init_cvar (void)
+{
+    lua_register(lst, "get_cvar_string", &game_lua_get_cvar_string);
+    lua_register(lst, "get_cvar_integer", &game_lua_get_cvar_integer);
+    lua_register(lst, "get_cvar_number", &game_lua_get_cvar_number);
+}
+
+/*
+=================
 g_init_video
 =================
 */
@@ -584,6 +650,7 @@ int g_init (void)
     luaL_openlibs(lst);
 
     g_init_cmd();
+    g_init_cvar();
     g_init_video();
     g_set_double("time", g_time);
     g_physics_init(mempool);
