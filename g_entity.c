@@ -550,6 +550,9 @@ static g_entity_t *g_entity_create (void)
     ent->ref     = LUA_REFNIL;
     ent->dataref = LUA_REFNIL;
 
+    ent->nextthink = 0.0;
+    ent->lastthink = 0.0;
+
     ent->origin[0]   = 0.0;
     ent->origin[1]   = 0.0;
     ent->origin[2]   = 0.0;
