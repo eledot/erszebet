@@ -137,10 +137,11 @@ int engine_init (void)
     cmdbuf_add("bind s screenshot_jpeg\n", CMD_SRC_ENGINE);
     cmdbuf_frame();
 
-    INIT(g);
-
     cmdbuf_add("exec config.cfg\n", CMD_SRC_ENGINE);
     cmdbuf_frame();
+
+    INIT(g);
+
     cmdbuf_add("exec autoexec.cfg\n", CMD_SRC_ENGINE);
     cmdbuf_frame();
 
