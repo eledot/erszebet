@@ -76,6 +76,8 @@ static const struct
     DOFF(mass,       ENT_F_DOUBLE,  NULL),
     DOFF(inertia,    ENT_F_DOUBLE,  NULL),
     DOFF(scale,      ENT_F_DOUBLE,  NULL),
+    DOFF(width,      ENT_F_DOUBLE,  NULL),
+    DOFF(height,     ENT_F_DOUBLE,  NULL),
     DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE, NULL),
     DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE, NULL),
     DOFF2(origin_z,   origin[2],   ENT_F_DOUBLE, &ent_set_origin_callback),
@@ -94,18 +96,18 @@ static const int ent_entity_fields_free[] =
 
 #undef FOFF
 
-static int ent_render_load_sprite (const char *name, const double *parms, void **data);
-static void ent_render_unload_sprite (void *data);
-static int ent_render_get_frames_num_sprite (const void *data);
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED void **data);
-static void ent_render_unload_model (GNUC_UNUSED void *data);
-static int ent_render_get_frames_num_model (GNUC_UNUSED const void *data);
+static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
+static void ent_render_unload_sprite (g_entity_t *ent);
+static int ent_render_get_frames_num_sprite (const g_entity_t *ent);
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
+static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
+static int ent_render_get_frames_num_model (GNUC_UNUSED const g_entity_t *ent);
 
 static const struct
 {
-    int (*load) (const char *name, const double *parms, void **data);
-    void (*unload) (void *data);
-    int (*get_frames_num) (const void *data);
+    int (*load) (const char *name, const double *parms, g_entity_t *ent);
+    void (*unload) (g_entity_t *ent);
+    int (*get_frames_num) (const g_entity_t *ent);
 }ent_render_load_unload_funcs[] =
 {
     { &ent_render_load_sprite, &ent_render_unload_sprite, &ent_render_get_frames_num_sprite },
@@ -124,12 +126,33 @@ static int         point_query_shapes_num;
 ent_render_load_sprite
 =================
 */
-static int ent_render_load_sprite (const char *name, const double *parms, void **data)
+static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
 {
-    return r_sprite_load(name,
-                         G_SPRITES_MASK,
-                         ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
-                         (r_sprite_t **)data);
+    r_sprite_t *sprite;
+    int res;
+
+    if (0 != (res = r_sprite_load(name,
+                                  G_SPRITES_MASK,
+                                  ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
+                                  &sprite)))
+    {
+        return res;
+    }
+
+    ent->render_type = 0;
+    ent->render_data = sprite;
+    ent->frame = 0;
+    ent->frames_num = sprite->frames_num;
+    ent->width = parms[1];
+    ent->height = parms[2];
+
+    if (!ent->width)
+        ent->width = sprite->frames[0]->w * sprite->inc;
+
+    if (!ent->height)
+        ent->height = sprite->frames[0]->h;
+
+    return 0;
 }
 
 /*
@@ -137,9 +160,9 @@ static int ent_render_load_sprite (const char *name, const double *parms, void *
 ent_render_unload_sprite
 =================
 */
-static void ent_render_unload_sprite (void *data)
+static void ent_render_unload_sprite (g_entity_t *ent)
 {
-    r_sprite_unload(data);
+    r_sprite_unload(ent->render_data);
 }
 
 /*
@@ -147,9 +170,9 @@ static void ent_render_unload_sprite (void *data)
 ent_render_get_frames_num_sprite
 =================
 */
-static int ent_render_get_frames_num_sprite (const void *data)
+static int ent_render_get_frames_num_sprite (const g_entity_t *ent)
 {
-    const r_sprite_t *sprite = data;
+    const r_sprite_t *sprite = ent->render_data;
 
     return sprite->frames_num;
 }
@@ -159,7 +182,7 @@ static int ent_render_get_frames_num_sprite (const void *data)
 ent_render_load_model
 =================
 */
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED void **data)
+static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
     return 1;
@@ -170,7 +193,7 @@ static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED cons
 ent_render_unload_model
 =================
 */
-static void ent_render_unload_model (GNUC_UNUSED void *data)
+static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
 }
@@ -180,7 +203,7 @@ static void ent_render_unload_model (GNUC_UNUSED void *data)
 ent_render_get_frames_num_model
 =================
 */
-static int ent_render_get_frames_num_model (GNUC_UNUSED const void *data)
+static int ent_render_get_frames_num_model (GNUC_UNUSED const g_entity_t *ent)
 {
     /* FIXME */
     return 0;
@@ -700,7 +723,7 @@ static int ent_lua_set_sprite (lua_State *lst)
 
     if (NULL != ent->render_data)
     {
-        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
+        ent_render_load_unload_funcs[ent->render_type].unload(ent);
         ent->render_data = NULL;
         ent->render_type = -1;
     }
@@ -708,16 +731,7 @@ static int ent_lua_set_sprite (lua_State *lst)
     name = luaL_checkstring(lst, 2);
     g_pop_vector(3, parms, 3);
 
-    if (0 == ent_render_load_unload_funcs[0].load(name, parms, &ent->render_data))
-    {
-        ent->render_type = 0;
-        ent->frame = 0;
-        ent->frames_num = ent_render_load_unload_funcs[0].get_frames_num(ent->render_data);
-        ent->width = parms[1];
-        ent->height = parms[2];
-    }
-
-    return 0;
+    return ent_render_load_unload_funcs[0].load(name, parms, ent);
 }
 
 /*
@@ -740,8 +754,9 @@ static int ent_lua_set_model (lua_State *lst)
 
     if (NULL != ent->render_data)
     {
-        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
+        ent_render_load_unload_funcs[ent->render_type].unload(ent);
         ent->render_data = NULL;
+        ent->render_type = -1;
     }
 
     /* FIXME */
