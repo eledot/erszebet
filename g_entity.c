@@ -62,8 +62,8 @@ static const struct
     { #str, FOFF(str), type, callback }
 #define DOFF2(str, field, type, callback)       \
     { #str, FOFF(field), type, callback }
-    DOFF(frame,      ENT_F_INTEGER, &ent_set_frame_callback),
     DOFF(classname,  ENT_F_STRING,  NULL),
+    DOFF(frame,      ENT_F_INTEGER, &ent_set_frame_callback),
     DOFF(flags,      ENT_F_INTEGER, NULL),
     DOFF(nextthink,  ENT_F_DOUBLE,  NULL),
     DOFF(origin,     ENT_F_VECTOR,  &ent_set_origin_callback),
@@ -98,20 +98,17 @@ static const int ent_entity_fields_free[] =
 
 static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
 static void ent_render_unload_sprite (g_entity_t *ent);
-static int ent_render_get_frames_num_sprite (const g_entity_t *ent);
 static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
 static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
-static int ent_render_get_frames_num_model (GNUC_UNUSED const g_entity_t *ent);
 
 static const struct
 {
     int (*load) (const char *name, const double *parms, g_entity_t *ent);
     void (*unload) (g_entity_t *ent);
-    int (*get_frames_num) (const g_entity_t *ent);
 }ent_render_load_unload_funcs[] =
 {
-    { &ent_render_load_sprite, &ent_render_unload_sprite, &ent_render_get_frames_num_sprite },
-    { &ent_render_load_model,  &ent_render_unload_model,  &ent_render_get_frames_num_model  }
+    { &ent_render_load_sprite, &ent_render_unload_sprite },
+    { &ent_render_load_model,  &ent_render_unload_model  }
 };
 
 static mem_pool_t mempool;
@@ -167,18 +164,6 @@ static void ent_render_unload_sprite (g_entity_t *ent)
 
 /*
 =================
-ent_render_get_frames_num_sprite
-=================
-*/
-static int ent_render_get_frames_num_sprite (const g_entity_t *ent)
-{
-    const r_sprite_t *sprite = ent->render_data;
-
-    return sprite->frames_num;
-}
-
-/*
-=================
 ent_render_load_model
 =================
 */
@@ -196,17 +181,6 @@ ent_render_unload_model
 static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
-}
-
-/*
-=================
-ent_render_get_frames_num_model
-=================
-*/
-static int ent_render_get_frames_num_model (GNUC_UNUSED const g_entity_t *ent)
-{
-    /* FIXME */
-    return 0;
 }
 
 /*
@@ -648,7 +622,7 @@ static void g_entity_mem_free (g_entity_t *ent)
     }
 
     if (NULL != ent->render_data)
-        ent_render_load_unload_funcs[ent->render_type].unload(ent->render_data);
+        ent_render_load_unload_funcs[ent->render_type].unload(ent);
 
     mem_free(ent);
 }
@@ -730,8 +704,9 @@ static int ent_lua_set_sprite (lua_State *lst)
 
     name = luaL_checkstring(lst, 2);
     g_pop_vector(3, parms, 3);
+    ent_render_load_unload_funcs[0].load(name, parms, ent);
 
-    return ent_render_load_unload_funcs[0].load(name, parms, ent);
+    return 0;
 }
 
 /*
