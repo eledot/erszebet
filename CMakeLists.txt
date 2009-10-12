@@ -26,7 +26,7 @@ set(${P}_PATCH_LEVEL   0)
 
 option(DEBUG "debug build" ON)
 
-set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -DGAME_NAME=\\\"${P}\\\"")
+set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -O2 -DGAME_NAME=\\\"${P}\\\"")
 
 if(DEBUG)
   set(CMAKE_C_FLAGS "-g -ggdb ${CMAKE_C_FLAGS}")
