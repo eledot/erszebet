@@ -200,12 +200,24 @@ void mem_free_pool_real (mem_pool_t *pool
 mem_strcpy_static
 =================
 */
-char *mem_strdup_static_real (const char *src, mem_pool_t mempool)
+char *mem_strdup_static_real (const char *src,
+                              mem_pool_t  mempool
+#ifdef ENGINE_MEM_DEBUG
+                              ,
+                              const char *file,
+                              const char *func,
+                              int         line
+#endif /* ENGINE_MEM_DEBUG */
+    )
 {
     char *res;
     int   len = strlen(src) + 1;
 
-    res = mem_alloc_static(len);
+#ifdef ENGINE_MEM_DEBUG
+    res = mem_alloc_real(mempool, len, file, func, line);
+#else
+    res = mem_alloc_real(mempool, len);
+#endif
     memcpy(res, src, len);
 
     return res;
@@ -303,7 +315,14 @@ void *mem_alloc_real (mem_pool_t  pool,
 mem_free
 =================
 */
-void mem_free (void *m)
+void mem_free_real (void       *m
+#ifdef ENGINE_MEM_DEBUG
+                    ,
+                    const char *file,
+                    const char *func,
+                    int         line
+#endif /* ENGINE_MEM_DEBUG */
+    )
 {
     alloc_t *i;
     alloc_t *a = m - sizeof(alloc_t);
@@ -313,6 +332,7 @@ void mem_free (void *m)
         sys_printf("broken sen1 in alloc (%p)\n", a);
 #ifdef ENGINE_MEM_DEBUG
         sys_printf("alloc was done at %s - %s:%i, t=%.5lf\n", a->func, a->file, a->line, a->time);
+        sys_printf("tried to free memory at %s - %s:%i\n", func, file, line);
 #endif /* ENGINE_MEM_DEBUG */
         return;
     }
@@ -322,6 +342,7 @@ void mem_free (void *m)
         sys_printf("broken sen2 in alloc (%p)\n", a);
 #ifdef ENGINE_MEM_DEBUG
         sys_printf("alloc was done at %s - %s:%i, t=%.5lf\n", a->func, a->file, a->line, a->time);
+        sys_printf("tried to free memory at %s - %s:%i\n", func, file, line);
 #endif /* ENGINE_MEM_DEBUG */
         return;
     }
@@ -351,6 +372,7 @@ void mem_free (void *m)
 
 #ifdef ENGINE_MEM_DEBUG
     sys_printf("alloc was done at %s - %s:%i, t=%.5lf\n", a->func, a->file, a->line, a->time);
+    sys_printf("tried to free memory at %s - %s:%i\n", func, file, line);
 #endif /* ENGINE_MEM_DEBUG */
 }
 
