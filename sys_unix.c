@@ -191,7 +191,9 @@ int SDL_main (int argc, char **argv)
 
     signal(SIGFPE, SIG_IGN);
     sys_arg_set(argc, argv);
-    grab_signals();
+
+    if (!sys_arg_find("-nocatch"))
+        grab_signals();
 
     sys_printf("starting engine...\n");
 
