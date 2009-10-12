@@ -29,6 +29,8 @@
 
 #define G_SPRITES_MASK 0x10000
 
+#define ENT_VALID(ent) (ent->ref != LUA_REFNIL && ent->dataref != LUA_REFNIL)
+
 typedef enum
 {
     PHYS_BODY_EMPTY = -1,
@@ -165,6 +167,7 @@ ent_render_unload_sprite
 static void ent_render_unload_sprite (g_entity_t *ent)
 {
     r_sprite_unload(ent->render_data);
+    ent->render_data = NULL;
 }
 
 /*
@@ -276,6 +279,10 @@ static void ent_set_origin_callback (g_entity_t *ent)
         {
             ent->prev = NULL;
             ent->next = entities;
+
+            if (NULL != entities)
+                entities->prev = ent;
+
             entities = ent;
         }
         else
@@ -522,6 +529,12 @@ static int ent_lua_newindex (lua_State *lst)
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
 
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
+        return 0;
+    }
+
     for (i = 0; i < STSIZE(ent_newindex_internal_flags) ;i++)
     {
         if (!strcmp(key, ent_newindex_internal_flags[i].field))
@@ -563,8 +576,6 @@ static g_entity_t *g_entity_create (void)
         sys_printf("failed to allocate memory for entity\n");
         return NULL;
     }
-
-    memset(ent, 0, sizeof(*ent));
 
     ent->ref     = LUA_REFNIL;
     ent->dataref = LUA_REFNIL;
@@ -608,6 +619,12 @@ g_entity_delete
 */
 static void g_entity_delete (g_entity_t *ent)
 {
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
+        return;
+    }
+
     if (NULL != ent->prev)
         ent->prev->next = ent->next;
 
@@ -617,6 +634,7 @@ static void g_entity_delete (g_entity_t *ent)
     if (entities == ent)
         entities = ent->next;
 
+    ent->prev = NULL;
     ent->next = remove_entities;
     remove_entities = ent;
 
@@ -626,6 +644,9 @@ static void g_entity_delete (g_entity_t *ent)
 
     lua_unref(lst, ent->ref);
     lua_unref(lst, ent->dataref);
+
+    ent->ref = LUA_REFNIL;
+    ent->dataref = LUA_REFNIL;
 }
 
 /*
@@ -694,6 +715,12 @@ static int ent_lua_remove (lua_State *lst)
         return 0;
     }
 
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
+        return 0;
+    }
+
     g_entity_delete(ent);
 
     return 0;
@@ -716,6 +743,12 @@ static int ent_lua_set_sprite (lua_State *lst)
     if (NULL == ent)
     {
         sys_printf("called \"set_sprite\" without entity\n");
+        return 0;
+    }
+
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -751,6 +784,12 @@ static int ent_lua_set_model (lua_State *lst)
         return 0;
     }
 
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
+        return 0;
+    }
+
     if (NULL != ent->render_data)
     {
         ent_render_load_unload_funcs[ent->render_type].unload(ent);
@@ -781,12 +820,24 @@ static int ent_lua_attach_pin (lua_State *lst)
         return 0;
     }
 
+    if (!ENT_VALID(a))
+    {
+        sys_printf("invalid entity\n");
+        return 0;
+    }
+
     lua_getfield(lst, 2, "__ref");
     b = (g_entity_t *)lua_touserdata(lst, -1);
 
     if (NULL == b)
     {
         sys_printf("called \"phys_attach_pin\" without entity\n");
+        return 0;
+    }
+
+    if (!ENT_VALID(b))
+    {
+        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -811,6 +862,12 @@ static int ent_lua_detach (lua_State *lst)
     if (NULL == a)
     {
         sys_printf("called \"phys_detach\" without entity\n");
+        return 0;
+    }
+
+    if (!ENT_VALID(a))
+    {
+        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -885,6 +942,12 @@ static int ent_lua_apply_impulse (lua_State *lst)
         return 0;
     }
 
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
+        return 0;
+    }
+
     if (0 != g_pop_vector(2, point, 2))
     {
         sys_printf("called phys_apply_impulse without point\n");
@@ -920,6 +983,12 @@ static int ent_lua_set_body (lua_State *lst)
     if (NULL == ent)
     {
         sys_printf("called \"set_physics\" without entity\n");
+        return 0;
+    }
+
+    if (!ENT_VALID(ent))
+    {
+        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -1194,14 +1263,16 @@ void g_entity_shutdown (void)
 {
     g_entity_t *ent;
 
-    for (; NULL != entities ;)
+    while (NULL != entities)
+    {
         g_entity_delete(entities);
+    }
 
     while (NULL != remove_entities)
     {
         ent = remove_entities->next;
         g_physics_free_obj(remove_entities);
-        mem_free(remove_entities);
+        g_entity_mem_free(remove_entities);
         remove_entities = ent;
     }
 
