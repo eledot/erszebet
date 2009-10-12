@@ -86,8 +86,6 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         sh = ceil_pwrov2(sh);
     }
 
-    sh = sw;
-
     if (0 != image_resize(image, sw, sh))
         return -1;
 
