@@ -621,7 +621,7 @@ static void g_entity_delete (g_entity_t *ent)
     remove_entities = ent;
 
     /* remove all handlers, mark invalid */
-    ent->cflags -= ent->flags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
+    ent->cflags -= ent->cflags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
     ent->flags |= ENT_FL_NON_SOLID;
 
     lua_unref(lst, ent->ref);
