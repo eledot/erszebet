@@ -177,13 +177,14 @@ int r_sprite_load (const char *name,
     s->ref = 1;
     s->frames_num = num;
     s->align = align;
-    s->next = sprites;
 
     *sprite = s;
 
     if (NULL != sprites)
         sprites->prev = s;
 
+    s->prev = NULL;
+    s->next = sprites;
     sprites = s;
 
     mem_free(data);
@@ -214,20 +215,17 @@ void r_sprite_unload (r_sprite_t *sprite)
         return;
     }
 
-    /* internal sprites shouldn't be unloaded */
-    if (!sprite->frames[0]->mask)
-        return;
-
     /* check the reference counter */
     if (--sprite->ref > 0)
         return;
 
+    if (NULL != sprite->prev)
+        sprite->prev->next = sprite->next;
+
     if (NULL != sprite->next)
         sprite->next->prev = sprite->prev;
 
-    if (NULL != sprite->prev)
-        sprite->prev->next = sprite->next;
-    else
+    if (sprites == sprite)
         sprites = sprite->next;
 
     mem_free(sprite);
