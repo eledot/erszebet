@@ -277,6 +277,14 @@ void r_sprite_draw (const r_sprite_t *sprite,
     else if (sprite->align & SPRITE_ALIGN_BOTTOM)
         originy += height * scale / 2.0;
 
+    if (originx + width * scale < 0 ||
+        originx - width * scale > video_width ||
+        originy + height * scale < 0 ||
+        originy - height * scale > video_height)
+    {
+        return;
+    }
+
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
         tex = sprite->frames[frame];
@@ -296,6 +304,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
         vt[1] = vt[3] = 0.0f;
         vt[5] = vt[7] = 1.0f;
         vt[4] = vt[2] = vt[0] + sprite->inc;
+
         gl_draw_texture2(tex->gltex,
                          originx,
                          originy,
