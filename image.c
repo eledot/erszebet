@@ -215,10 +215,10 @@ int image_resize (image_t *image, int outwidth, int outheight)
 
             if (yi != oldy)
             {
-                inrow = (uint8_t *)indata + inwidth * 4 * yi;
+                inrow = (uint8_t *)indata + (inwidth << 2) * yi;
 
                 if (yi == oldy + 1)
-                    memcpy(row1, row2, outwidth * 4);
+                    memcpy(row1, row2, outwidth << 2);
                 else
                     resample_lerp_line(inrow, row1, inwidth, outwidth);
 
@@ -296,7 +296,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
                 oldy = yi;
             }
 
-            memcpy(out, row1, outwidth << 4);
+            memcpy(out, row1, outwidth << 2);
         }
     }
 
