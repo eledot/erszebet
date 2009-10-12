@@ -39,6 +39,8 @@ static void g_add_shape (g_entity_t *ent, cpShape *shape)
 {
     ent->shapes[ent->shapes_num++] = shape;
     shape->data = ent;
+    shape->group = ent->phys_group;
+    shape->layers = ent->phys_layers;
 
     if (ent->flags & ENT_FL_STATIC)
         cpSpaceAddStaticShape(phys_space, shape);
@@ -404,6 +406,8 @@ void g_physics_update_body (g_entity_t *ent)
         shape = ent->shapes[i];
         shape->e = ent->elasticity;
         shape->u = ent->friction;
+        shape->group = ent->phys_group;
+        shape->layers = ent->phys_layers;
     }
 
     cpBodySetMass(body, ent->mass);

@@ -17,6 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
+#include <limits.h>
+
 #include "common.h"
 #include "3rd/lua/lua.h"
 #include "3rd/lua/lualib.h"
@@ -48,6 +50,7 @@ typedef enum
 
 static void ent_set_frame_callback (g_entity_t *ent);
 static void ent_set_origin_callback (g_entity_t *ent);
+static void ent_set_group_layers_callback (g_entity_t *ent);
 
 /* entity field offsets */
 static const struct
@@ -62,22 +65,24 @@ static const struct
     { #str, FOFF(str), type, callback }
 #define DOFF2(str, field, type, callback)       \
     { #str, FOFF(field), type, callback }
-    DOFF(classname,  ENT_F_STRING,  NULL),
-    DOFF(frame,      ENT_F_INTEGER, &ent_set_frame_callback),
-    DOFF(flags,      ENT_F_INTEGER, NULL),
-    DOFF(nextthink,  ENT_F_DOUBLE,  NULL),
-    DOFF(origin,     ENT_F_VECTOR,  &ent_set_origin_callback),
-    DOFF(velocity,   ENT_F_VECTOR,  NULL),
-    DOFF(angle,      ENT_F_DOUBLE,  NULL),
-    DOFF(rotation,   ENT_F_DOUBLE,  NULL),
-    DOFF(gravity,    ENT_F_DOUBLE,  NULL),
-    DOFF(elasticity, ENT_F_DOUBLE,  NULL),
-    DOFF(friction,   ENT_F_DOUBLE,  NULL),
-    DOFF(mass,       ENT_F_DOUBLE,  NULL),
-    DOFF(inertia,    ENT_F_DOUBLE,  NULL),
-    DOFF(scale,      ENT_F_DOUBLE,  NULL),
-    DOFF(width,      ENT_F_DOUBLE,  NULL),
-    DOFF(height,     ENT_F_DOUBLE,  NULL),
+    DOFF(classname,   ENT_F_STRING,  NULL),
+    DOFF(frame,       ENT_F_INTEGER, &ent_set_frame_callback),
+    DOFF(flags,       ENT_F_INTEGER, NULL),
+    DOFF(nextthink,   ENT_F_DOUBLE,  NULL),
+    DOFF(origin,      ENT_F_VECTOR,  &ent_set_origin_callback),
+    DOFF(velocity,    ENT_F_VECTOR,  NULL),
+    DOFF(angle,       ENT_F_DOUBLE,  NULL),
+    DOFF(rotation,    ENT_F_DOUBLE,  NULL),
+    DOFF(gravity,     ENT_F_DOUBLE,  NULL),
+    DOFF(elasticity,  ENT_F_DOUBLE,  NULL),
+    DOFF(friction,    ENT_F_DOUBLE,  NULL),
+    DOFF(mass,        ENT_F_DOUBLE,  NULL),
+    DOFF(inertia,     ENT_F_DOUBLE,  NULL),
+    DOFF(scale,       ENT_F_DOUBLE,  NULL),
+    DOFF(width,       ENT_F_DOUBLE,  NULL),
+    DOFF(height,      ENT_F_DOUBLE,  NULL),
+    DOFF(phys_group,  ENT_F_INTEGER, &ent_set_group_layers_callback),
+    DOFF(phys_layers, ENT_F_INTEGER, &ent_set_group_layers_callback),
     DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE, NULL),
     DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE, NULL),
     DOFF2(origin_z,   origin[2],   ENT_F_DOUBLE, &ent_set_origin_callback),
@@ -294,6 +299,16 @@ static void ent_set_origin_callback (g_entity_t *ent)
 
 /*
 =================
+ent_set_group_layers_callback
+=================
+*/
+static void ent_set_group_layers_callback (g_entity_t *ent)
+{
+    g_physics_update_body(ent);
+}
+
+/*
+=================
 ent_set_field
 =================
 */
@@ -411,6 +426,8 @@ static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
              "friction=%-2.2lf "
              "mass=%-2.2lf "
              "inertia=%-2.2lf "
+             "phys_group=%i "
+             "phys_layers=%i "
              "scale=%-2.2lf "
              "frame=%i "
              "frames_num=%i",
@@ -432,6 +449,8 @@ static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
              ent->friction,
              ent->mass,
              ent->inertia,
+             ent->phys_group,
+             ent->phys_layers,
              ent->scale,
              ent->frame,
              ent->frames_num);
@@ -566,6 +585,8 @@ static g_entity_t *g_entity_create (void)
     ent->friction    = 0.6;
     ent->mass        = 1.0;
     ent->inertia     = 100.0;
+    ent->phys_group  = 0;
+    ent->phys_layers = INT_MAX;
     ent->scale       = 1.0;
     ent->frame       = 0;
     ent->frames_num  = 0;

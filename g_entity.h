@@ -55,6 +55,9 @@ typedef struct g_entity_s
     double mass;
     double inertia;
 
+    int phys_group;
+    int phys_layers;
+
     /* model_t *model; */
 
     struct g_entity_s *prev;
