@@ -20,12 +20,24 @@ project(erszebet)
 
 set(P ${PROJECT_NAME})
 
-add_subdirectory(3rd)
-add_subdirectory(tools)
-
 set(${P}_MAJOR_VERSION 0)
 set(${P}_MINOR_VERSION 1)
 set(${P}_PATCH_LEVEL   0)
+
+option(DEBUG "debug build" ON)
+
+set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -DGAME_NAME=\\\"${P}\\\"")
+
+if(DEBUG)
+  set(CMAKE_C_FLAGS "-g -ggdb ${CMAKE_C_FLAGS}")
+  message(">>> DEBUG enabled")
+  add_definitions(-DDEBUG=1)
+else(DEBUG)
+  add_definitions(-DRELEASE=1)
+endif(DEBUG)
+
+add_subdirectory(3rd)
+add_subdirectory(tools)
 
 option(WITH_IMAGE_PNG   "PNG image format support" ON)
 option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
@@ -36,7 +48,6 @@ option(WITH_SND_WAV     "WAV audio format support" ON)
 option(WITH_SND_OGG     "OGG VORBIS audio format support" ON)
 option(WITH_SND_FLAC    "FLAC audio format support" ON)
 
-option(DEBUG                 "debug build" ON)
 option(DEBUG_SYS_PRINTF      "print debug messages" ON)
 option(DEBUG_SYS_PRINTF_LOC  "print location in debug messages" ON)
 option(DEBUG_SYS_PRINTF_TIME "print timestamp in debug messages" OFF)
@@ -45,12 +56,7 @@ option(DEBUG_SND "debug sound" ON)
 option(DEBUG_GL  "debug opengl" ON)
 option(DEBUG_MEM "debug memory manager" ON)
 
-set(CMAKE_C_FLAGS "-W -Wall -Wextra -std=c99 -DGAME_NAME=\\\"${P}\\\"")
-
 if(DEBUG)
-  set(CMAKE_C_FLAGS "-g -ggdb ${CMAKE_C_FLAGS}")
-  message(">>> DEBUG enabled")
-  add_definitions(-DDEBUG=1)
   if(DEBUG_SYS_PRINTF)
     add_definitions(-DENGINE_SYS_PRINTF)
     if(DEBUG_SYS_PRINTF_LOC)
@@ -69,8 +75,6 @@ if(DEBUG)
   if(DEBUG_MEM)
     add_definitions(-DENGINE_MEM_DEBUG)
   endif(DEBUG_MEM)
-else(DEBUG)
-  add_definitions(-DRELEASE=1)
 endif(DEBUG)
 
 file(GLOB SRC_FILES *.c)
