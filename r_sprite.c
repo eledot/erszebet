@@ -184,6 +184,8 @@ int r_sprite_load (const char *name,
     if (NULL != sprites)
         sprites->prev = s;
 
+    sprites = s;
+
     mem_free(data);
 
     return 0;
