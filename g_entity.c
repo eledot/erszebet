@@ -379,19 +379,19 @@ static const char *ent_flags_string (const g_entity_t *ent)
     if (ent->flags & ENT_FL_NON_SOLID)
         strlcat(flags, "non_solid ", s);
 
-    if (ent->cflags & ENT_CFL_THINK)
+    if (ent->internal_flags & ENT_INTFL_THINK)
         strlcat(flags, "think ", s);
 
-    if (ent->cflags & ENT_CFL_TOUCH)
+    if (ent->internal_flags & ENT_INTFL_TOUCH)
         strlcat(flags, "touch ", s);
 
-    if (ent->cflags & ENT_CFL_BLOCK)
+    if (ent->internal_flags & ENT_INTFL_BLOCK)
         strlcat(flags, "block ", s);
 
-    if (ent->cflags & ENT_CFL_PHYS_STATIC)
+    if (ent->internal_flags & ENT_INTFL_PHYS_STATIC)
         strlcat(flags, "phys_static ", s);
 
-    if (ent->cflags & ENT_CFL_DRAW)
+    if (ent->internal_flags & ENT_INTFL_DRAW)
         strlcat(flags, "draw ", s);
 
     if (unknown)
@@ -511,31 +511,31 @@ static int ent_lua_newindex (lua_State *lst)
     {
         const char *field;
         int         flag;
-    }ent_newindex_cflags[] =
+    }ent_newindex_internal_flags[] =
          {
-             { "think", ENT_CFL_THINK },
-             { "touch", ENT_CFL_TOUCH },
-             { "block", ENT_CFL_BLOCK },
-             { "draw",  ENT_CFL_DRAW  }
+             { "think", ENT_INTFL_THINK },
+             { "touch", ENT_INTFL_TOUCH },
+             { "block", ENT_INTFL_BLOCK },
+             { "draw",  ENT_INTFL_DRAW  }
          };
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
 
-    for (i = 0; i < STSIZE(ent_newindex_cflags) ;i++)
+    for (i = 0; i < STSIZE(ent_newindex_internal_flags) ;i++)
     {
-        if (!strcmp(key, ent_newindex_cflags[i].field))
+        if (!strcmp(key, ent_newindex_internal_flags[i].field))
         {
             if (!lua_toboolean(lst, 3))
-                ent->cflags -= (ent->cflags & ent_newindex_cflags[i].flag);
+                ent->internal_flags -= (ent->internal_flags & ent_newindex_internal_flags[i].flag);
             else
-                ent->cflags |= ent_newindex_cflags[i].flag;
+                ent->internal_flags |= ent_newindex_internal_flags[i].flag;
 
             break;
         }
     }
 
-    if (i >= STSIZE(ent_newindex_cflags) && ent_set_field(ent, key, 3))
+    if (i >= STSIZE(ent_newindex_internal_flags) && ent_set_field(ent, key, 3))
     {
         g_physics_update_body(ent);
     }
@@ -621,7 +621,7 @@ static void g_entity_delete (g_entity_t *ent)
     remove_entities = ent;
 
     /* remove all handlers, mark invalid */
-    ent->cflags -= ent->cflags & (ENT_CFL_THINK | ENT_CFL_TOUCH | ENT_CFL_BLOCK | ENT_CFL_DRAW);
+    ent->internal_flags -= ent->internal_flags & (ENT_INTFL_THINK | ENT_INTFL_TOUCH | ENT_INTFL_BLOCK | ENT_INTFL_DRAW);
     ent->flags |= ENT_FL_NON_SOLID;
 
     lua_unref(lst, ent->ref);
@@ -1051,7 +1051,7 @@ void g_entity_draw_entities (int draw2d)
                 }
             }
 
-            if (ent->cflags & ENT_CFL_DRAW && LUA_REFNIL != ent->ref)
+            if (ent->internal_flags & ENT_INTFL_DRAW && LUA_REFNIL != ent->ref)
             {
                 lua_getref(lst, ent->dataref);
                 lua_getfield(lst, -1, "draw");
@@ -1088,13 +1088,14 @@ void g_entity_frame (void)
 
     for (ent = entities; NULL != ent ;ent = ent->next)
     {
-        if (!(ent->cflags & ENT_CFL_PHYS_STATIC))
+        if (!(ent->internal_flags & ENT_INTFL_PHYS_STATIC))
         {
             g_physics_update_ent(ent);
         }
 
-        if (ent->cflags & ENT_CFL_THINK &&
-            ent->nextthink > ent->lastthink && ent->nextthink < g_time &&
+        if ((ent->internal_flags & ENT_INTFL_THINK) &&
+            ent->nextthink > ent->lastthink &&
+            ent->nextthink < g_time &&
             LUA_REFNIL != ent->ref)
         {
             ent->lastthink = ent->nextthink;

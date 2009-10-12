@@ -22,12 +22,12 @@
 
 typedef enum
 {
-    ENT_CFL_THINK       = (1 << 0),
-    ENT_CFL_TOUCH       = (1 << 1),
-    ENT_CFL_BLOCK       = (1 << 2),
-    ENT_CFL_PHYS_STATIC = (1 << 3),
-    ENT_CFL_DRAW        = (1 << 4)
-}g_entity_cflags_e;
+    ENT_INTFL_THINK       = (1 << 0),
+    ENT_INTFL_TOUCH       = (1 << 1),
+    ENT_INTFL_BLOCK       = (1 << 2),
+    ENT_INTFL_PHYS_STATIC = (1 << 3),
+    ENT_INTFL_DRAW        = (1 << 4)
+}g_entity_internal_flags_e;
 
 typedef enum
 {
@@ -39,7 +39,7 @@ typedef struct g_entity_s
 {
     char *classname;
 
-    int cflags;
+    int internal_flags;
     int flags;
 
     double nextthink;

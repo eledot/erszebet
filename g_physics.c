@@ -92,7 +92,7 @@ static void g_delete_shapes (g_entity_t *ent)
 {
     int i;
 
-    if (ent->cflags & ENT_CFL_PHYS_STATIC)
+    if (ent->internal_flags & ENT_INTFL_PHYS_STATIC)
     {
         for (i = 0; i < ent->shapes_num ;i++)
         {
@@ -146,7 +146,7 @@ void g_physics_free_obj (g_entity_t *ent)
     if (NULL != ent->body)
         g_delete_body(ent);
 
-    ent->cflags |= ENT_CFL_PHYS_STATIC;
+    ent->internal_flags |= ENT_INTFL_PHYS_STATIC;
     ent->flags |= ENT_FL_STATIC;
 }
 
@@ -167,13 +167,13 @@ static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
     if (ent->flags & ENT_FL_STATIC)
     {
         body = cpBodyNew(INFINITY, INFINITY);
-        ent->cflags |= ENT_CFL_PHYS_STATIC;
+        ent->internal_flags |= ENT_INTFL_PHYS_STATIC;
     }
     else
     {
         body = cpBodyNew(ent->mass, ent->inertia);
         cpSpaceAddBody(phys_space, body);
-        ent->cflags -= (ent->cflags & ENT_CFL_PHYS_STATIC);
+        ent->internal_flags -= (ent->internal_flags & ENT_INTFL_PHYS_STATIC);
     }
 
     ent->shapes = mem_alloc_static(sizeof(void *) * shapes_num);
@@ -567,19 +567,19 @@ static int g_default_coll_func (cpShape   *a,
 {
     int i;
     int afl = 0, bfl = 0;
-    int acfl = 0, bcfl = 0;
+    int aintfl = 0, bintfl = 0;
     g_entity_t *ae = a->data, *be = b->data;
 
     if (NULL != ae)
     {
         afl = ae->flags;
-        acfl = ae->cflags;
+        aintfl = ae->internal_flags;
     }
 
     if (NULL != be)
     {
         bfl = be->flags;
-        bcfl = be->cflags;
+        bintfl = be->internal_flags;
     }
 
     for (i = 0; i < num_contacts ;i++)
@@ -596,10 +596,10 @@ static int g_default_coll_func (cpShape   *a,
         normal[1] = normal_coef * contacts[i].n.y;
         normal[2] = 0.0;
 
-        if (acfl & ENT_CFL_TOUCH && !(bfl & ENT_FL_NON_SOLID))
+        if (aintfl & ENT_INTFL_TOUCH && !(bfl & ENT_FL_NON_SOLID))
             atouch_blocked = g_entity_touch(ae, be, origin, normal);
 
-        if (bcfl & ENT_CFL_TOUCH && !(afl & ENT_FL_NON_SOLID))
+        if (bintfl & ENT_INTFL_TOUCH && !(afl & ENT_FL_NON_SOLID))
             btouch_blocked = g_entity_touch(be, ae, origin, normal);
 
         if (!(!(atouch_blocked & btouch_blocked) || ((afl | bfl) & ENT_FL_NON_SOLID)))
