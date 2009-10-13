@@ -49,6 +49,9 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
     static int  last_number_jpeg = 0;
     static int  last_number_png = 0;
 
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
     if (!strcmp(cmd->name, "screenshot_jpeg"))
     {
         last_number = &last_number_jpeg;
