@@ -19,6 +19,12 @@
 
 #include "r_private.h"
 #include "gl_texture.h"
+#include "sglib.h"
+
+#define TEXTURE_NAME_COMPARATOR(f1, f2) strcmp(f1->name, f2->name)
+
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(r_texture_t, TEXTURE_NAME_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(r_texture_t, TEXTURE_NAME_COMPARATOR, next);
 
 static const int types[] =
 {
@@ -35,9 +41,10 @@ r_texture_load
 */
 int r_texture_load (const char *name, int type, r_texture_t **tex)
 {
-    int     gltex, nlen, w, h;
-    char    tmp[MISC_MAX_FILENAME];
+    int gltex, nlen, w, h;
+    char tmp[MISC_MAX_FILENAME], *namecopy;
     image_t image;
+    r_texture_t *t, clone;
 
     if (NULL == name || type < 0 || type >= STSIZE(types) || NULL == tex)
     {
@@ -51,48 +58,61 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
         return -2;
 
     /* check if it was loaded earlier */
-    for (*tex = textures; NULL != *tex ;*tex = (*tex)->next)
+    clone.name = name;
+    t = sglib_r_texture_t_find_member(textures, &clone);
+
+    if (NULL != t)
     {
-        if (!strcmp((*tex)->name, name))
-        {
-            (*tex)->ref++;
-            return 0;
-        }
+        t->ref++;
+        *tex = t;
+        return 0;
     }
 
     snprintf(tmp, sizeof(tmp), "tex/%s", name);
 
     if (0 != image_load(tmp, &image))
-        return -3;
+        goto error;
 
     w = image.width;
     h = image.height;
 
     if (0 != gl_texture_create(&image, types[type], &gltex))
-        return -4;
+        goto error;
 
     mem_free(image.data);
+    image.data = NULL;
 
     nlen = strlen(name) + 1;
 
-    if (NULL == (*tex = mem_alloc_static(sizeof(r_texture_t) + nlen)))
+    if (NULL == (t = mem_alloc_static(sizeof(r_texture_t) + nlen)))
     {
         gl_texture_delete(gltex);
-        return -5;
+        goto error;
     }
 
-    (*tex)->type  = type;
-    (*tex)->gltex = gltex;
-    (*tex)->ref = 1;
-    (*tex)->w = w;
-    (*tex)->h = h;
-    (*tex)->next  = textures;
-    strlcpy((*tex)->name, name, nlen);
+    namecopy = (char *)t + sizeof(r_texture_t);
+    strlcpy(namecopy, name, nlen);
 
-    if (NULL != textures)
-        textures->prev = *tex;
+    t->name = namecopy;
+    t->type  = type;
+    t->gltex = gltex;
+    t->ref = 1;
+    t->w = w;
+    t->h = h;
+    t->next  = textures;
+
+    *tex = t;
+
+    sglib_r_texture_t_add(&textures, t);
 
     return 0;
+
+error:
+
+    if (NULL != image.data)
+        mem_free(image.data);
+
+    return -3;
 }
 
 /*
@@ -112,15 +132,8 @@ void r_texture_unload (r_texture_t *tex)
     if (--tex->ref > 0)
         return;
 
-    if (NULL != tex->next)
-        tex->next->prev = tex->prev;
-
-    if (NULL != tex->prev)
-        tex->prev->next = tex->next;
-    else
-        textures = tex->next;
-
     gl_texture_delete(tex->gltex);
+    sglib_r_texture_t_delete(&textures, tex);
 
     mem_free(tex);
 }
