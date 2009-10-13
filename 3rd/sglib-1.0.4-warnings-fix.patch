@@ -1,0 +1,10 @@
+--- sglib-1.0.4/sglib.h	2006-08-02 11:11:02.000000000 +0300
++++ sglib.h	2009-10-13 14:50:24.000000000 +0300
+@@ -383,7 +383,6 @@
+ 
+ #define SGLIB_LIST_MAP_ON_ELEMENTS(type, list, iteratedVariable, next, command) {\
+   type *_ne_;\
+-  type *iteratedVariable;\
+   (iteratedVariable) = (list); \
+   while ((iteratedVariable)!=NULL) {\
+     _ne_ = (iteratedVariable)->next;\

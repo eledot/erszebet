@@ -1253,8 +1253,8 @@
    return(*member!=NULL);\
  }\
  int sglib_##type##_len(type *list) {\
-   int res = 0;\
-   SGLIB_SORTED_LIST_LEN(type, list, next, res);      \
+   int res;\
+   SGLIB_SORTED_LIST_LEN(type, list, next, res);\
    return(res);\
  }\
  void sglib_##type##_sort(type **list) { \
