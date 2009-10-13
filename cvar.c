@@ -260,7 +260,7 @@ void cvar_shutdown (void)
     if (!cvar_i)
         return;
 
-    if (NULL != (f = fs_open("config.cfg", FS_WRONLY, NULL, 1)))
+    if (NULL != (f = fs_open("config.cfg", FS_APPEND, NULL, 1)))
     {
         for (i = 0; i < HASH_SIZE ;i++)
         {

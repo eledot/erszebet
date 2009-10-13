@@ -248,8 +248,32 @@ keyboard_shutdown
 */
 void keyboard_shutdown (void)
 {
+    int i;
+    fs_file_t f;
+
     if (!keyboard_i)
         return;
+
+    if (NULL != (f = fs_open("config.cfg", FS_WRONLY, NULL, 1)))
+    {
+        for (i = 0; i < STSIZE(key_binds) ;i++)
+        {
+            if (NULL != key_binds[i].cmd)
+                fs_printf(f, "bind %c \"%s\"\n", '0' + i, key_binds[i].cmd);
+        }
+
+        for (i = 2; i < STSIZE(key_special_binds) ;i++)
+        {
+            if (NULL != key_special_binds[i].cmd)
+                fs_printf(f, "bind %s \"%s\"\n", key_special_binds, key_special_binds[i].cmd);
+        }
+
+        fs_close(f);
+    }
+    else
+    {
+        sys_printf("failed to save configuration\n");
+    }
 
     mem_free_static_pool();
 
