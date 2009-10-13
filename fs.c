@@ -27,6 +27,14 @@
 
 #define MAX_FILES 64
 
+static const char file_modes[] =
+{
+    [FS_RDONLY] = 'r',
+    [FS_WRONLY] = 'w',
+    [FS_APPEND] = 'a',
+    [FS_RDWR]   = '+'
+};
+
 typedef struct file_s
 {
     char name[MISC_MAX_FILENAME];
@@ -359,6 +367,37 @@ static void fs_add_paths (const char *base, const char *home)
 
 /*
 =================
+fs_list_files_f
+=================
+*/
+static void fs_list_files_f (GNUC_UNUSED const struct cmd_s *cmd,
+                             int source,
+                             GNUC_UNUSED int argc,
+                             GNUC_UNUSED const char **argv)
+{
+    struct sglib_file_t_iterator it;
+    const file_t *file;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- files list -----------\n");
+
+    for (file = sglib_file_t_it_init(&it, files);
+         NULL != file;
+         file = sglib_file_t_it_next(&it))
+    {
+        sys_printf("file: %p name=%s mode=%c f=%i size=%i\n",
+                   file,
+                   file->name,
+                   file_modes[file->mode],
+                   file->f,
+                   file->size);
+    }
+}
+
+/*
+=================
 fs_init
 =================
 */
@@ -403,8 +442,9 @@ int fs_init (void)
     }
 
     fs_add_paths(fs_base->s, fs_home->s);
-
     mem_alloc_static_pool("fs", MAX_FILES * sizeof(file_t));
+
+    cmd_register("fs_list_files", NULL, &fs_list_files_f, 0);
 
     fs_i = 1;
 
