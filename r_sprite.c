@@ -87,6 +87,8 @@ int r_sprite_load (const char  *name,
         return -1;
     }
 
+    *sprite = NULL;
+
     /* check if it was loaded earlier */
     clone.name = name;
     s = sglib_r_sprite_t_find_member(sprites, &clone);
