@@ -23,6 +23,7 @@
 
 #include "common.h"
 #include "fs_private.h"
+#include "sglib.h"
 
 #define MAX_FILES 64
 
@@ -34,8 +35,12 @@ typedef struct file_s
     int  size;
 
     struct file_s *next;
-    struct file_s *prev;
 }file_t;
+
+#define FILE_NAME_COMPARATOR(f1, f2) strcmp(f1->name, f2->name)
+
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(file_t, FILE_NAME_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(file_t, FILE_NAME_COMPARATOR, next);
 
 static int fs_i = 0;
 
@@ -135,12 +140,8 @@ fs_file_t fs_open (const char *name_, int mode, int *size, int shout)
         file->mode = mode;
         file->size = st.st_size;
         file->f    = f;
-        file->next = files;
 
-        if (NULL != files)
-            files->prev = file;
-
-        files = file;
+        sglib_file_t_add(&files, file);
 
         break;
     }
@@ -175,14 +176,7 @@ void fs_close (fs_file_t f)
         sys_printf("error while closing \"%s\"\n", file->name);
     }
 
-    if (NULL != file->next)
-        file->next->prev = file->prev;
-
-    if (NULL != file->prev)
-        file->prev->next = file->next;
-
-    if (files == file)
-        files = file->next;
+    sglib_file_t_delete(&files, file);
 
     mem_free(file);
 }
@@ -426,20 +420,13 @@ fs_shutdown
 */
 void fs_shutdown (void)
 {
-    file_t *f;
-
     if (!fs_i)
         return;
 
     fs_helpers_apple_shutdown();
 
-    for (f = files; NULL != f ;f = f->next)
-    {
-        if (-1 == close(f->f))
-        {
-            sys_printf("error while closing \"%s\"\n", f->name);
-        }
-    }
+    while (NULL != files)
+        fs_close(files);
 
     mem_free_static_pool();
 
