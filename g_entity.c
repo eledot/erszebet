@@ -28,8 +28,6 @@
 #include "r_sprite.h"
 #include "sglib.h"
 
-#define ENT_VALID(ent) (ent->ref != LUA_REFNIL && ent->dataref != LUA_REFNIL)
-
 typedef enum
 {
     PHYS_BODY_EMPTY = -1,
@@ -500,9 +498,9 @@ static int ent_lua_newindex (lua_State *lst)
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
 
-    if (!ENT_VALID(ent))
+    if (NULL == ent)
     {
-        sys_printf("invalid entity\n");
+        sys_printf("tried to set field on non-entity object\n");
         return 0;
     }
 
@@ -590,15 +588,15 @@ g_entity_delete
 */
 static void g_entity_delete (g_entity_t *ent)
 {
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
-        return;
-    }
-
     sglib_g_entity_t_delete(&entities, ent);
     ent->next = remove_entities;
     remove_entities = ent;
+
+    /* mark entity as removed (set pointer to NULL) */
+    lua_getref(lst, ent->ref);
+    lua_pushlightuserdata(lst, NULL);
+    lua_setfield(lst, -2, "__ref");
+    lua_pop(lst, 1);
 
     lua_unref(lst, ent->ref);
     lua_unref(lst, ent->dataref);
@@ -671,15 +669,10 @@ static int ent_lua_remove (lua_State *lst)
     lua_getfield(lst, -1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
 
+    /* don't remove entities twice */
     if (NULL == ent)
     {
-        sys_printf("called \"ent_remove\" without entity\n");
-        return 0;
-    }
-
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
+        /* FIXME -- warn about double removal? */
         return 0;
     }
 
@@ -705,12 +698,6 @@ static int ent_lua_set_sprite (lua_State *lst)
     if (NULL == ent)
     {
         sys_printf("called \"set_sprite\" without entity\n");
-        return 0;
-    }
-
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -746,12 +733,6 @@ static int ent_lua_set_model (lua_State *lst)
         return 0;
     }
 
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
-        return 0;
-    }
-
     if (NULL != ent->render_data)
     {
         ent_render_load_unload_funcs[ent->render_type].unload(ent);
@@ -782,24 +763,12 @@ static int ent_lua_attach_pin (lua_State *lst)
         return 0;
     }
 
-    if (!ENT_VALID(a))
-    {
-        sys_printf("invalid entity\n");
-        return 0;
-    }
-
     lua_getfield(lst, 2, "__ref");
     b = (g_entity_t *)lua_touserdata(lst, -1);
 
     if (NULL == b)
     {
         sys_printf("called \"phys_attach_pin\" without entity\n");
-        return 0;
-    }
-
-    if (!ENT_VALID(b))
-    {
-        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -824,12 +793,6 @@ static int ent_lua_detach (lua_State *lst)
     if (NULL == a)
     {
         sys_printf("called \"phys_detach\" without entity\n");
-        return 0;
-    }
-
-    if (!ENT_VALID(a))
-    {
-        sys_printf("invalid entity\n");
         return 0;
     }
 
@@ -904,12 +867,6 @@ static int ent_lua_apply_impulse (lua_State *lst)
         return 0;
     }
 
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
-        return 0;
-    }
-
     if (0 != g_pop_vector(2, point, 2))
     {
         sys_printf("called phys_apply_impulse without point\n");
@@ -945,12 +902,6 @@ static int ent_lua_set_body (lua_State *lst)
     if (NULL == ent)
     {
         sys_printf("called \"set_physics\" without entity\n");
-        return 0;
-    }
-
-    if (!ENT_VALID(ent))
-    {
-        sys_printf("invalid entity\n");
         return 0;
     }
 
