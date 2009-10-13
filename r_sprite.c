@@ -18,8 +18,14 @@
 */
 
 #include "r_private.h"
+#include "sglib.h"
 
 #define MAX_FRAMES 64
+
+#define SPRITE_NAME_COMPARATOR(f1, f2) strcmp(f1->name, f2->name)
+
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(r_sprite_t, SPRITE_NAME_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(r_sprite_t, SPRITE_NAME_COMPARATOR, next);
 
 static r_sprite_t *sprites;
 
@@ -68,9 +74,9 @@ int r_sprite_load (const char *name,
 {
     char tmp[MISC_MAX_FILENAME];
     int i, nlen, num, size, align = 0;
-    r_sprite_t *s = NULL;
+    r_sprite_t *s = NULL, clone;
     void *data = NULL;
-    char *d;
+    char *d, *namecopy;
     const char *frames_names[MAX_FRAMES];
 
     if (NULL == name || NULL == frames_names || NULL == sprite)
@@ -84,14 +90,14 @@ int r_sprite_load (const char *name,
     }
 
     /* check if it was loaded earlier */
-    for (s = sprites; NULL != s ;s = s->next)
+    clone.name = name;
+    s = sglib_r_sprite_t_find_member(sprites, &clone);
+
+    if (NULL != s)
     {
-        if (!strcmp(s->name, name))
-        {
-            s->ref++;
-            *sprite = s;
-            return 0;
-        }
+        s->ref++;
+        *sprite = s;
+        return 0;
     }
 
     snprintf(tmp, sizeof(tmp), "spr/%s.txt", name);
@@ -147,7 +153,7 @@ int r_sprite_load (const char *name,
         }
 
         s->type = R_SPRITE_TYPE_LINE;
-        s->name = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
+        namecopy = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
         s->inc = 1.0f / (float)num;
     }
     else
@@ -169,23 +175,19 @@ int r_sprite_load (const char *name,
         }
 
         s->type = R_SPRITE_TYPE_TEXTURES;
-        s->name = (char *)s + sizeof(r_sprite_t) + num * sizeof(r_texture_t *);
+        namecopy = (char *)s + sizeof(r_sprite_t) + num * sizeof(r_texture_t *);
         s->inc = 1.0f;
     }
 
-    strlcpy(s->name, name, nlen);
+    strlcpy(namecopy, name, nlen);
+    s->name = namecopy;
     s->ref = 1;
     s->frames_num = num;
     s->align = align;
 
     *sprite = s;
 
-    if (NULL != sprites)
-        sprites->prev = s;
-
-    s->prev = NULL;
-    s->next = sprites;
-    sprites = s;
+    sglib_r_sprite_t_add(&sprites, s);
 
     mem_free(data);
 
@@ -219,14 +221,7 @@ void r_sprite_unload (r_sprite_t *sprite)
     if (--sprite->ref > 0)
         return;
 
-    if (NULL != sprite->prev)
-        sprite->prev->next = sprite->next;
-
-    if (NULL != sprite->next)
-        sprite->next->prev = sprite->prev;
-
-    if (sprites == sprite)
-        sprites = sprite->next;
+    sglib_r_sprite_t_delete(&sprites, sprite);
 
     mem_free(sprite);
 }

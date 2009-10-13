@@ -38,7 +38,8 @@ typedef enum
 
 typedef struct r_sprite_s
 {
-    char *name;
+    const char *name;
+
     int   ref;
     int   frames_num;
     int   align;
@@ -46,7 +47,6 @@ typedef struct r_sprite_s
     float inc;
 
     struct r_sprite_s *next;
-    struct r_sprite_s *prev;
 
     r_texture_t *frames[0];
 }r_sprite_t;
