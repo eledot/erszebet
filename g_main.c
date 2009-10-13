@@ -652,7 +652,7 @@ int g_init (void)
     g_init_cmd();
     g_init_cvar();
     g_init_video();
-    g_set_double("time", g_time);
+    g_set_double("time", 0.0);
     g_set_double("RANDSEED", sys_get_time() * 10000);
     g_physics_init(mempool);
     g_entity_init(lst, mempool);
