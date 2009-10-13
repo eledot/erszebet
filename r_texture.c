@@ -140,12 +140,45 @@ void r_texture_unload (r_texture_t *tex)
 
 /*
 =================
+r_list_textures_f
+=================
+*/
+static void r_list_textures_f (GNUC_UNUSED const struct cmd_s *cmd,
+                               int source,
+                               GNUC_UNUSED int argc,
+                               GNUC_UNUSED const char **argv)
+{
+    struct sglib_r_texture_t_iterator it;
+    const r_texture_t *tex;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- textures list -----------\n");
+
+    for (tex = sglib_r_texture_t_it_init(&it, textures);
+         NULL != tex;
+         tex = sglib_r_texture_t_it_next(&it))
+    {
+        sys_printf("texture: %p name=%s ref=%i w=%i h=%i\n",
+                   tex,
+                   tex->name,
+                   tex->ref,
+                   tex->w,
+                   tex->h);
+    }
+}
+
+/*
+=================
 r_texture_init
 =================
 */
 int r_texture_init (void)
 {
     textures = NULL;
+
+    cmd_register("r_list_textures", NULL, &r_list_textures_f, 0);
 
     return 0;
 }
