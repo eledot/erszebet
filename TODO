@@ -1,3 +1,4 @@
+- call math.randomseed(...) from g_main.c explicitly
 - resource database
 + traceback on lua error
 + port engine to iphone
