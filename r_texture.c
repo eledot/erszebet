@@ -99,7 +99,6 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
     t->ref = 1;
     t->w = w;
     t->h = h;
-    t->next  = textures;
 
     *tex = t;
 
