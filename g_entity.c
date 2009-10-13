@@ -26,6 +26,10 @@
 #include "g_entity.h"
 #include "g_physics.h"
 #include "r_sprite.h"
+#include "sglib.h"
+
+#undef assert
+#define assert(unused) (void)0
 
 #define G_SPRITES_MASK 0x10000
 
@@ -54,19 +58,22 @@ static void ent_set_frame_callback (g_entity_t *ent);
 static void ent_set_origin_callback (g_entity_t *ent);
 static void ent_set_group_layers_callback (g_entity_t *ent);
 
-/* entity field offsets */
-static const struct
+typedef struct ent_field_s
 {
-    const char *field;
+    const char *name;
     int         offset;
     int         type;
     void      (*callback) (g_entity_t *ent);
-}ent_entity_fields[] =
-{
+    struct ent_field_s *next;
+}ent_field_t;
+
 #define DOFF(str, type, callback)               \
-    { #str, FOFF(str), type, callback }
+    { #str, FOFF(str),   type, callback, NULL }
 #define DOFF2(str, field, type, callback)       \
-    { #str, FOFF(field), type, callback }
+    { #str, FOFF(field), type, callback, NULL }
+
+static ent_field_t ent_fields_known[] =
+{
     DOFF(classname,   ENT_F_STRING,  NULL),
     DOFF(frame,       ENT_F_INTEGER, &ent_set_frame_callback),
     DOFF(flags,       ENT_F_INTEGER, NULL),
@@ -91,17 +98,32 @@ static const struct
     DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE, NULL),
     DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE, NULL),
     DOFF2(velocity_z, velocity[2], ENT_F_DOUBLE, NULL)
-#undef DOFF
-#undef DOFF2
 };
 
+#undef DOFF
+#undef DOFF2
+
+static ent_field_t *ent_fields;
+
+#define ENT_FIELD_COMPARATOR(f1, f2) strcmp(f1->name, f2->name)
+
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(ent_field_t, ENT_FIELD_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(ent_field_t, ENT_FIELD_COMPARATOR, next);
+
 /* entity field offsets for strings that must be freed */
-static const int ent_entity_fields_free[] =
+static const int ent_fields_free[] =
 {
     FOFF(classname)
 };
 
 #undef FOFF
+
+#define ENT_ZORDER_COMPARATOR(e1, e2) (e1->origin[2] == e2->origin[2] ? \
+                                       -1 : \
+                                       e1->origin[2] - e2->origin[2])
+
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
 static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
 static void ent_render_unload_sprite (g_entity_t *ent);
@@ -198,43 +220,42 @@ ent_get_field
 */
 static int ent_get_field (const g_entity_t *ent, const char *field)
 {
-    int i;
+    const void  *data;
+    ent_field_t *f, s;
 
-    for (i = 0; i < STSIZE(ent_entity_fields) ;i++)
+    s.name = field;
+    f = sglib_ent_field_t_find_member(ent_fields, &s);
+
+    if (NULL != f)
     {
-        const void *data;
+        data = (const void *)ent + f->offset;
 
-        if (!strcmp(ent_entity_fields[i].field, field))
+        switch (f->type)
         {
-            data = (const void *)ent + ent_entity_fields[i].offset;
+        case ENT_F_STRING:
+            if (NULL == *(char **)data)
+                lua_pushstring(lst, "");
+            else
+                lua_pushstring(lst, *(const char **)data);
+            break;
 
-            switch (ent_entity_fields[i].type)
-            {
-            case ENT_F_STRING:
-                if (NULL == *(char **)data)
-                    lua_pushstring(lst, "");
-                else
-                    lua_pushstring(lst, *(const char **)data);
-                break;
+        case ENT_F_INTEGER:
+            lua_pushinteger(lst, *(const int *)data);
+            break;
 
-            case ENT_F_INTEGER:
-                lua_pushinteger(lst, *(const int *)data);
-                break;
+        case ENT_F_DOUBLE:
+            lua_pushnumber(lst, *(const double *)data);
+            break;
 
-            case ENT_F_DOUBLE:
-                lua_pushnumber(lst, *(const double *)data);
-                break;
+        case ENT_F_VECTOR:
+            g_push_vector((const double *)data, 3);
+            break;
 
-            case ENT_F_VECTOR:
-                g_push_vector((const double *)data, 3);
-                break;
-
-            default:
-                return 0;
-            }
-
-            return 1;
+        default:
+            return 0;
         }
+
+        return 1;
     }
 
     return 0;
@@ -256,52 +277,9 @@ static void ent_set_frame_callback (g_entity_t *ent)
 ent_set_origin_callback
 =================
 */
-static void ent_set_origin_callback (g_entity_t *ent)
+static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
 {
-    g_entity_t *e, *prev;
-
-    if (NULL != ent->prev)
-        ent->prev->next = ent->next;
-
-    if (NULL != ent->next)
-        ent->next->prev = ent->prev;
-
-    if (entities == ent)
-        entities = ent->next;
-
-    for (prev = NULL, e = entities; NULL != e ;prev = e, e = e->next)
-        if (e->origin[2] > ent->origin[2])
-            break;
-
-    if (NULL == e)
-    {
-        if (NULL == prev)
-        {
-            ent->prev = NULL;
-            ent->next = entities;
-
-            if (NULL != entities)
-                entities->prev = ent;
-
-            entities = ent;
-        }
-        else
-        {
-            prev->next = ent;
-            ent->prev = prev;
-            ent->next = NULL;
-        }
-
-        return;
-    }
-
-    ent->prev = e->prev;
-    ent->next = e;
-
-    if (NULL != ent->prev)
-        ent->prev->next = ent;
-
-    e->prev = ent;
+    sglib_g_entity_t_sort(&entities);
 }
 
 /*
@@ -321,46 +299,45 @@ ent_set_field
 */
 static int ent_set_field (g_entity_t *ent, const char *field, int index)
 {
-    int i;
+    void        *data;
+    ent_field_t *f, s;
 
-    for (i = 0; i < STSIZE(ent_entity_fields) ;i++)
+    s.name = field;
+    f = sglib_ent_field_t_find_member(ent_fields, &s);
+
+    if (NULL != f)
     {
-        void *data;
+        data = (void *)ent + f->offset;
 
-        if (!strcmp(ent_entity_fields[i].field, field))
+        switch (f->type)
         {
-            data = (void *)ent + ent_entity_fields[i].offset;
+        case ENT_F_STRING:
+            if (NULL != *(char **)data)
+                mem_free(*(char **)data);
 
-            switch (ent_entity_fields[i].type)
-            {
-            case ENT_F_STRING:
-                if (NULL != *(char **)data)
-                    mem_free(*(char **)data);
+            *(char **)data = mem_strdup_static(luaL_checkstring(lst, index));
+            break;
 
-                *(char **)data = mem_strdup_static(luaL_checkstring(lst, index));
-                break;
+        case ENT_F_INTEGER:
+            *(int *)data = lua_tointeger(lst, index);
+            break;
 
-            case ENT_F_INTEGER:
-                *(int *)data = lua_tointeger(lst, index);
-                break;
+        case ENT_F_DOUBLE:
+            *(double *)data = lua_tonumber(lst, index);
+            break;
 
-            case ENT_F_DOUBLE:
-                *(double *)data = lua_tonumber(lst, index);
-                break;
+        case ENT_F_VECTOR:
+            g_pop_vector(index, (double *)data, 3);
+            break;
 
-            case ENT_F_VECTOR:
-                g_pop_vector(index, (double *)data, 3);
-                break;
-
-            default:
-                return 0;
-            }
-
-            if (NULL != ent_entity_fields[i].callback)
-                ent_entity_fields[i].callback(ent);
-
-            return 1;
+        default:
+            return 0;
         }
+
+        if (NULL != f->callback)
+            f->callback(ent);
+
+        return 1;
     }
 
     return 0;
@@ -607,7 +584,7 @@ static g_entity_t *g_entity_create (void)
     ent->render_data = NULL;
 
     /* put to entities, taking into account zorder */
-    ent_set_origin_callback(ent);
+    sglib_g_entity_t_add(&entities, ent);
 
     return ent;
 }
@@ -625,25 +602,16 @@ static void g_entity_delete (g_entity_t *ent)
         return;
     }
 
-    if (NULL != ent->prev)
-        ent->prev->next = ent->next;
-
-    if (NULL != ent->next)
-        ent->next->prev = ent->prev;
-
-    if (entities == ent)
-        entities = ent->next;
-
-    ent->prev = NULL;
+    sglib_g_entity_t_delete(&entities, ent);
     ent->next = remove_entities;
     remove_entities = ent;
+
+    lua_unref(lst, ent->ref);
+    lua_unref(lst, ent->dataref);
 
     /* remove all handlers, mark invalid */
     ent->internal_flags -= ent->internal_flags & (ENT_INTFL_THINK | ENT_INTFL_TOUCH | ENT_INTFL_BLOCK | ENT_INTFL_DRAW);
     ent->flags |= ENT_FL_NON_SOLID;
-
-    lua_unref(lst, ent->ref);
-    lua_unref(lst, ent->dataref);
 
     ent->ref = LUA_REFNIL;
     ent->dataref = LUA_REFNIL;
@@ -658,9 +626,9 @@ static void g_entity_mem_free (g_entity_t *ent)
 {
     int i;
 
-    for (i = 0; i < STSIZE(ent_entity_fields_free) ;i++)
+    for (i = 0; i < STSIZE(ent_fields_free) ;i++)
     {
-        char *data = *(char **)((void *)ent + ent_entity_fields[i].offset);
+        char *data = *(char **)((void *)ent + ent_fields_free[i]);
 
         if (NULL != data)
             mem_free(data);
@@ -1089,10 +1057,13 @@ g_entity_draw_entities
 void g_entity_draw_entities (int draw2d)
 {
     g_entity_t *ent;
+    struct sglib_g_entity_t_iterator it;
 
     if (draw2d)
     {
-        for (ent = entities; NULL != ent ;ent = ent->next)
+        for (ent = sglib_g_entity_t_it_init(&it, entities);
+             NULL != ent;
+             ent = sglib_g_entity_t_it_next(&it))
         {
             if (NULL != ent->render_data)
             {
@@ -1144,6 +1115,7 @@ g_entity_frame
 void g_entity_frame (void)
 {
     g_entity_t *ent;
+    struct sglib_g_entity_t_iterator it;
 
     while (NULL != remove_entities)
     {
@@ -1155,7 +1127,9 @@ void g_entity_frame (void)
 
     remove_entities = NULL;
 
-    for (ent = entities; NULL != ent ;ent = ent->next)
+    for (ent = sglib_g_entity_t_it_init(&it, entities);
+         NULL != ent;
+         ent = sglib_g_entity_t_it_next(&it))
     {
         if (!(ent->internal_flags & ENT_INTFL_PHYS_STATIC))
         {
@@ -1188,16 +1162,19 @@ static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
                                GNUC_UNUSED const char **argv)
 {
     char tmp[512];
-    const g_entity_t *e;
+    struct sglib_g_entity_t_iterator it;
+    const g_entity_t *ent;
 
     if (source == CMD_SRC_KEY_UP)
         return;
 
     sys_printf("----------- entities list -----------\n");
 
-    for (e = entities; NULL != e ;e = e->next)
+    for (ent = sglib_g_entity_t_it_init(&it, entities);
+         NULL != ent;
+         ent = sglib_g_entity_t_it_next(&it))
     {
-        ent_entity_string(e, tmp, sizeof(tmp));
+        ent_entity_string(ent, tmp, sizeof(tmp));
         sys_printf("%s\n", tmp);
     }
 }
@@ -1216,12 +1193,17 @@ void g_entity_init (void *_lst, mem_pool_t pool)
             { "__tostring", &ent_lua_tostring },
             { NULL, NULL }
         };
+    int i;
 
     entities = NULL;
     remove_entities = NULL;
+    ent_fields = NULL;
     lst = _lst;
 
     mempool = pool;
+
+    for (i = 0; i < STSIZE(ent_fields_known) ;i++)
+        sglib_ent_field_t_add(&ent_fields, &ent_fields_known[i]);
 
     luaL_newmetatable(lst, "entity");
     lua_pushvalue(lst, -1);

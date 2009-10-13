@@ -58,9 +58,6 @@ typedef struct g_entity_s
     int phys_group;
     int phys_layers;
 
-    /* model_t *model; */
-
-    struct g_entity_s *prev;
     struct g_entity_s *next;
 
     /* lua stuff */
