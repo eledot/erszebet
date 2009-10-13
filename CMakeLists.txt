@@ -39,6 +39,8 @@ endif(DEBUG)
 add_subdirectory(3rd)
 add_subdirectory(tools)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}/3rd/sglib")
+
 option(WITH_IMAGE_PNG   "PNG image format support" ON)
 option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
 option(WITH_IMAGE_CG    "PNG/JPEG image format support (CoreGraphics)" ON)
