@@ -41,7 +41,7 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
 
     if (NULL == name || type < 0 || type >= STSIZE(types) || NULL == tex)
     {
-        sys_printf("bad args (name=%p, tex=%p)\n");
+        sys_printf("bad args (name=%p, type=%i, tex=%p)\n", name, type, tex);
         return -1;
     }
 
