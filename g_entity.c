@@ -28,9 +28,6 @@
 #include "r_sprite.h"
 #include "sglib.h"
 
-#undef assert
-#define assert(unused) (void)0
-
 #define G_SPRITES_MASK 0x10000
 
 #define ENT_VALID(ent) (ent->ref != LUA_REFNIL && ent->dataref != LUA_REFNIL)

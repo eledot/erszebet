@@ -33,6 +33,9 @@ extern "C"
 #include <math.h>
 #include <errno.h>
 
+#undef assert
+#define assert(unused) (void)0
+
 #include "gnuc.h"
 #include "misc.h"
 #include "mem.h"
