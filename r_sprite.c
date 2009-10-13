@@ -209,21 +209,31 @@ error:
 r_sprite_unload
 =================
 */
-void r_sprite_unload (r_sprite_t *sprite)
+void r_sprite_unload (r_sprite_t *spr)
 {
-    if (NULL == sprite)
+    int i;
+
+    if (NULL == spr)
     {
         sys_printf("NULL sprite\n");
         return;
     }
 
     /* check the reference counter */
-    if (--sprite->ref > 0)
+    if (--spr->ref > 0)
         return;
 
-    sglib_r_sprite_t_delete(&sprites, sprite);
+    r_texture_unload(spr->frames[0]);
 
-    mem_free(sprite);
+    if (spr->type == R_SPRITE_TYPE_TEXTURES)
+    {
+        for (i = 1; i < spr->frames_num ;i++)
+            r_texture_unload(spr->frames[i]);
+    }
+
+    sglib_r_sprite_t_delete(&sprites, spr);
+
+    mem_free(spr);
 }
 
 /*
