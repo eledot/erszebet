@@ -28,8 +28,6 @@
 #include "r_sprite.h"
 #include "sglib.h"
 
-#define G_SPRITES_MASK 0x10000
-
 #define ENT_VALID(ent) (ent->ref != LUA_REFNIL && ent->dataref != LUA_REFNIL)
 
 typedef enum
@@ -155,7 +153,6 @@ static int ent_render_load_sprite (const char *name, const double *parms, g_enti
     int res;
 
     if (0 != (res = r_sprite_load(name,
-                                  G_SPRITES_MASK,
                                   ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
                                   &sprite)))
     {

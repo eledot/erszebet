@@ -20,8 +20,6 @@
 #include "r_private.h"
 #include "gl_texture.h"
 
-/* FIXME -- 'notexture' with mask=0 in r_texture_load on fail */
-
 static const int types[] =
 {
     0,
@@ -35,7 +33,7 @@ static r_texture_t *textures;
 r_texture_load
 =================
 */
-int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
+int r_texture_load (const char *name, int type, r_texture_t **tex)
 {
     int     gltex, nlen, w, h;
     char    tmp[MISC_MAX_FILENAME];
@@ -83,7 +81,6 @@ int r_texture_load (const char *name, int mask, int type, r_texture_t **tex)
         return -5;
     }
 
-    (*tex)->mask  = mask;
     (*tex)->type  = type;
     (*tex)->gltex = gltex;
     (*tex)->ref = 1;
@@ -111,10 +108,6 @@ void r_texture_unload (r_texture_t *tex)
         return;
     }
 
-    /* internal textures shouldn't be unloaded */
-    if (!tex->mask)
-        return;
-
     /* check the reference counter */
     if (--tex->ref > 0)
         return;
@@ -130,27 +123,6 @@ void r_texture_unload (r_texture_t *tex)
     gl_texture_delete(tex->gltex);
 
     mem_free(tex);
-}
-
-/*
-=================
-r_texture_mask_unload
-=================
-*/
-void r_texture_mask_unload (int mask)
-{
-    r_texture_t *t, *next = NULL;
-
-    if (!mask)
-        return;
-
-    for (t = textures; NULL != t ;t = next)
-    {
-        next = t->next;
-
-        if (t->mask & mask)
-            r_texture_unload(t);
-    }
 }
 
 /*

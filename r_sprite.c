@@ -67,9 +67,8 @@ static void r_sprite_get_align (const char *name, const char *word, int *align)
 r_sprite_load
 =================
 */
-int r_sprite_load (const char *name,
-                   int mask,
-                   int type,
+int r_sprite_load (const char  *name,
+                   int          type,
                    r_sprite_t **sprite)
 {
     char tmp[MISC_MAX_FILENAME];
@@ -81,9 +80,8 @@ int r_sprite_load (const char *name,
 
     if (NULL == name || NULL == frames_names || NULL == sprite)
     {
-        sys_printf("bad args (name=%p, mask=%i, type=%i, sprite=%p)\n",
+        sys_printf("bad args (name=%p, type=%i, sprite=%p)\n",
                    name,
-                   mask,
                    type,
                    sprite);
         return -1;
@@ -146,7 +144,7 @@ int r_sprite_load (const char *name,
         if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
             goto error;
 
-        if (0 != r_texture_load(frames_names[1], mask, type, s->frames))
+        if (0 != r_texture_load(frames_names[1], type, s->frames))
         {
             sys_printf("failed to load texture for sprite \"%s\"\n", name);
             goto error;
@@ -163,7 +161,7 @@ int r_sprite_load (const char *name,
 
         for (i = 0; i < num ;i++)
         {
-            if (0 != r_texture_load(frames_names[i], mask, type, &s->frames[i]))
+            if (0 != r_texture_load(frames_names[i], type, &s->frames[i]))
             {
                 sys_printf("failed to load frame %i (\"%s\")\n", i, frames_names[i]);
 

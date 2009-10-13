@@ -30,7 +30,6 @@ typedef enum
 
 typedef struct r_texture_s
 {
-    int mask;
     int type;
     int gltex;
     int ref;
@@ -43,9 +42,8 @@ typedef struct r_texture_s
     char name[0];
 }r_texture_t;
 
-int r_texture_load (const char *name, int mask, int type, r_texture_t **tex);
+int r_texture_load (const char *name, int type, r_texture_t **tex);
 void r_texture_unload (r_texture_t *tex);
-void r_texture_mask_unload (int mask);
 
 int r_texture_init (void);
 void r_texture_shutdown (void);

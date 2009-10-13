@@ -51,9 +51,8 @@ typedef struct r_sprite_s
     r_texture_t *frames[0];
 }r_sprite_t;
 
-int r_sprite_load (const char *name,
-                   int mask,
-                   int type,
+int r_sprite_load (const char  *name,
+                   int          type,
                    r_sprite_t **sprite);
 void r_sprite_unload (r_sprite_t *sprite);
 
