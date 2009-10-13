@@ -312,12 +312,44 @@ void r_sprite_draw (const r_sprite_t *sprite,
 
 /*
 =================
+r_list_sprites_f
+=================
+*/
+static void r_list_sprites_f (GNUC_UNUSED const struct cmd_s *cmd,
+                              int source,
+                              GNUC_UNUSED int argc,
+                              GNUC_UNUSED const char **argv)
+{
+    struct sglib_r_sprite_t_iterator it;
+    const r_sprite_t *spr;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- sprites list -----------\n");
+
+    for (spr = sglib_r_sprite_t_it_init(&it, sprites);
+         NULL != spr;
+         spr = sglib_r_sprite_t_it_next(&it))
+    {
+        sys_printf("sprite: %p name=%s ref=%i frames=%i\n",
+                   spr,
+                   spr->name,
+                   spr->ref,
+                   spr->frames_num);
+    }
+}
+
+/*
+=================
 r_sprite_init
 =================
 */
 int r_sprite_init (void)
 {
     sprites = NULL;
+
+    cmd_register("r_list_sprites", NULL, &r_list_sprites_f, 0);
 
     return 0;
 }
