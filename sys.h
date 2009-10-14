@@ -48,7 +48,8 @@ int sys_unlink (const char *filename);
 
 #ifdef ENGINE_SYS_PRINTF
 
-void sys_printf_real (const char *file, int line, const char *func, const char *format, ...);
+void sys_printf_real (const char *file, int line, const char *func, const char *format, ...)
+    GNUC_PRINTF(4, 5);
 #define sys_printf(a...) sys_printf_real(__FILE__, __LINE__, __FUNCTION__, a)
 #define TRACE sys_printf("------ trace ------\n")
 

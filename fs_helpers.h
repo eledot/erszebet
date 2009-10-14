@@ -59,6 +59,7 @@ int fs_eof (fs_file_t);
 
 int fs_file_exists (const char *name);
 
-int fs_printf (fs_file_t f, const char *format, ...);
+int fs_printf (fs_file_t f, const char *format, ...)
+    GNUC_PRINTF(2, 3);
 
 #endif /* !_FS_HELPERS_H */
