@@ -17,15 +17,55 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _R_PRIVATE_H
-#define _R_PRIVATE_H
+#include "r_private.h"
+#include "sglib.h"
 
-#include "common.h"
-#include "r_texture.h"
-#include "r_sprite.h"
-#include "r_font.h"
-#include "r_text.h"
+static r_font_t *fonts;
 
-extern mem_pool_t mempool;
+/*
+=================
+r_font_load
+=================
+*/
+int r_font_load (GNUC_UNUSED const char *name, GNUC_UNUSED int first, GNUC_UNUSED r_font_t **font)
+{
+    goto error;
 
-#endif /* !_R_PRIVATE_H */
+    return 0;
+
+error:
+
+    return -3;
+}
+
+/*
+=================
+r_font_unload
+=================
+*/
+void r_font_unload (GNUC_UNUSED r_font_t *font)
+{
+}
+
+/*
+=================
+r_font_init
+=================
+*/
+int r_font_init (void)
+{
+    fonts = NULL;
+
+    return 0;
+}
+
+/*
+=================
+r_font_shutdown
+=================
+*/
+void r_font_shutdown (void)
+{
+    while (NULL != fonts)
+        r_font_unload(fonts);
+}

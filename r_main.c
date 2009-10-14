@@ -187,6 +187,12 @@ int r_init (void)
     if (0 != r_sprite_init())
         return -1;
 
+    if (0 != r_font_init())
+        return -1;
+
+    if (0 != r_text_init())
+        return -1;
+
     r_i = 1;
 
     sys_printf("+r\n");
@@ -204,6 +210,8 @@ void r_shutdown (void)
     if (!r_i)
         return;
 
+    r_text_shutdown();
+    r_font_shutdown();
     r_sprite_shutdown();
     r_texture_shutdown();
 

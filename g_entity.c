@@ -39,6 +39,13 @@ typedef enum
 
 typedef enum
 {
+    RENDER_TYPE_SPRITE = 0,
+    RENDER_TYPE_TEXT,
+    RENDER_TYPE_MODEL
+}render_types_e;
+
+typedef enum
+{
     ENT_F_STRING = 0,
     ENT_F_INTEGER,
     ENT_F_DOUBLE,
@@ -120,6 +127,8 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
 static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
 static void ent_render_unload_sprite (g_entity_t *ent);
+static int ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
+static void ent_render_unload_text (g_entity_t *ent);
 static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
 static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
 
@@ -129,8 +138,9 @@ static const struct
     void (*unload) (g_entity_t *ent);
 }ent_render_load_unload_funcs[] =
 {
-    { &ent_render_load_sprite, &ent_render_unload_sprite },
-    { &ent_render_load_model,  &ent_render_unload_model  }
+    [RENDER_TYPE_SPRITE] = { &ent_render_load_sprite, &ent_render_unload_sprite },
+    [RENDER_TYPE_TEXT]   = { &ent_render_load_text,   &ent_render_unload_text   },
+    [RENDER_TYPE_MODEL]  = { &ent_render_load_model,  &ent_render_unload_model  }
 };
 
 static mem_pool_t mempool;
@@ -182,6 +192,25 @@ static void ent_render_unload_sprite (g_entity_t *ent)
 {
     r_sprite_unload(ent->render_data);
     ent->render_data = NULL;
+}
+
+/*
+=================
+ent_render_load_text
+=================
+*/
+static int ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
+{
+    return 1;
+}
+
+/*
+=================
+ent_render_unload_text
+=================
+*/
+static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
+{
 }
 
 /*
@@ -710,7 +739,41 @@ static int ent_lua_set_sprite (lua_State *lst)
 
     name = luaL_checkstring(lst, 2);
     g_pop_vector(3, parms, 3);
-    ent_render_load_unload_funcs[0].load(name, parms, ent);
+    ent_render_load_unload_funcs[RENDER_TYPE_SPRITE].load(name, parms, ent);
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_set_text
+=================
+*/
+static int ent_lua_set_text (lua_State *lst)
+{
+    g_entity_t *ent;
+    const char *text;
+    double parms[3] = { 0.0, 0.0, 0.0 };
+
+    lua_getfield(lst, -1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_text\" without entity\n");
+        return 0;
+    }
+
+    if (NULL != ent->render_data)
+    {
+        ent_render_load_unload_funcs[ent->render_type].unload(ent);
+        ent->render_data = NULL;
+        ent->render_type = -1;
+    }
+
+    text = luaL_checkstring(lst, 2);
+    g_pop_vector(3, parms, 3);
+    ent_render_load_unload_funcs[RENDER_TYPE_TEXT].load(text, parms, ent);
 
     return 0;
 }
@@ -1162,6 +1225,7 @@ void g_entity_init (void *_lst, mem_pool_t pool)
     lua_register(lst, "ent_spawn", &ent_lua_spawn);
     lua_register(lst, "ent_remove", &ent_lua_remove);
     lua_register(lst, "ent_set_sprite", &ent_lua_set_sprite);
+    lua_register(lst, "ent_set_text", &ent_lua_set_text);
     lua_register(lst, "ent_set_model", &ent_lua_set_model);
     lua_register(lst, "phys_set_body", &ent_lua_set_body);
     lua_register(lst, "phys_attach_pin", &ent_lua_attach_pin);

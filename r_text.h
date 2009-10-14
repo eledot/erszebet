@@ -17,15 +17,14 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _R_PRIVATE_H
-#define _R_PRIVATE_H
+#ifndef _R_TEXT_H
+#define _R_TEXT_H
 
-#include "common.h"
-#include "r_texture.h"
-#include "r_sprite.h"
-#include "r_font.h"
-#include "r_text.h"
+int r_text_set (const char *string, const char *font, void **text);
+void r_text_delete (void *text);
+void r_text_draw (const void *text);
 
-extern mem_pool_t mempool;
+int r_text_init (void);
+void r_text_shutdown (void);
 
-#endif /* !_R_PRIVATE_H */
+#endif /* !_R_TEXT_H */
