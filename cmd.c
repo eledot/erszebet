@@ -157,6 +157,28 @@ cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, i
 
 /*
 =================
+set_f
+=================
+*/
+static void set_f (GNUC_UNUSED const struct cmd_s *cmd,
+                   GNUC_UNUSED int source,
+                   int argc,
+                   const char **argv)
+{
+    if (argc < 3)
+        return;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    if (NULL == cvar_get(argv[1], argv[2], argv[0][3] == 'a' ? CVAR_FL_SAVE : 0))
+    {
+        sys_printf("failed to register cvar \"%s\"\n", argv[1]);
+    }
+}
+
+/*
+=================
 cmd_init
 =================
 */
@@ -165,6 +187,9 @@ int cmd_init (void)
     memset(cmds, 0, sizeof(cmds));
 
     mem_alloc_static_pool("cmd", MAX_CMDS * sizeof(cmd_t));
+
+    cmd_register("set", NULL, &set_f, 0);
+    cmd_register("seta", NULL, &set_f, 0);
 
     cmd_i = 1;
 
