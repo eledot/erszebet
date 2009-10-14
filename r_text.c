@@ -45,7 +45,7 @@ int r_text_set (const char *string, const char *font, void **text)
 r_text_delete
 =================
 */
-void r_text_delete (GNUC_UNUSED void *text)
+void r_text_delete (void *text)
 {
     if (NULL == text)
     {
