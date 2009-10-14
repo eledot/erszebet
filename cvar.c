@@ -268,7 +268,7 @@ void cvar_shutdown (void)
             {
                 if (cv->flags & CVAR_FL_SAVE)
                 {
-                    fs_printf(f, "%s \"%s\"\n", cv->name, cv->s);
+                    fs_printf(f, "seta %s \"%s\"\n", cv->name, cv->s);
                 }
             }
         }
