@@ -175,7 +175,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
 
     if (NULL == image || outwidth < 1 || outheight < 1)
     {
-        sys_printf("bad args (image=%p, outwidth=%p, outheight=%p)\n", image, outwidth, outheight);
+        sys_printf("bad args (image=%p, outwidth=%i, outheight=%i)\n", image, outwidth, outheight);
         return -1;
     }
 

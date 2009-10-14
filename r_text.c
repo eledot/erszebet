@@ -30,7 +30,7 @@ int r_text_set (const char *string, const char *font, void **text)
 {
     if (NULL == string || NULL == font || NULL == text)
     {
-        sys_printf("bad args (string=%p, font=%i, text=%p)\n",
+        sys_printf("bad args (string=%p, font=%p, text=%p)\n",
                    string,
                    font,
                    text);

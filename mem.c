@@ -264,7 +264,7 @@ void *mem_alloc_real (mem_pool_t  pool,
 
     if (p->size_max && p->size_max < p->size + size)
     {
-        sys_printf("pool \"%s\" overflow (%i bytes alloc failed)\n", p->name);
+        sys_printf("pool \"%s\" overflow (%i bytes alloc failed)\n", p->name, size);
 #ifdef ENGINE_MEM_DEBUG
         sys_printf("alloc was at %s - %s:%i\n", func, file, line);
 #endif /* ENGINE_MEM_DEBUG */
