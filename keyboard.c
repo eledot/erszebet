@@ -265,7 +265,7 @@ void keyboard_shutdown (void)
         for (i = 2; i < STSIZE(key_special_binds) ;i++)
         {
             if (NULL != key_special_binds[i].cmd)
-                fs_printf(f, "bind %s \"%s\"\n", key_special_binds, key_special_binds[i].cmd);
+                fs_printf(f, "bind %s \"%s\"\n", key_names[i], key_special_binds[i].cmd);
         }
 
         fs_close(f);
