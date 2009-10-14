@@ -478,6 +478,7 @@ static int game_lua_execute (lua_State *lst)
     const char *s = luaL_checkstring(lst, -1);
 
     cmdbuf_add(s, CMD_SRC_CONSOLE);
+    cmdbuf_frame();
 
     return 0;
 }
