@@ -58,8 +58,10 @@ typedef struct cmd_s
     struct cmd_s *next;
 }cmd_t;
 
-cmd_t *cmd_find (const char *name);
-cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, int flags);
+cmd_t *cmd_find (const char *name)
+    GNUC_NONNULL;
+cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, int flags)
+    GNUC_NONNULL_ARGS(1, 3);
 
 int cmd_init (void);
 void cmd_shutdown (void);

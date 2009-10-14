@@ -42,8 +42,8 @@ typedef struct r_texture_s
     struct r_texture_s *prev;
 }r_texture_t;
 
-int r_texture_load (const char *name, int type, r_texture_t **tex);
-void r_texture_unload (r_texture_t *tex);
+int r_texture_load (const char *name, int type, r_texture_t **tex) GNUC_NONNULL;
+void r_texture_unload (r_texture_t *tex) GNUC_NONNULL;
 
 int r_texture_init (void);
 void r_texture_shutdown (void);

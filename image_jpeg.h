@@ -36,7 +36,7 @@
  *
  * @return 0 - success
  */
-int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool);
+int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
 
 /**
  * @brief Tries to save an image in JPEG format
@@ -46,7 +46,7 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool);
  *
  * @return 0 - success
  */
-int image_jpeg_save (const char *name, image_t *im);
+int image_jpeg_save (const char *name, image_t *im) GNUC_NONNULL;
 
 /**
  * @brief JPEG module initialization

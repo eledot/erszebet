@@ -57,9 +57,9 @@ typedef enum
 
 int snd_get_stream_format (int bps, int channels);
 
-void snd_set_listener_pos (const float *pos);
-void snd_set_listener_orientation (const float *ori);
-void snd_set_listener_velocity (const float *vel);
+void snd_set_listener_pos (const float *pos) GNUC_NONNULL;
+void snd_set_listener_orientation (const float *ori) GNUC_NONNULL;
+void snd_set_listener_velocity (const float *vel) GNUC_NONNULL;
 
 void snd_frame (void);
 

@@ -45,9 +45,7 @@ void cmdbuf_exec (const char *c, int source)
 
     if (NULL != (cmd = cmd_find(tok_argv[0])))
     {
-        if (0 != cmd->lua_func)
-            g_call_cmd(cmd, source, tok_argc, tok_argv);
-        else if (NULL != cmd->action)
+        if (NULL != cmd->action)
             cmd->action(cmd, source, tok_argc, tok_argv);
         else if (NULL != cmd->alias)
             cmdbuf_exec(cmd->alias, source);

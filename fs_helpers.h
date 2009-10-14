@@ -39,7 +39,8 @@
  *
  * @return Size of data on success, <0 on failure
  */
-int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, int shout);
+int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, int shout)
+    GNUC_NONNULL;
 
 /**
  * @brief Opens/creates/truncates, writes and closes a file
@@ -51,13 +52,14 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
  *
  * @return Size of written data on success, <0 on failure
  */
-int fs_open_write_close (const char *name, const void *buffer, int size, int shout);
+int fs_open_write_close (const char *name, const void *buffer, int size, int shout)
+    GNUC_NONNULL;
 
-int fs_get_size (fs_file_t f);
+int fs_get_size (fs_file_t f) GNUC_NONNULL;
 
-int fs_eof (fs_file_t);
+int fs_eof (fs_file_t) GNUC_NONNULL;
 
-int fs_file_exists (const char *name);
+int fs_file_exists (const char *name) GNUC_NONNULL;
 
 int fs_printf (fs_file_t f, const char *format, ...)
     GNUC_PRINTF(2, 3);

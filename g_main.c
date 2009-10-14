@@ -454,7 +454,7 @@ static int game_lua_register_cmd (lua_State *lst)
 {
     const char *name  = luaL_checkstring(lst, 1);
     int         flags = luaL_checknumber(lst, 3);
-    cmd_t      *cmd   = cmd_register(name, NULL, NULL, flags);
+    cmd_t      *cmd   = cmd_register(name, NULL, &g_call_cmd, flags);
     int         func;
 
     lua_pushvalue(lst, 2);

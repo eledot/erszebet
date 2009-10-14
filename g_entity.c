@@ -54,9 +54,9 @@ typedef enum
 
 #define FOFF(f) ((const void *)&((const g_entity_t *)NULL)->f - (const void *)NULL)
 
-static void ent_set_frame_callback (g_entity_t *ent);
-static void ent_set_origin_callback (g_entity_t *ent);
-static void ent_set_group_layers_callback (g_entity_t *ent);
+GNUC_NONNULL static void ent_set_frame_callback (g_entity_t *ent);
+GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
+GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent);
 
 typedef struct ent_field_s
 {
@@ -125,12 +125,12 @@ static const int ent_fields_free[] =
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
-static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
-static void ent_render_unload_sprite (g_entity_t *ent);
-static int ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
-static void ent_render_unload_text (g_entity_t *ent);
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
-static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
+GNUC_NONNULL static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
+GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent);
+GNUC_NONNULL static int ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
+GNUC_NONNULL static void ent_render_unload_text (g_entity_t *ent);
+GNUC_NONNULL static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
+GNUC_NONNULL static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
 
 static const struct
 {
@@ -155,7 +155,7 @@ static int         point_query_shapes_num;
 ent_render_load_sprite
 =================
 */
-static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
+GNUC_NONNULL static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
 {
     r_sprite_t *sprite;
     int res;
@@ -188,7 +188,7 @@ static int ent_render_load_sprite (const char *name, const double *parms, g_enti
 ent_render_unload_sprite
 =================
 */
-static void ent_render_unload_sprite (g_entity_t *ent)
+GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent)
 {
     r_sprite_unload(ent->render_data);
     ent->render_data = NULL;
@@ -199,7 +199,7 @@ static void ent_render_unload_sprite (g_entity_t *ent)
 ent_render_load_text
 =================
 */
-static int ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static int ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
 {
     return 1;
 }
@@ -209,7 +209,7 @@ static int ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const
 ent_render_unload_text
 =================
 */
-static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
 {
 }
 
@@ -218,7 +218,7 @@ static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
 ent_render_load_model
 =================
 */
-static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
     return 1;
@@ -229,7 +229,7 @@ static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED cons
 ent_render_unload_model
 =================
 */
-static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
 }
@@ -239,7 +239,7 @@ static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
 ent_get_field
 =================
 */
-static int ent_get_field (const g_entity_t *ent, const char *field)
+GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 {
     const void  *data;
     ent_field_t *f, s;
@@ -287,7 +287,7 @@ static int ent_get_field (const g_entity_t *ent, const char *field)
 ent_set_frame_callback
 =================
 */
-static void ent_set_frame_callback (g_entity_t *ent)
+GNUC_NONNULL static void ent_set_frame_callback (g_entity_t *ent)
 {
     if (ent->frames_num)
         ent->frame %= ent->frames_num;
@@ -298,7 +298,7 @@ static void ent_set_frame_callback (g_entity_t *ent)
 ent_set_origin_callback
 =================
 */
-static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
 {
     sglib_g_entity_t_sort(&entities);
 }
@@ -308,7 +308,7 @@ static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
 ent_set_group_layers_callback
 =================
 */
-static void ent_set_group_layers_callback (g_entity_t *ent)
+GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent)
 {
     g_physics_update_body(ent);
 }
@@ -318,7 +318,7 @@ static void ent_set_group_layers_callback (g_entity_t *ent)
 ent_set_field
 =================
 */
-static int ent_set_field (g_entity_t *ent, const char *field, int index)
+GNUC_NONNULL static int ent_set_field (g_entity_t *ent, const char *field, int index)
 {
     void        *data;
     ent_field_t *f, s;
@@ -369,7 +369,7 @@ static int ent_set_field (g_entity_t *ent, const char *field, int index)
 ent_flags_to_string
 =================
 */
-static const char *ent_flags_string (const g_entity_t *ent)
+GNUC_NONNULL static const char *ent_flags_string (const g_entity_t *ent)
 {
     static char flags[128];
     const int s = sizeof(flags);
@@ -413,7 +413,7 @@ static const char *ent_flags_string (const g_entity_t *ent)
 ent_entity_string
 =================
 */
-static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
+GNUC_NONNULL static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
 {
     snprintf(buffer,
              size,
@@ -466,7 +466,7 @@ static void ent_entity_string (const g_entity_t *ent, char *buffer, int size)
 ent_lua_tostring
 =================
 */
-static int ent_lua_tostring (lua_State *lst)
+GNUC_NONNULL static int ent_lua_tostring (lua_State *lst)
 {
     char tmp[512];
     const g_entity_t *ent;
@@ -484,7 +484,7 @@ static int ent_lua_tostring (lua_State *lst)
 ent_lua_index
 =================
 */
-static int ent_lua_index (lua_State *lst)
+GNUC_NONNULL static int ent_lua_index (lua_State *lst)
 {
     const char *key = luaL_checkstring(lst, 2);
     g_entity_t *ent;
@@ -507,7 +507,7 @@ static int ent_lua_index (lua_State *lst)
 ent_lua_newindex
 =================
 */
-static int ent_lua_newindex (lua_State *lst)
+GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 {
     int         i;
     g_entity_t *ent;
@@ -615,7 +615,7 @@ static g_entity_t *g_entity_create (void)
 g_entity_delete
 =================
 */
-static void g_entity_delete (g_entity_t *ent)
+GNUC_NONNULL static void g_entity_delete (g_entity_t *ent)
 {
     sglib_g_entity_t_delete(&entities, ent);
     ent->next = remove_entities;
@@ -643,7 +643,7 @@ static void g_entity_delete (g_entity_t *ent)
 g_entity_mem_free
 =================
 */
-static void g_entity_mem_free (g_entity_t *ent)
+GNUC_NONNULL static void g_entity_mem_free (g_entity_t *ent)
 {
     int i;
 
@@ -666,7 +666,7 @@ static void g_entity_mem_free (g_entity_t *ent)
 ent_lua_spawn
 =================
 */
-static int ent_lua_spawn (lua_State *lst)
+GNUC_NONNULL static int ent_lua_spawn (lua_State *lst)
 {
     g_entity_t *ent = g_entity_create();
 
@@ -691,7 +691,7 @@ static int ent_lua_spawn (lua_State *lst)
 ent_lua_remove
 =================
 */
-static int ent_lua_remove (lua_State *lst)
+GNUC_NONNULL static int ent_lua_remove (lua_State *lst)
 {
     g_entity_t *ent;
 
@@ -715,7 +715,7 @@ static int ent_lua_remove (lua_State *lst)
 ent_lua_set_sprite
 =================
 */
-static int ent_lua_set_sprite (lua_State *lst)
+GNUC_NONNULL static int ent_lua_set_sprite (lua_State *lst)
 {
     g_entity_t *ent;
     const char *name;
@@ -749,7 +749,7 @@ static int ent_lua_set_sprite (lua_State *lst)
 ent_lua_set_text
 =================
 */
-static int ent_lua_set_text (lua_State *lst)
+GNUC_NONNULL static int ent_lua_set_text (lua_State *lst)
 {
     g_entity_t *ent;
     const char *text;
@@ -783,7 +783,7 @@ static int ent_lua_set_text (lua_State *lst)
 ent_lua_set_model
 =================
 */
-static int ent_lua_set_model (lua_State *lst)
+GNUC_NONNULL static int ent_lua_set_model (lua_State *lst)
 {
     g_entity_t *ent;
 
@@ -813,7 +813,7 @@ static int ent_lua_set_model (lua_State *lst)
 ent_lua_attach_pin
 =================
 */
-static int ent_lua_attach_pin (lua_State *lst)
+GNUC_NONNULL static int ent_lua_attach_pin (lua_State *lst)
 {
     g_entity_t *a, *b;
 
@@ -845,7 +845,7 @@ static int ent_lua_attach_pin (lua_State *lst)
 ent_lua_detach
 =================
 */
-static int ent_lua_detach (lua_State *lst)
+GNUC_NONNULL static int ent_lua_detach (lua_State *lst)
 {
     int         top = lua_gettop(lst);
     g_entity_t *a, *b = NULL;
@@ -875,7 +875,7 @@ static int ent_lua_detach (lua_State *lst)
 ent_lua_point_query_callback
 =================
 */
-static void ent_lua_point_query_callback (g_entity_t *ent)
+GNUC_NONNULL static void ent_lua_point_query_callback (g_entity_t *ent)
 {
     point_query_shapes_num++;
     lua_pushinteger(lst, point_query_shapes_num);
@@ -893,7 +893,7 @@ static void ent_lua_point_query_callback (g_entity_t *ent)
 ent_lua_point_query
 =================
 */
-static int ent_lua_point_query (lua_State *lst)
+GNUC_NONNULL static int ent_lua_point_query (lua_State *lst)
 {
     double point[3];
 
@@ -916,7 +916,7 @@ static int ent_lua_point_query (lua_State *lst)
 ent_lua_apply_impulse
 =================
 */
-static int ent_lua_apply_impulse (lua_State *lst)
+GNUC_NONNULL static int ent_lua_apply_impulse (lua_State *lst)
 {
     double point[2], impulse[2];
     g_entity_t *ent;
@@ -952,7 +952,7 @@ static int ent_lua_apply_impulse (lua_State *lst)
 ent_lua_set_body
 =================
 */
-static int ent_lua_set_body (lua_State *lst)
+GNUC_NONNULL static int ent_lua_set_body (lua_State *lst)
 {
     g_entity_t *ent;
     double      radius, points[4], *coords;
@@ -1164,10 +1164,10 @@ void g_entity_frame (void)
 g_list_entities_f
 =================
 */
-static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
-                               int source,
-                               GNUC_UNUSED int argc,
-                               GNUC_UNUSED const char **argv)
+GNUC_NONNULL static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
+                                            int source,
+                                            GNUC_UNUSED int argc,
+                                            GNUC_UNUSED const char **argv)
 {
     char tmp[512];
     struct sglib_g_entity_t_iterator it;

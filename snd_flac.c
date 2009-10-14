@@ -355,11 +355,11 @@ int snd_flac_load (const char   *name,
 
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
-        sys_printf("bad args (name=%p, pool=%p, stream=%p, streaming=%p)\n",
+        sys_printf("bad args (name=%p, stream=%p, streaming=%p, pool=%p)\n",
                    name,
-                   pool,
                    stream,
-                   streaming);
+                   streaming,
+                   pool);
 
         return -1;
     }

@@ -20,9 +20,9 @@
 #ifndef _CMDBUF_H
 #define _CMDBUF_H
 
-void cmdbuf_exec (const char *c, int source);
-void cmdbuf_add (const char *c, int source);
-void cmdbuf_add_file (const char *filename);
+void cmdbuf_exec (const char *c, int source) GNUC_NONNULL;
+void cmdbuf_add (const char *c, int source) GNUC_NONNULL;
+void cmdbuf_add_file (const char *filename) GNUC_NONNULL;
 
 void cmdbuf_frame (void);
 

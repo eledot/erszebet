@@ -33,8 +33,8 @@ typedef struct r_font_s
     float chars[0];
 }r_font_t;
 
-int r_font_load (const char *name, int first, r_font_t **font);
-void r_font_unload (r_font_t *font);
+int r_font_load (const char *name, int first, r_font_t **font) GNUC_NONNULL;
+void r_font_unload (r_font_t *font) GNUC_NONNULL;
 
 int r_font_init (void);
 void r_font_shutdown (void);

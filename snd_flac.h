@@ -23,7 +23,7 @@
 int snd_flac_load (const char   *name,
                    snd_stream_t *stream,
                    int          *streaming,
-                   mem_pool_t    pool);
+                   mem_pool_t    pool) GNUC_NONNULL;
 
 int snd_flac_init (void);
 void snd_flac_shutdown (void);

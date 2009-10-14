@@ -24,11 +24,15 @@
 #define GNUC_MALLOC __attribute__((__malloc__))
 #define GNUC_CONST __attribute__((__const__))
 #define GNUC_UNUSED __attribute__((__unused__))
+#define GNUC_NONNULL __attribute__((nonnull))
+#define GNUC_NONNULL_ARGS(a...) __attribute__((nonnull(a)))
 #define GNUC_PRINTF(f, p) __attribute__((format(printf, f, p)))
 #else
 #define GNUC_MALLOC
 #define GNUC_CONST
 #define GNUC_UNUSED
+#define GNUC_NONNULL
+#define GNUC_NONNULL_ARGS(a...)
 #define GNUC_PRINTF(format, parms)
 #endif
 

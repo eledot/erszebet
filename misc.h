@@ -66,8 +66,8 @@
 extern int         tok_argc;
 extern const char *tok_argv[];
 
-int string_tokenize (const char *text);
-int filename_is_valid (const char *name);
-int varname_is_valid (const char *name);
+int string_tokenize (const char *text) GNUC_NONNULL;
+int filename_is_valid (const char *name) GNUC_NONNULL;
+int varname_is_valid (const char *name) GNUC_NONNULL;
 
 #endif /* !_MISC_H */

@@ -79,14 +79,14 @@ typedef enum
  *
  * @return File handle on success, NULL on error
  */
-fs_file_t fs_open (const char *name, int mode, int *size, int shout);
+fs_file_t fs_open (const char *name, int mode, int *size, int shout) GNUC_NONNULL_ARGS(1);
 
 /**
  * @brief Closes a file
  *
  * @param f File handle
  */
-void fs_close (fs_file_t f);
+void fs_close (fs_file_t f) GNUC_NONNULL;
 
 /**
  * @brief Reads from file
@@ -97,7 +97,7 @@ void fs_close (fs_file_t f);
  *
  * @return Number of bytes actually read (< 0 on errors)
  */
-int fs_read (fs_file_t f, void *buffer, int size);
+int fs_read (fs_file_t f, void *buffer, int size) GNUC_NONNULL;
 
 /**
  * @brief Writes to file
@@ -108,7 +108,7 @@ int fs_read (fs_file_t f, void *buffer, int size);
  *
  * @return Number of bytes actually written (-1 on error)
  */
-int fs_write (fs_file_t f, const void *buffer, int size);
+int fs_write (fs_file_t f, const void *buffer, int size) GNUC_NONNULL;
 
 /**
  * @brief Repositions the cursor in a file
@@ -119,14 +119,14 @@ int fs_write (fs_file_t f, const void *buffer, int size);
  *
  * @return Number of bytes from start after the repositioning, -1 on error
  */
-int fs_seek (fs_file_t f, int offset, int origin);
+int fs_seek (fs_file_t f, int offset, int origin) GNUC_NONNULL;
 
 /**
  * @brief Returns file cursor position
  *
  * @return Number of bytes from start to the cursor position, -1 on error
  */
-int fs_tell (fs_file_t f);
+int fs_tell (fs_file_t f) GNUC_NONNULL;
 
 /**
  * @brief Creates a direcrory
@@ -135,7 +135,7 @@ int fs_tell (fs_file_t f);
  *
  * @return 0 on success, -1 on error
  */
-int fs_mkdir (const char *name);
+int fs_mkdir (const char *name) GNUC_NONNULL;
 
 /**
  * @brief Removes file or directory
@@ -144,7 +144,7 @@ int fs_mkdir (const char *name);
  *
  * @return 0 on success (or if it doesn't exist already), -1 on error
  */
-int fs_unlink (const char *name);
+int fs_unlink (const char *name) GNUC_NONNULL;
 
 /**
  * @brief FS module initialization

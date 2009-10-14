@@ -20,9 +20,9 @@
 #ifndef _R_TEXT_H
 #define _R_TEXT_H
 
-int r_text_set (const char *string, const char *font, void **text);
-void r_text_delete (void *text);
-void r_text_draw (const void *text);
+int r_text_set (const char *string, const char *font, void **text) GNUC_NONNULL;
+void r_text_delete (void *text) GNUC_NONNULL;
+void r_text_draw (const void *text) GNUC_NONNULL;
 
 int r_text_init (void);
 void r_text_shutdown (void);

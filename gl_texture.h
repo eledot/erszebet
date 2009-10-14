@@ -37,7 +37,7 @@ typedef enum
                       GL_TEX_FL_NOANISO |                               \
                       GL_TEX_FL_NOLOD)
 
-int gl_texture_create (image_t *image, int flags, int *gltex);
+int gl_texture_create (image_t *image, int flags, int *gltex) GNUC_NONNULL;
 void gl_texture_delete (int gltex);
 
 int gl_texture_init (void);

@@ -29,6 +29,6 @@
  *
  * @return Length of the final string
  */
-size_t strlcat (char *dst, const char *src, size_t n);
+size_t strlcat (char *dst, const char *src, size_t n) GNUC_NONNULL;
 
 #endif /* !_STRLCAT_H */

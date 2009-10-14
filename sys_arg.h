@@ -35,7 +35,7 @@
  *
  * @return Argument index [1-...] or 0 if wasn't found
  */
-int sys_arg_find (const char *name);
+int sys_arg_find (const char *name) GNUC_NONNULL;
 
 /**
  * @brief Puts specific arguments into command buffer (like '+set fs_game blah')
@@ -50,6 +50,6 @@ void sys_arg_to_cmdbuf (char start);
  * @param c argc
  * @param v argv
  */
-void sys_arg_set (int c, char **v);
+void sys_arg_set (int c, char **v) GNUC_NONNULL;
 
 #endif /* !_SYS_ARG_H */

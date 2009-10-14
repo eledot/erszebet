@@ -34,7 +34,7 @@ static r_sprite_t *sprites;
 r_sprite_get_align
 =================
 */
-static void r_sprite_get_align (const char *name, const char *word, int *align)
+GNUC_NONNULL static void r_sprite_get_align (const char *name, const char *word, int *align)
 {
     int a = *align;
 

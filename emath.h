@@ -47,6 +47,6 @@
 #define CLAMP(v, min, max) (MAX(MIN((v), (max)), (min)))
 #define IS_PWROV2(n)       (!((n) & ((n) - 1)))
 
-int ceil_pwrov2 (int n);
+int ceil_pwrov2 (int n) GNUC_CONST;
 
 #endif /* !_EMATH_H */

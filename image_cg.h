@@ -20,7 +20,7 @@
 #ifndef _IMAGE_CG_H
 #define _IMAGE_CG_H
 
-int image_cg_load (const char *name, image_t *im, mem_pool_t pool);
+int image_cg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
 
 int image_cg_init (void);
 void image_cg_shutdown (void);

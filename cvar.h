@@ -66,22 +66,22 @@ typedef struct cvar_s
 /**
  * @brief searches for a cvar by it's name
  */
-cvar_t *cvar_find (const char *name);
+cvar_t *cvar_find (const char *name) GNUC_NONNULL;
 
 /**
  * @brief sets cvar with new value
  */
-void cvar_set (cvar_t *c, const char *str);
+void cvar_set (cvar_t *c, const char *str) GNUC_NONNULL;
 
-void cvar_set_min (cvar_t *c, float min);
-void cvar_set_max (cvar_t *c, float max);
+void cvar_set_min (cvar_t *c, float min) GNUC_NONNULL;
+void cvar_set_max (cvar_t *c, float max) GNUC_NONNULL;
 
 #define cvar_set_minmax(c, min, max) { cvar_set_min((c), (min)); cvar_set_max((c), (max)); }
 
 /**
  * @brief creates a cvar
  */
-cvar_t *cvar_get (const char *name, const char *str, int flags);
+cvar_t *cvar_get (const char *name, const char *str, int flags) GNUC_NONNULL;
 
 /**
  * @brief initializes cvar module

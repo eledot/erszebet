@@ -35,7 +35,7 @@ static double   phys_speed;
 g_add_shape
 =================
 */
-static void g_add_shape (g_entity_t *ent, cpShape *shape)
+GNUC_NONNULL static void g_add_shape (g_entity_t *ent, cpShape *shape)
 {
     ent->shapes[ent->shapes_num++] = shape;
     shape->data = ent;
@@ -55,7 +55,7 @@ static void g_add_shape (g_entity_t *ent, cpShape *shape)
 g_delete_constraint
 =================
 */
-static void g_delete_constraint (void *ptr, void *data)
+GNUC_NONNULL static void g_delete_constraint (void *ptr, void *data)
 {
     cpBody      **bodies = (cpBody **)data;
     cpConstraint *con = ptr;
@@ -72,7 +72,7 @@ static void g_delete_constraint (void *ptr, void *data)
 g_delete_constraint_full
 =================
 */
-static void g_delete_constraint_full (void *ptr, void *data)
+GNUC_NONNULL static void g_delete_constraint_full (void *ptr, void *data)
 {
     cpBody       *body = data;
     cpConstraint *con = ptr;
@@ -88,7 +88,7 @@ static void g_delete_constraint_full (void *ptr, void *data)
 g_delete_shapes
 =================
 */
-static void g_delete_shapes (g_entity_t *ent)
+GNUC_NONNULL static void g_delete_shapes (g_entity_t *ent)
 {
     int i;
 
@@ -125,7 +125,7 @@ static void g_delete_shapes (g_entity_t *ent)
 g_delete_body
 =================
 */
-static void g_delete_body (g_entity_t *ent)
+GNUC_NONNULL static void g_delete_body (g_entity_t *ent)
 {
     g_physics_detach(ent, NULL);
     cpSpaceRemoveBody(phys_space, ent->body);
@@ -138,7 +138,7 @@ static void g_delete_body (g_entity_t *ent)
 g_physics_free_obj
 =================
 */
-void g_physics_free_obj (g_entity_t *ent)
+GNUC_NONNULL void g_physics_free_obj (g_entity_t *ent)
 {
     if (NULL != ent->shapes)
         g_delete_shapes(ent);
@@ -155,7 +155,7 @@ void g_physics_free_obj (g_entity_t *ent)
 g_physics_new_obj
 =================
 */
-static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
+GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
 {
     int     flags;
     cpBody *body;

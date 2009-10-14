@@ -22,17 +22,17 @@
 
 extern double g_time;
 
-void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv);
-void g_destroy_cmd (cmd_t *cmd);
-void g_call_func (const char *func, const char *types, ...);
+void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv) GNUC_NONNULL;
+void g_destroy_cmd (cmd_t *cmd) GNUC_NONNULL;
+void g_call_func (const char *func, const char *types, ...) GNUC_NONNULL;
 
-void g_set_double (const char *name, double value);
-void g_set_integer (const char *name, int value);
-void g_set_string (const char *name, const char *value);
+void g_set_double (const char *name, double value) GNUC_NONNULL;
+void g_set_integer (const char *name, int value) GNUC_NONNULL;
+void g_set_string (const char *name, const char *value) GNUC_NONNULL;
 
-void g_push_vector (const double *vector, int num);
-int g_pop_vector (int index, double *vector, int num);
-void g_push_strings (const char **strings, int num);
+void g_push_vector (const double *vector, int num) GNUC_NONNULL;
+int g_pop_vector (int index, double *vector, int num) GNUC_NONNULL;
+void g_push_strings (const char **strings, int num) GNUC_NONNULL;
 
 void g_frame (void);
 

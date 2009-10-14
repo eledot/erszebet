@@ -42,9 +42,9 @@ void init_time (void);
  */
 double sys_get_time (void);
 
-int sys_mkdir (char *path);
+int sys_mkdir (char *path) GNUC_NONNULL;
 
-int sys_unlink (const char *filename);
+int sys_unlink (const char *filename) GNUC_NONNULL;
 
 #ifdef ENGINE_SYS_PRINTF
 

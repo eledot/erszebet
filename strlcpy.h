@@ -29,6 +29,6 @@
  *
  * @return Length of the final string
  */
-size_t strlcpy (char *dst, const char *src, size_t n);
+size_t strlcpy (char *dst, const char *src, size_t n) GNUC_NONNULL;
 
 #endif /* !_STRLCPY_H */

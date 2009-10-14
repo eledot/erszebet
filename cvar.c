@@ -32,7 +32,7 @@ static mem_pool_t mempool;
 cvar_insert
 =================
 */
-static void cvar_insert (cvar_t *ins)
+GNUC_NONNULL static void cvar_insert (cvar_t *ins)
 {
     cvar_t *c, *prev;
     int     first, res;

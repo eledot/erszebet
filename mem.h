@@ -32,7 +32,8 @@ mem_pool_t mem_alloc_pool_real (const char *name,
 void mem_free_pool_real (mem_pool_t *pool,
                          const char *file,
                          const char *func,
-                         int         line);
+                         int         line)
+    GNUC_NONNULL;
 void *mem_alloc_real (mem_pool_t  pool,
                       uint32_t    size,
                       const char *file,
@@ -44,11 +45,13 @@ char *mem_strdup_static_real (const char *src,
                               mem_pool_t  mempool,
                               const char *file,
                               const char *func,
-                              int         line);
+                              int         line)
+    GNUC_NONNULL;
 void mem_free_real (void       *m,
                     const char *file,
                     const char *func,
-                    int         line);
+                    int         line)
+    GNUC_NONNULL;
 
 #define mem_alloc_pool(name, max) mem_alloc_pool_real((name), (max), __FILE__, __FUNCTION__, __LINE__)
 #define mem_alloc(pool, size) mem_alloc_real((pool), (size), __FILE__, __FUNCTION__, __LINE__)
@@ -58,12 +61,14 @@ void mem_free_real (void       *m,
 #else /* !ENGINE_MEM_DEBUG */
 mem_pool_t mem_alloc_pool_real (const char *name, uint32_t max_size)
     GNUC_MALLOC;
-void mem_free_pool_real (mem_pool_t *pool);
+void mem_free_pool_real (mem_pool_t *pool)
+    GNUC_NONNULL;
 void *mem_alloc_real (mem_pool_t pool, uint32_t size)
     GNUC_MALLOC;
 char *mem_strdup_static_real (const char *src, mem_pool_t mempool)
     GNUC_MALLOC;
-void mem_free_real (void *m);
+void mem_free_real (void *m)
+    GNUC_NONNULL;
 
 #define mem_alloc_pool(name, max) mem_alloc_pool_real((name), (max))
 #define mem_alloc mem_alloc_real

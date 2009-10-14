@@ -64,11 +64,11 @@ typedef struct image_s
  *
  * @return 0 on success, -1 otherwise
  */
-int image_load (const char *name, image_t *image);
+int image_load (const char *name, image_t *image) GNUC_NONNULL;
 
-int image_mipmap (image_t *image);
+int image_mipmap (image_t *image) GNUC_NONNULL;
 
-int image_resize (image_t *image, int width, int height);
+int image_resize (image_t *image, int width, int height) GNUC_NONNULL;
 
 /**
  * @brief Image module initialization

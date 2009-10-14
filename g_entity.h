@@ -81,12 +81,14 @@ typedef struct g_entity_s
 
 extern g_entity_t *entities;
 
-int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, const double *normal);
+int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, const double *normal)
+    GNUC_NONNULL_ARGS(1, 3, 4);
 
 void g_entity_draw_entities (int draw2d);
 void g_entity_frame (void);
 
-void g_entity_init (void *lst, mem_pool_t pool);
+void g_entity_init (void *lst, mem_pool_t pool)
+    GNUC_NONNULL;
 void g_entity_shutdown (void);
 
 #endif /* !_G_ENTITY_H */

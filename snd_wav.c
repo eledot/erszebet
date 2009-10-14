@@ -63,7 +63,7 @@ static int snd_wav_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_wav_find_chunk
 =================
 */
-static int snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
+GNUC_NONNULL static int snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
 {
     int i;
 
@@ -88,7 +88,7 @@ static int snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *ch
 snd_wav_get_wav_info
 =================
 */
-static int snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
+GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
 {
     const uint8_t *b  = buffer;
     int            s  = size;
@@ -162,11 +162,11 @@ int snd_wav_load (const char   *name,
 
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
-        sys_printf("bad args (name=%p, pool=%p, stream=%p, streaming=%p)\n",
+        sys_printf("bad args (name=%p, stream=%p, streaming=%p, pool=%p)\n",
                    name,
-                   pool,
                    stream,
-                   streaming);
+                   streaming,
+                   pool);
 
         return -1;
     }
