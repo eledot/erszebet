@@ -350,8 +350,10 @@ static void fs_add_paths (const char *base, const char *home)
         p->valid = 1;                                                   \
         snprintf(p->path, size, "%s/%s", d1, d2);                       \
         p->rdonly = rd;                                                 \
-        if (!rd)                                                        \
-            sys_mkdir(p->path);                                         \
+        if (!rd && !sys_mkdir(p->path))                                 \
+        {                                                               \
+            sys_printf("failed to create \"%s\"\n", p->path);           \
+        }                                                               \
         sys_printf("added \"%s\" to paths\n", p->path);                 \
     }
 
