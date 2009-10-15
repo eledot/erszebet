@@ -564,7 +564,7 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 g_entity_create
 =================
 */
-static g_entity_t *g_entity_create (void)
+GNUC_WARN_UNUSED_RES static g_entity_t *g_entity_create (void)
 {
     g_entity_t *ent;
 

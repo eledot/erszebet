@@ -28,8 +28,8 @@
 #ifndef _IMAGE_JPEG_H
 #define _IMAGE_JPEG_H
 
-bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
-bool image_jpeg_save (const char *name, image_t *im) GNUC_NONNULL;
+bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+bool image_jpeg_save (const char *name, image_t *im) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
 bool image_jpeg_init (void);
 void image_jpeg_shutdown (void);

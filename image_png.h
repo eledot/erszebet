@@ -28,8 +28,8 @@
 #ifndef _IMAGE_PNG_H
 #define _IMAGE_PNG_H
 
-bool image_png_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
-bool image_png_save (const char *name, image_t *im) GNUC_NONNULL;
+bool image_png_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+bool image_png_save (const char *name, image_t *im) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
 bool image_png_init (void);
 void image_png_shutdown (void);

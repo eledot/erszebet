@@ -26,7 +26,7 @@
 #define GL_INTERNAL_FONT_CH 12.0f
 
 void gl_clear (void);
-bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL;
+bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_color (float r, float g, float b, float a);
 void gl_draw_stretched (int gltex);
 void gl_draw_texture (int gltex,

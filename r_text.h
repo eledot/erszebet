@@ -20,7 +20,7 @@
 #ifndef _R_TEXT_H
 #define _R_TEXT_H
 
-bool r_text_set (const char *string, const char *font, void **text) GNUC_NONNULL;
+bool r_text_set (const char *string, const char *font, void **text) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void r_text_delete (void *text) GNUC_NONNULL;
 void r_text_draw (const void *text) GNUC_NONNULL;
 

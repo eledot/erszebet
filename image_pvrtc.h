@@ -20,7 +20,7 @@
 #ifndef _IMAGE_PVRTC_H
 #define _IMAGE_PVRTC_H
 
-bool image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
+bool image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
 bool image_pvrtc_init (void);
 void image_pvrtc_shutdown (void);

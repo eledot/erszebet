@@ -55,7 +55,7 @@ typedef enum
     SND_STREAM_RET_STOPPED,
 }snd_stream_func_ret_e;
 
-int snd_get_stream_format (int bps, int channels);
+int snd_get_stream_format (int bps, int channels) GNUC_CONST GNUC_WARN_UNUSED_RES;
 
 void snd_set_listener_pos (const float *pos) GNUC_NONNULL;
 void snd_set_listener_orientation (const float *ori) GNUC_NONNULL;

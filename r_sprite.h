@@ -53,7 +53,7 @@ typedef struct r_sprite_s
 
 bool r_sprite_load (const char  *name,
                     int          type,
-                    r_sprite_t **sprite) GNUC_NONNULL;
+                    r_sprite_t **sprite) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void r_sprite_unload (r_sprite_t *sprite) GNUC_NONNULL;
 
 void r_sprite_draw (const r_sprite_t *sprite,

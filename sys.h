@@ -42,9 +42,9 @@ void init_time (void);
  */
 double sys_get_time (void);
 
-bool sys_mkdir (char *path) GNUC_NONNULL;
+bool sys_mkdir (char *path) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
-bool sys_unlink (const char *filename) GNUC_NONNULL;
+bool sys_unlink (const char *filename) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
 #ifdef ENGINE_SYS_PRINTF
 
