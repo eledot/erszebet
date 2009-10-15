@@ -65,7 +65,6 @@ void cmdbuf_exec (const char *c, int source)
         }
         else if (!(cvar->flags & CVAR_FL_RDONLY))
         {
-            sys_printf(">> setting %s to %s\n", cvar->name, tok_argv[1]);
             cvar_set(cvar, tok_argv[1]);
         }
         else
