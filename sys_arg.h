@@ -35,7 +35,7 @@
  *
  * @return Argument index [1-...] or 0 if wasn't found
  */
-int sys_arg_find (const char *name) GNUC_NONNULL;
+int sys_arg_find (const char *name) GNUC_NONNULL GNUC_PURE;
 
 /**
  * @brief Puts specific arguments into command buffer (like '+set fs_game blah')

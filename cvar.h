@@ -66,7 +66,7 @@ typedef struct cvar_s
 /**
  * @brief searches for a cvar by it's name
  */
-cvar_t *cvar_find (const char *name) GNUC_NONNULL;
+cvar_t *cvar_find (const char *name) GNUC_NONNULL GNUC_PURE;
 
 /**
  * @brief sets cvar with new value

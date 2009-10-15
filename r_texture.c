@@ -94,7 +94,7 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
     strlcpy(namecopy, name, nlen);
 
     t->name = namecopy;
-    t->type  = type;
+    t->type = type;
     t->gltex = gltex;
     t->ref = 1;
     t->w = w;
