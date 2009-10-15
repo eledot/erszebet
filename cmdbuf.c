@@ -41,7 +41,10 @@ void cmdbuf_exec (const char *c, int source)
     /* FIXME -- check for too much reverse calls */
 
     if (!string_tokenize(c))
+    {
+        sys_printf("%s is nothing\n", c);
         return;
+    }
 
     if (NULL != (cmd = cmd_find(tok_argv[0])))
     {
@@ -62,6 +65,7 @@ void cmdbuf_exec (const char *c, int source)
         }
         else if (!(cvar->flags & CVAR_FL_RDONLY))
         {
+            sys_printf(">> setting %s to %s\n", cvar->name, tok_argv[1]);
             cvar_set(cvar, tok_argv[1]);
         }
         else
@@ -228,31 +232,31 @@ void cmdbuf_frame (void)
 set_f
 =================
 */
-static void set_f (const struct cmd_s *cmd, int source, int argc, const char **argv)
+static void set_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int argc, const char **argv)
 {
     cvar_t *c;
-    int     flags;
+    int flags = 0;
 
     if (argc < 3)
         return;
 
-    if (NULL != (c = cvar_find(argv[1])) && (c->flags & CVAR_FL_RDONLY))
+    if (NULL != (c = cvar_find(argv[1])))
     {
-        if (CMD_SRC_CONSOLE == source)
+        if (c->flags & CVAR_FL_RDONLY)
         {
             /* FIXME -- print to console */
             sys_printf("\"%s\" is read-only\n", argv[1]);
+            return;
         }
-
-        return;
     }
 
-    if ('a' == cmd->name[0])
+    if ('a' == cmd->name[3])
         flags = CVAR_FL_SAVE;
-    else
-        flags = 0;
 
-    cvar_get(argv[1], argv[2], flags);
+    if (NULL == c)
+        cvar_get(argv[1], argv[2], flags);
+    else
+        cvar_set(c, argv[2]);
 }
 
 /*
@@ -271,7 +275,7 @@ bool cmdbuf_init (void)
     }
 
     cmd_register("set",  NULL, &set_f, 0); /* normal set              */
-    cmd_register("aset", NULL, &set_f, 0); /* set with CVAR_FL_SAVE   */
+    cmd_register("seta", NULL, &set_f, 0); /* set with CVAR_FL_SAVE   */
 
     cmdbuf_i = true;
 

@@ -215,13 +215,11 @@ cvar_t *cvar_get (const char *name, const char *str, int flags)
         c->flags = flags;
 
         cvar_set(c, str);
-
         cvar_insert(c);
     }
     else
     {
         c->flags = flags;
-
         cvar_set(c, c->s);
     }
 

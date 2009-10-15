@@ -113,6 +113,10 @@ bool engine_start (void)
 
     cmd_register("quit", NULL, &quit_f, 0);
     cmd_register("echo", NULL, &echo_f, 0);
+    cmd_register("exec", NULL, &exec_f, 0);
+
+    cmdbuf_add("exec config.cfg\n", CMD_SRC_ENGINE);
+    cmdbuf_frame();
 
     /*
       put sys args into cmdbuf (which begin with '+')
@@ -130,12 +134,6 @@ bool engine_start (void)
     INIT(gl);
     INIT(r);
     INIT(snd);
-
-    cmd_register("exec", NULL, &exec_f, 0);
-
-    cmdbuf_add("exec config.cfg\n", CMD_SRC_ENGINE);
-    cmdbuf_frame();
-
     INIT(g);
 
     cmdbuf_add("exec autoexec.cfg\n", CMD_SRC_ENGINE);
