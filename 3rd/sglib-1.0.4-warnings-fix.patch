@@ -8,3 +8,12 @@
    (iteratedVariable) = (list); \
    while ((iteratedVariable)!=NULL) {\
      _ne_ = (iteratedVariable)->next;\
+@@ -1276,7 +1276,7 @@
+  type *sglib_##type##_it_next(struct sglib_##type##_iterator *it) {\
+    type *ce, *eq;\
+    int  (*scp)(type *, type *);\
+-   int  c;\
++   int  c = 0;\
+    ce = it->nextelem;\
+    it->nextelem = NULL;\
+    if (it->subcomparator != NULL) {\
