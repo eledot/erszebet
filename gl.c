@@ -339,7 +339,7 @@ void gl_draw_text (const char *text, float x, float y)
         return;
     }
 
-    if (!*text)
+    if (!*text || internal_font < 0)
         return;
 
     eglBindTexture(GL_TEXTURE_2D, internal_font);
@@ -521,7 +521,8 @@ static bool gl_create_internal_font (void)
         }
     }
 
-    gl_texture_create(&im, GL_TEX_FL_UI, &internal_font);
+    if (!gl_texture_create(&im, GL_TEX_FL_UI, &internal_font))
+        internal_font = -1;
 
     mem_free(im.data);
 
