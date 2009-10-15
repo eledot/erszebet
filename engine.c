@@ -115,21 +115,14 @@ bool engine_start (void)
     cmd_register("echo", NULL, &echo_f, 0);
     cmd_register("exec", NULL, &exec_f, 0);
 
+    INIT(fs);
+    INIT(keyboard);
+
     cmdbuf_add("exec config.cfg\n", CMD_SRC_ENGINE);
     cmdbuf_frame();
 
-    /*
-      put sys args into cmdbuf (which begin with '+')
-      before some modules (this affects RO cvars like fs_game)
-    */
-    sys_arg_to_cmdbuf('+');
-    cmdbuf_frame();
-
-    INIT(fs);
     INIT(mouse);
-    INIT(keyboard);
     INIT(image);
-
     INIT(video);
     INIT(gl);
     INIT(r);
