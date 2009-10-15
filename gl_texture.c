@@ -45,7 +45,7 @@ static cvar_t *gl_picmip;
 gl_texture_create
 =================
 */
-int gl_texture_create (image_t *image, int flags, int *gltex)
+bool gl_texture_create (image_t *image, int flags, int *gltex)
 {
     int    max, sw, sh, mip;
     GLuint tex;
@@ -53,7 +53,7 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
     if (NULL == image || NULL == gltex)
     {
         sys_printf("bad args (image=%p, flags=%i, gltex=%p)\n", image, flags, gltex);
-        return -1;
+        return false;
     }
 
     if (flags & GL_TEX_FL_TEX3D)
@@ -86,8 +86,8 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         sh = ceil_pwrov2(sh);
     }
 
-    if (0 != image_resize(image, sw, sh))
-        return -1;
+    if (!image_resize(image, sw, sh))
+        return false;
 
     glGenTextures(1, &tex);
     GLERROR();
@@ -173,13 +173,13 @@ int gl_texture_create (image_t *image, int flags, int *gltex)
         GLERROR();
     }
 
-    return 0;
+    return true;
 
 error:
     glDeleteTextures(1, &tex);
     GLERROR();
 
-    return -1;
+    return false;
 }
 
 /*
@@ -199,7 +199,7 @@ void gl_texture_delete (int gltex)
 gl_texture_init
 =================
 */
-int gl_texture_init (void)
+bool gl_texture_init (void)
 {
     gl_trilinear = cvar_get("gl_trilinear", "1", CVAR_FL_SAVE);
     gl_anisotropy_level = cvar_get("gl_anisotropy_level", "1", CVAR_FL_SAVE);
@@ -208,7 +208,7 @@ int gl_texture_init (void)
 
     cvar_set_min(gl_picmip, 0.0f);
 
-    return 0;
+    return true;
 }
 
 /*

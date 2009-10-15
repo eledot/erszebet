@@ -67,9 +67,9 @@ GNUC_NONNULL static void r_sprite_get_align (const char *name, const char *word,
 r_sprite_load
 =================
 */
-int r_sprite_load (const char  *name,
-                   int          type,
-                   r_sprite_t **sprite)
+bool r_sprite_load (const char  *name,
+                    int          type,
+                    r_sprite_t **sprite)
 {
     char tmp[MISC_MAX_FILENAME];
     int i, nlen, num, size, align = 0;
@@ -84,7 +84,7 @@ int r_sprite_load (const char  *name,
                    name,
                    type,
                    sprite);
-        return -1;
+        return false;
     }
 
     *sprite = NULL;
@@ -97,7 +97,7 @@ int r_sprite_load (const char  *name,
     {
         s->ref++;
         *sprite = s;
-        return 0;
+        return true;
     }
 
     snprintf(tmp, sizeof(tmp), "spr/%s.txt", name);
@@ -105,7 +105,7 @@ int r_sprite_load (const char  *name,
     if (1 > (size = fs_open_read_close(tmp, &data, 4096, mempool, 1)))
     {
         sys_printf("sprite \"%s\" not found\n", name);
-        return -2;
+        return false;
     }
 
     frames_names[0] = data;
@@ -146,7 +146,7 @@ int r_sprite_load (const char  *name,
         if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
             goto error;
 
-        if (0 != r_texture_load(frames_names[1], type, s->frames))
+        if (!r_texture_load(frames_names[1], type, s->frames))
         {
             sys_printf("failed to load texture for sprite \"%s\"\n", name);
             goto error;
@@ -163,7 +163,7 @@ int r_sprite_load (const char  *name,
 
         for (i = 0; i < num ;i++)
         {
-            if (0 != r_texture_load(frames_names[i], type, &s->frames[i]))
+            if (!r_texture_load(frames_names[i], type, &s->frames[i]))
             {
                 sys_printf("failed to load frame %i (\"%s\")\n", i, frames_names[i]);
 
@@ -191,7 +191,7 @@ int r_sprite_load (const char  *name,
 
     mem_free(data);
 
-    return 0;
+    return true;
 
 error:
 
@@ -201,7 +201,7 @@ error:
     if (NULL != data)
         mem_free(data);
 
-    return -3;
+    return false;
 }
 
 /*
@@ -355,13 +355,13 @@ static void r_list_sprites_f (GNUC_UNUSED const struct cmd_s *cmd,
 r_sprite_init
 =================
 */
-int r_sprite_init (void)
+bool r_sprite_init (void)
 {
     sprites = NULL;
 
     cmd_register("r_list_sprites", NULL, &r_list_sprites_f, 0);
 
-    return 0;
+    return true;
 }
 
 /*

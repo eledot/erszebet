@@ -22,7 +22,7 @@
 #define HASH_SIZE ('z' - 'a')
 #define MAX_CMDS 256
 
-static int cmd_i = 0;
+static bool cmd_i = false;
 
 static cmd_t *cmds[HASH_SIZE];
 static mem_pool_t mempool;
@@ -182,7 +182,7 @@ static void set_f (GNUC_UNUSED const struct cmd_s *cmd,
 cmd_init
 =================
 */
-int cmd_init (void)
+bool cmd_init (void)
 {
     memset(cmds, 0, sizeof(cmds));
 
@@ -191,11 +191,11 @@ int cmd_init (void)
     cmd_register("set", NULL, &set_f, 0);
     cmd_register("seta", NULL, &set_f, 0);
 
-    cmd_i = 1;
+    cmd_i = true;
 
     sys_printf("+cmd\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -217,7 +217,7 @@ void cmd_shutdown (void)
 
     mem_free_static_pool();
 
-    cmd_i = 0;
+    cmd_i = false;
 
     sys_printf("-cmd\n");
 }

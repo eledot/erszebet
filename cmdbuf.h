@@ -26,7 +26,7 @@ void cmdbuf_add_file (const char *filename) GNUC_NONNULL;
 
 void cmdbuf_frame (void);
 
-int cmdbuf_init (void);
+bool cmdbuf_init (void);
 void cmdbuf_shutdown (void);
 
 #endif /* !_CMDBUF_H */

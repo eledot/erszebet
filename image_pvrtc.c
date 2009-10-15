@@ -57,14 +57,14 @@ typedef struct pvrtc_header_s
     unsigned int surfs_num; /* number of surfaces */
 }pvrtc_header_t;
 
-static int image_pvrtc_i = 0;
+static bool image_pvrtc_i = false;
 
 /*
 =================
 image_pvrtc_teximage2d
 =================
 */
-static void image_pvrtc_teximage2d (image_t *im)
+GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
 {
     int            i, off, width, height;
     unsigned char *data;
@@ -105,7 +105,7 @@ static void image_pvrtc_teximage2d (image_t *im)
 image_pvrtc_load
 =================
 */
-int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
+bool image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
 {
     fs_file_t      f;
     int            size, format, mipmaps_num = 1, pf;
@@ -113,10 +113,10 @@ int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
     pvrtc_header_t header;
 
     if (!image_pvrtc_i)
-        return -1;
+        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
-        return -2;
+        return false;
 
     if (size <= (int)sizeof(header))
     {
@@ -194,7 +194,7 @@ int image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
 
     fs_close(f);
 
-    return 0;
+    return true;
 
 error:
     fs_close(f);
@@ -202,7 +202,7 @@ error:
     if (NULL != data)
         mem_free(data);
 
-    return -1;
+    return false;
 }
 
 /*
@@ -210,15 +210,15 @@ error:
 image_pvrtc_init
 =================
 */
-int image_pvrtc_init (void)
+bool image_pvrtc_init (void)
 {
     if (sys_arg_find("-nopvrtc"))
-        return 0;
+        return true;
 
-    image_pvrtc_i = 1;
+    image_pvrtc_i = true;
     sys_printf("+image_pvrtc\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -231,7 +231,7 @@ void image_pvrtc_shutdown (void)
     if (!image_pvrtc_i)
         return;
 
-    image_pvrtc_i = 0;
+    image_pvrtc_i = false;
     sys_printf("-image_pvrtc\n");
 }
 
@@ -239,14 +239,14 @@ void image_pvrtc_shutdown (void)
 
 #include "common.h"
 
-int image_pvrtc_load (GNUC_UNUSED const char *name,
-                      GNUC_UNUSED image_t *im,
-                      GNUC_UNUSED mem_pool_t pool)
+bool image_pvrtc_load (GNUC_UNUSED const char *name,
+                       GNUC_UNUSED image_t *im,
+                       GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int image_pvrtc_init (void) { return -1; }
+bool image_pvrtc_init (void) { return false; }
 void image_pvrtc_shutdown (void) { }
 
 #endif /* ENGINE_IMAGE_PVRTC && GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG */

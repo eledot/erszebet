@@ -25,7 +25,7 @@
 
 #define STREAM_BUFFER_SIZE 65536
 
-static int snd_flac_i = 0;
+static bool snd_flac_i = false;
 
 /*
 =================
@@ -340,10 +340,10 @@ static int snd_flac_stream_func (GNUC_UNUSED snd_stream_t *stream, GNUC_UNUSED i
 snd_flac_load
 =================
 */
-int snd_flac_load (const char   *name,
-                   snd_stream_t *stream,
-                   int          *streaming,
-                   mem_pool_t    pool)
+bool snd_flac_load (const char   *name,
+                    snd_stream_t *stream,
+                    int          *streaming,
+                    mem_pool_t    pool)
 {
     fs_file_t                     f;
     int                           file_size;
@@ -351,7 +351,7 @@ int snd_flac_load (const char   *name,
     FLAC__StreamDecoderInitStatus status;
 
     if (!snd_flac_i)
-        return -1;
+        return false;
 
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
@@ -361,13 +361,13 @@ int snd_flac_load (const char   *name,
                    streaming,
                    pool);
 
-        return -1;
+        return false;
     }
 
     memset(stream, 0, sizeof(*stream));
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
-        return -2;
+        return false;
 
     if (NULL == (dec = FLAC__stream_decoder_new()))
     {
@@ -446,7 +446,7 @@ int snd_flac_load (const char   *name,
         FLAC__stream_decoder_delete(dec);
     }
 
-    return 0;
+    return true;
 
 error:
     sys_printf("failed to load \"%s\"\n", name);
@@ -460,7 +460,7 @@ error:
     if (NULL != dec)
         FLAC__stream_decoder_delete(dec);
 
-    return -3;
+    return false;
 }
 
 /*
@@ -468,15 +468,15 @@ error:
 snd_flac_init
 =================
 */
-int snd_flac_init (void)
+bool snd_flac_init (void)
 {
     if (sys_arg_find("-nolibflac"))
-        return 0;
+        return true;
 
-    snd_flac_i = 1;
+    snd_flac_i = true;
     sys_printf("+snd_flac\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -489,6 +489,8 @@ void snd_flac_shutdown (void)
     if (!snd_flac_i)
         return;
 
+    snd_flac_i = false;
+
     sys_printf("-snd_flac\n");
 }
 
@@ -496,15 +498,15 @@ void snd_flac_shutdown (void)
 
 #include "common.h"
 
-int snd_flac_load (GNUC_UNUSED const char *name,
-                   GNUC_UNUSED snd_stream_t *stream,
-                   GNUC_UNUSED int *streaming,
-                   GNUC_UNUSED mem_pool_t pool)
+bool snd_flac_load (GNUC_UNUSED const char *name,
+                    GNUC_UNUSED snd_stream_t *stream,
+                    GNUC_UNUSED int *streaming,
+                    GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int snd_flac_init (void) { return -1; }
+bool snd_flac_init (void) { return false; }
 void snd_flac_shutdown (void) { }
 
 #endif /* ENGINE_SND_FLAC */

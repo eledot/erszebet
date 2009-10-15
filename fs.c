@@ -50,7 +50,7 @@ typedef struct file_s
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(file_t, FILE_NAME_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(file_t, FILE_NAME_COMPARATOR, next);
 
-static int fs_i = 0;
+static bool fs_i = false;
 
 static file_t *files;
 static mem_pool_t mempool;
@@ -286,13 +286,13 @@ int fs_tell (fs_file_t f)
 fs_mkdir
 =================
 */
-int fs_mkdir (const char *name)
+bool fs_mkdir (const char *name)
 {
     int  i;
     char tmp[MISC_MAX_FILENAME * 2];
 
     if (!filename_is_valid(name))
-        return -1;
+        return false;
 
     for (i = 0; i < STSIZE(paths) ;i++)
     {
@@ -303,7 +303,7 @@ int fs_mkdir (const char *name)
         }
     }
 
-    return -1;
+    return false;
 }
 
 /*
@@ -311,13 +311,13 @@ int fs_mkdir (const char *name)
 fs_unlink
 =================
 */
-int fs_unlink (const char *name)
+bool fs_unlink (const char *name)
 {
     int  i;
     char tmp[MISC_MAX_FILENAME * 2];
 
     if (!filename_is_valid(name))
-        return -1;
+        return false;
 
     for (i = 0; i < STSIZE(paths) ;i++)
     {
@@ -328,7 +328,7 @@ int fs_unlink (const char *name)
         }
     }
 
-    return -1;
+    return false;
 }
 
 /*
@@ -401,21 +401,21 @@ static void fs_list_files_f (GNUC_UNUSED const struct cmd_s *cmd,
 fs_init
 =================
 */
-int fs_init (void)
+bool fs_init (void)
 {
     const char *home, *s;
     char        tmp[MISC_MAX_FILENAME];
 
-    if (0 != fs_helpers_apple_init())
+    if (!fs_helpers_apple_init())
     {
         sys_printf("fs_helpers_apple_init failed\n");
-        return -1;
+        return false;
     }
 
     if (NULL == (home = getenv("HOME")) || !home[0])
     {
         sys_printf("$HOME env var hasn\'t been set\n");
-        return -2;
+        return false;
     }
 
     snprintf(tmp, sizeof(tmp), "%s/%s", home, FS_HOME_BASE);
@@ -431,14 +431,14 @@ int fs_init (void)
         if (!(*s >= '0' && *s <= '9') && !(*s >= 'a' && *s <= 'z') && *s != '_')
         {
             sys_printf("%s contains invalid char\n", fs_game->name);
-            return -3;
+            return false;
         }
     }
 
     if (!fs_home->s[0])
     {
         sys_printf("fs_home cvar is empty\n");
-        return -4;
+        return false;
     }
 
     fs_add_paths(fs_base->s, fs_home->s);
@@ -446,11 +446,11 @@ int fs_init (void)
 
     cmd_register("fs_list_files", NULL, &fs_list_files_f, 0);
 
-    fs_i = 1;
+    fs_i = true;
 
     sys_printf("+fs\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -470,7 +470,7 @@ void fs_shutdown (void)
 
     mem_free_static_pool();
 
-    fs_i = 0;
+    fs_i = false;
 
     sys_printf("-fs\n");
 }

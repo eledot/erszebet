@@ -33,7 +33,7 @@ typedef struct
     int data_size;
 }wav_info_t;
 
-static int snd_wav_i = 0;
+static bool snd_wav_i = false;
 
 /*
 =================
@@ -63,7 +63,7 @@ static int snd_wav_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_wav_find_chunk
 =================
 */
-GNUC_NONNULL static int snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
+GNUC_NONNULL static bool snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
 {
     int i;
 
@@ -76,11 +76,11 @@ GNUC_NONNULL static int snd_wav_find_chunk (const uint8_t **buffer, int *size, c
         {
             *buffer += i + 4;
             *size   -= i + 4;
-            return 0;
+            return true;
         }
     }
 
-    return -1;
+    return false;
 }
 
 /*
@@ -88,7 +88,7 @@ GNUC_NONNULL static int snd_wav_find_chunk (const uint8_t **buffer, int *size, c
 snd_wav_get_wav_info
 =================
 */
-GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
+GNUC_NONNULL static bool snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
 {
     const uint8_t *b  = buffer;
     int            s  = size;
@@ -96,20 +96,20 @@ GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, w
     int            s2 = size;
 
     if (size < 40)
-        return -1;
+        return false;
 
-    if (0 != snd_wav_find_chunk(&b, &s, "RIFF") ||
-        0 != snd_wav_find_chunk(&b, &s, "WAVE") ||
-        0 != snd_wav_find_chunk(&b, &s, "fmt "))
+    if (!snd_wav_find_chunk(&b, &s, "RIFF") ||
+        !snd_wav_find_chunk(&b, &s, "WAVE") ||
+        !snd_wav_find_chunk(&b, &s, "fmt "))
     {
         sys_printf("RIFF/WAVE/fmt chunks are missing\n");
-        return -2;
+        return false;
     }
 
     if (s < 32)
     {
         sys_printf("invalid wav file\n");
-        return -3;
+        return false;
     }
 
     b += 4;
@@ -120,16 +120,16 @@ GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, w
     b += 6;
     wav->bps      = LITTLESHORT2(b);
 
-    if (0 != snd_wav_find_chunk(&b2, &s2, "data"))
+    if (!snd_wav_find_chunk(&b2, &s2, "data"))
     {
         sys_printf("data chunk is missing\n");
-        return -4;
+        return false;
     }
 
     if (s2 < 8)
     {
         sys_printf("invalid wav file\n");
-        return -5;
+        return false;
     }
 
     wav->data_size  = LITTLELONG2(b2);
@@ -138,10 +138,10 @@ GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, w
     if (wav->data_size < 1)
     {
         sys_printf("wav data size < 1\n");
-        return -6;
+        return false;
     }
 
-    return 0;
+    return true;
 
 }
 
@@ -150,10 +150,10 @@ GNUC_NONNULL static int snd_wav_get_wav_info (const uint8_t *buffer, int size, w
 snd_wav_load
 =================
 */
-int snd_wav_load (const char   *name,
-                  snd_stream_t *stream,
-                  int          *streaming,
-                  mem_pool_t    pool)
+bool snd_wav_load (const char   *name,
+                   snd_stream_t *stream,
+                   int          *streaming,
+                   mem_pool_t    pool)
 {
     fs_file_t  f;
     int        file_size, s, format;
@@ -168,17 +168,17 @@ int snd_wav_load (const char   *name,
                    streaming,
                    pool);
 
-        return -1;
+        return false;
     }
 
     memset(stream, 0, sizeof(*stream));
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
-        return -2;
+        return false;
 
     s = fs_read(f, tmp, sizeof(tmp));
 
-    if (0 != snd_wav_get_wav_info(tmp, s, &wav))
+    if (!snd_wav_get_wav_info(tmp, s, &wav))
         goto error;
 
     if (-1 == (format = snd_get_stream_format(wav.bps, wav.channels)))
@@ -229,7 +229,7 @@ int snd_wav_load (const char   *name,
         fs_close(f);
     }
 
-    return 0;
+    return true;
 
 error:
     sys_printf("failed to load \"%s\"\n", name);
@@ -239,7 +239,7 @@ error:
 
     fs_close(f);
 
-    return -3;
+    return false;
 }
 
 /*
@@ -247,13 +247,13 @@ error:
 snd_wav_init
 =================
 */
-int snd_wav_init (void)
+bool snd_wav_init (void)
 {
-    snd_wav_i = 1;
+    snd_wav_i = true;
 
     sys_printf("+snd_wav\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -266,6 +266,8 @@ void snd_wav_shutdown (void)
     if (!snd_wav_i)
         return;
 
+    snd_wav_i = false;
+
     sys_printf("-snd_wav\n");
 }
 
@@ -273,15 +275,15 @@ void snd_wav_shutdown (void)
 
 #include "common.h"
 
-int snd_wav_load (GNUC_UNUSED const char *name,
-                  GNUC_UNUSED snd_stream_t *stream,
-                  GNUC_UNUSED int *streaming,
-                  GNUC_UNUSED mem_pool_t pool)
+bool snd_wav_load (GNUC_UNUSED const char *name,
+                   GNUC_UNUSED snd_stream_t *stream,
+                   GNUC_UNUSED int *streaming,
+                   GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int snd_wav_init (void) { return -1; }
+bool snd_wav_init (void) { return false; }
 void snd_wav_shutdown (void) { }
 
 #endif /* ENGINE_SND_WAV */

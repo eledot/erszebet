@@ -20,7 +20,7 @@
 #include "common.h"
 #include "video_private.h"
 
-static int keyboard_i = 0;
+static bool keyboard_i = false;
 
 static mem_pool_t mempool;
 
@@ -226,7 +226,7 @@ void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int 
 keyboard_init
 =================
 */
-int keyboard_init (void)
+bool keyboard_init (void)
 {
     mem_alloc_static_pool("keyboard", 0);
 
@@ -235,10 +235,10 @@ int keyboard_init (void)
 
     cmd_register("bind", NULL, &bind_f, 0);
 
-    keyboard_i = 1;
+    keyboard_i = true;
     sys_printf("+keyboard\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -253,6 +253,8 @@ void keyboard_shutdown (void)
 
     if (!keyboard_i)
         return;
+
+    keyboard_i = false;
 
     if (NULL != (f = fs_open("config.cfg", FS_WRONLY, NULL, 1)))
     {

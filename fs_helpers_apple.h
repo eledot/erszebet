@@ -31,7 +31,7 @@ CGDataProviderRef fs_get_data_provider (const char *name);
 
 #endif
 
-int fs_helpers_apple_init (void);
+bool fs_helpers_apple_init (void);
 void fs_helpers_apple_shutdown (void);
 
 #endif /* !_FS_HELPERS_APPLE_H */

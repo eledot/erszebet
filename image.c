@@ -23,7 +23,7 @@
 #include "image_cg.h"
 #include "image_pvrtc.h"
 
-static int image_i = 0;
+static bool image_i = false;
 
 static mem_pool_t mempool;
 
@@ -87,7 +87,7 @@ static void resample_lerp_line (const uint8_t *in, uint8_t *out, int inwidth, in
 image_load
 =================
 */
-int image_load (const char *name, image_t *image)
+bool image_load (const char *name, image_t *image)
 {
     int  i;
     char tmp[MISC_MAX_FILENAME];
@@ -95,11 +95,11 @@ int image_load (const char *name, image_t *image)
     if (NULL == name || NULL == image)
     {
         sys_printf("bad args (name=%p, image=%p)\n", name, image);
-        return -1;
+        return false;
     }
 
     if (!filename_is_valid(name))
-        return -2;
+        return false;
 
     image->teximage2d = NULL;
     image->format = 0;
@@ -109,16 +109,16 @@ int image_load (const char *name, image_t *image)
     {
         snprintf(tmp, sizeof(tmp), "%s.%s", name, loaders[i].ext);
 
-        if (0 == loaders[i].func(tmp, image, mempool))
+        if (loaders[i].func(tmp, image, mempool))
         {
             strlcpy(image->name, name, sizeof(image->name));
-            return 0;
+            return true;
         }
     }
 
     sys_printf("failed to load \"%s\"\n", name);
 
-    return -1;
+    return false;
 }
 
 /*
@@ -166,7 +166,7 @@ int image_mipmap (image_t *image)
 image_resize
 =================
 */
-int image_resize (image_t *image, int outwidth, int outheight)
+bool image_resize (image_t *image, int outwidth, int outheight)
 {
     int            i, j, yi, oldy, f, fstep, endy;
     uint8_t       *out, *outdata, *row1, *row2;
@@ -176,11 +176,11 @@ int image_resize (image_t *image, int outwidth, int outheight)
     if (NULL == image || outwidth < 1 || outheight < 1)
     {
         sys_printf("bad args (image=%p, outwidth=%i, outheight=%i)\n", image, outwidth, outheight);
-        return -1;
+        return false;
     }
 
     if (image->format || (outwidth == image->width && image->height == outheight))
-        return 0;
+        return true;
 
     indata   = image->data;
     inwidth  = image->width;
@@ -189,7 +189,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
     if (NULL == (outdata = mem_alloc_static((outwidth * outheight) << 2)))
     {
         sys_printf("not enough memory to resize image\n");
-        return -1;
+        return false;
     }
 
     endy  = inheight - 1;
@@ -308,7 +308,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
     image->width  = outwidth;
     image->height = outheight;
 
-    return 0;
+    return true;
 }
 
 /*
@@ -316,7 +316,7 @@ int image_resize (image_t *image, int outwidth, int outheight)
 image_init
 =================
 */
-int image_init (void)
+bool image_init (void)
 {
     mem_alloc_static_pool("image", 0);
 
@@ -324,10 +324,10 @@ int image_init (void)
     image_jpeg_init();
     image_cg_init();
 
-    image_i = 1;
+    image_i = true;
     sys_printf("+image\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -346,6 +346,6 @@ void image_shutdown (void)
     image_jpeg_shutdown();
     image_cg_shutdown();
 
-    image_i = 0;
+    image_i = false;
     sys_printf("-image\n");
 }

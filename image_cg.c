@@ -24,7 +24,7 @@
 #include "common.h"
 #include "fs_helpers_apple.h"
 
-static int image_cg_i = 0;
+static bool image_cg_i = false;
 
 typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
                                  const CGFloat          decode[],
@@ -42,17 +42,17 @@ static im_prov_t providers[] =
 image_cg_load
 =================
 */
-int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
+bool image_cg_load (const char *name, image_t *im, mem_pool_t pool)
 {
     CGDataProviderRef provider = NULL;
     CGImageRef        image = NULL;
     CGColorSpaceRef   color_space = NULL;
     CGContextRef      context = NULL;
-    int               width, height, error = -1, prov;
+    int               width, height, error = true, prov;
     unsigned char    *data = NULL;
 
     if (!image_cg_i)
-        return -1;
+        return false;
 
     if (NULL == (provider = fs_get_data_provider(name)))
     {
@@ -108,7 +108,7 @@ int image_cg_load (const char *name, image_t *im, mem_pool_t pool)
     im->height = height;
     im->data   = data;
 
-    error = 0;
+    error = false;
 
 error:
     if (NULL != context)
@@ -134,15 +134,15 @@ error:
 image_cg_init
 =================
 */
-int image_cg_init (void)
+bool image_cg_init (void)
 {
     if (sys_arg_find("-nocg"))
-        return 0;
+        return true;
 
-    image_cg_i = 1;
+    image_cg_i = true;
     sys_printf("+image_cg\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -155,7 +155,7 @@ void image_cg_shutdown (void)
     if (!image_cg_i)
         return;
 
-    image_cg_i = 0;
+    image_cg_i = false;
     sys_printf("-image_cg\n");
 }
 
@@ -163,14 +163,14 @@ void image_cg_shutdown (void)
 
 #include "common.h"
 
-int image_cg_load (GNUC_UNUSED const char *name,
-                   GNUC_UNUSED image_t *im,
-                   GNUC_UNUSED mem_pool_t pool)
+bool image_cg_load (GNUC_UNUSED const char *name,
+                    GNUC_UNUSED image_t *im,
+                    GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int image_cg_init (void) { return -1; }
+bool image_cg_init (void) { return false; }
 void image_cg_shutdown (void) { }
 
 #endif /* ENGINE_IMAGE_CG */

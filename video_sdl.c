@@ -25,7 +25,7 @@
 
 #define DEFAULT_FLAGS (SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_OPENGL)
 
-static int video_i = 0;
+static bool video_i = false;
 
 static SDL_Surface *surf;
 static SDL_Rect   **modes;
@@ -40,11 +40,11 @@ static int nograb;
 int video_orientation;
 int video_width;
 int video_height;
-int video_fullscreen;
-int video_grabbed = 0;
+bool video_fullscreen;
+bool video_grabbed = false;
 double video_aspect;
 
-static int input_grabbed = 1;
+static bool input_grabbed = true;
 
 /*
 =================
@@ -60,13 +60,13 @@ void video_grab_toggle (void)
     {
         SDL_ShowCursor(SDL_DISABLE);
         SDL_WM_GrabInput(SDL_GRAB_ON);
-        video_grabbed = 1;
+        video_grabbed = true;
     }
     else
     {
         SDL_ShowCursor(SDL_ENABLE);
         SDL_WM_GrabInput(SDL_GRAB_OFF);
-        video_grabbed = 0;
+        video_grabbed = false;
     }
 
     errno = 0;
@@ -179,7 +179,7 @@ void video_frame (void)
 video_set_mode
 =================
 */
-int video_set_mode (int w, int h, int fullscreen)
+bool video_set_mode (int w, int h, bool fullscreen)
 {
     int flags = DEFAULT_FLAGS;
 
@@ -200,7 +200,7 @@ int video_set_mode (int w, int h, int fullscreen)
     if (NULL == (surf = SDL_SetVideoMode(w, h, 32, flags)))
     {
         sys_printf("SDL_SetVideoMode failed on %ix%i\n", w, h);
-        return -1;
+        return false;
     }
 
     video_width = w;
@@ -213,7 +213,7 @@ int video_set_mode (int w, int h, int fullscreen)
 
     errno = 0;
 
-    return 0;
+    return true;
 }
 
 /*
@@ -221,7 +221,7 @@ int video_set_mode (int w, int h, int fullscreen)
 video_init
 =================
 */
-int video_init (void)
+bool video_init (void)
 {
     int flags, w = 0, h = 0, i;
 
@@ -235,12 +235,11 @@ int video_init (void)
     if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))
     {
         sys_printf("SDL_Init failed\n");
-        return -1;
+        return false;
     }
 
     video_orientation = VIDEO_LANDSCAPE;
-
-    video_i = 1;
+    video_i = true;
 
     SDL_EventState(SDL_VIDEOEXPOSE, SDL_IGNORE);
 
@@ -250,7 +249,7 @@ int video_init (void)
     {
         sys_printf("no available video modes\n");
         SDL_Quit();
-        return -2;
+        return false;
     }
 
     errno = 0;
@@ -289,10 +288,10 @@ int video_init (void)
         }
     }
 
-    if (0 != video_set_mode(w, h, r_fullscreen->i))
+    if (!video_set_mode(w, h, r_fullscreen->i))
     {
         SDL_Quit();
-        return -3;
+        return false;
     }
 
     video_grab_toggle();
@@ -300,7 +299,7 @@ int video_init (void)
 
     sys_printf("+video\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -313,7 +312,7 @@ void video_shutdown (void)
     if (!video_i)
         return;
 
-    video_i = 0;
+    video_i = false;
 
     SDL_Quit();
     errno = 0;

@@ -26,7 +26,7 @@ static void *texts;
 r_text_set
 =================
 */
-int r_text_set (const char *string, const char *font, void **text)
+bool r_text_set (const char *string, const char *font, void **text)
 {
     if (NULL == string || NULL == font || NULL == text)
     {
@@ -34,10 +34,10 @@ int r_text_set (const char *string, const char *font, void **text)
                    string,
                    font,
                    text);
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /*
@@ -73,11 +73,11 @@ void r_text_draw (const void *text)
 r_text_init
 =================
 */
-int r_text_init (void)
+bool r_text_init (void)
 {
     texts = NULL;
 
-    return 0;
+    return true;
 }
 
 /*

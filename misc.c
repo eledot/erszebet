@@ -33,7 +33,7 @@ static int  tok_bufferpos = 0;
 parse_token
 =================
 */
-static int parse_token (const char **datapointer)
+static bool parse_token (const char **datapointer)
 {
     int         len;
     const char *data = *datapointer;
@@ -44,7 +44,7 @@ static int parse_token (const char **datapointer)
     if (NULL == data)
     {
         *datapointer = NULL;
-        return 0;
+        return false;
     }
 
 skipwhite:
@@ -53,7 +53,7 @@ skipwhite:
         if (!*data)
         {
             *datapointer = NULL;
-            return 0;
+            return false;
         }
     }
 
@@ -73,7 +73,7 @@ skipwhite:
                 tok_token[0] = 0;
                 *datapointer = NULL;
 
-                return 0;
+                return false;
             }
 
             tok_token[len++] = *data;
@@ -82,7 +82,7 @@ skipwhite:
         tok_token[len] = 0;
         *datapointer = data + 1;
 
-        return 1;
+        return true;
     }
     else
     {
@@ -92,7 +92,7 @@ skipwhite:
             {
                 tok_token[0] = 0;
                 *datapointer = NULL;
-                return 0;
+                return false;
             }
 
             tok_token[len++] = *data;
@@ -101,7 +101,7 @@ skipwhite:
         tok_token[len] = 0;
         *datapointer = data;
 
-        return 1;
+        return true;
     }
 }
 
@@ -162,14 +162,14 @@ int string_tokenize (const char *text)
 filename_is_valid
 =================
 */
-int filename_is_valid (const char *name)
+bool filename_is_valid (const char *name)
 {
     int len, i, d;
 
     if (NULL == name || name[0] < 'a' || name[0] > 'z')
     {
         sys_printf("invalid filename\n");
-        return 0;
+        return false;
     }
 
     len = strlen(name);
@@ -177,7 +177,7 @@ int filename_is_valid (const char *name)
     if (len >= MISC_MAX_FILENAME)
     {
         sys_printf("invalid filename (too long)\n");
-        return 0;
+        return false;
     }
 
     d = 0;
@@ -190,7 +190,7 @@ int filename_is_valid (const char *name)
              (name[i] < '0' || name[i] > '9')))
         {
             sys_printf("invalid name (contains invalid chars (0x%02x))\n", name[i]);
-            return 0;
+            return false;
         }
 
         if ('.' == name[i])
@@ -200,7 +200,7 @@ int filename_is_valid (const char *name)
             if (d > 1)
             {
                 sys_printf("invalid name (probably relative path)\n");
-                return 0;
+                return false;
             }
         }
         else
@@ -209,7 +209,7 @@ int filename_is_valid (const char *name)
         }
     }
 
-    return 1;
+    return true;
 }
 
 /*
@@ -217,14 +217,14 @@ int filename_is_valid (const char *name)
 varname_is_valid
 =================
 */
-int varname_is_valid (const char *name)
+bool varname_is_valid (const char *name)
 {
     int len, i;
 
     if (NULL == name || name[0] < 'a' || name[0] > 'z')
     {
         sys_printf("invalid name\n");
-        return 0;
+        return false;
     }
 
     len = strlen(name);
@@ -232,7 +232,7 @@ int varname_is_valid (const char *name)
     if (len >= MISC_MAX_VARNAME)
     {
         sys_printf("invalid name (too long)\n");
-        return 0;
+        return false;
     }
 
     for (i = 1; i < len ;i++)
@@ -241,9 +241,9 @@ int varname_is_valid (const char *name)
             (name[i] != '_' && (name[i] < '0' || name[i] > '9')))
         {
             sys_printf("invalid name (contains invalid chars)\n");
-            return 0;
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }

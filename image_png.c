@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-static int image_png_i = 0;
+static bool image_png_i = false;
 
 static void epng_error (png_structp png_ptr, png_const_charp msg);
 
@@ -92,7 +92,7 @@ static void epng_flush (GNUC_UNUSED png_structp png_ptr)
 image_png_load
 =================
 */
-int image_png_load (const char *name, image_t *im, mem_pool_t pool)
+bool image_png_load (const char *name, image_t *im, mem_pool_t pool)
 {
     fs_file_t   f;
     int         size, r, width, height, inc;
@@ -102,10 +102,10 @@ int image_png_load (const char *name, image_t *im, mem_pool_t pool)
     png_byte    depth, color_type;
 
     if (!image_png_i)
-        return -1;
+        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
-        return -2;
+        return false;
 
     if (NULL == (pngst = png_create_read_struct(PNG_LIBPNG_VER_STRING,
                                                 NULL,
@@ -114,7 +114,7 @@ int image_png_load (const char *name, image_t *im, mem_pool_t pool)
     {
         sys_printf("failed to create png read struct\n");
         fs_close(f);
-        return -3;
+        return false;
     }
 
     if (NULL == (info = png_create_info_struct(pngst)))
@@ -186,7 +186,7 @@ int image_png_load (const char *name, image_t *im, mem_pool_t pool)
     im->height = height;
     im->data   = image;
 
-    return 0;
+    return true;
 
 error:
     if (NULL != f)
@@ -197,7 +197,7 @@ error:
     if (NULL != image)
         mem_free(image);
 
-    return -4;
+    return false;
 }
 
 /*
@@ -205,7 +205,7 @@ error:
 image_png_save
 =================
 */
-int image_png_save (const char *name, image_t *im)
+bool image_png_save (const char *name, image_t *im)
 {
     fs_file_t   f;
     png_structp pngst;
@@ -213,10 +213,10 @@ int image_png_save (const char *name, image_t *im)
     int         r, inc;
 
     if (!image_png_i)
-        return -1;
+        return false;
 
     if (NULL == (f = fs_open(name, FS_WRONLY, NULL, 0)))
-        return -2;
+        return false;
 
     if (NULL == (pngst = png_create_write_struct(PNG_LIBPNG_VER_STRING,
                                                  f,
@@ -225,7 +225,7 @@ int image_png_save (const char *name, image_t *im)
     {
         sys_printf("failed to create png write struct\n");
         fs_close(f);
-        return -3;
+        return false;
     }
 
     if (setjmp(png_jmpbuf(pngst)))
@@ -264,7 +264,7 @@ int image_png_save (const char *name, image_t *im)
 
     fs_close(f);
 
-    return 0;
+    return true;
 
 error:
     if (NULL != f)
@@ -272,7 +272,7 @@ error:
 
     png_destroy_write_struct(&pngst, NULL != info ? &info : NULL);
 
-    return -4;
+    return false;
 }
 
 /*
@@ -280,15 +280,15 @@ error:
 image_png_init
 =================
 */
-int image_png_init (void)
+bool image_png_init (void)
 {
     if (sys_arg_find("-nolibpng"))
-        return 0;
+        return true;
 
-    image_png_i = 1;
+    image_png_i = true;
     sys_printf("+image_png\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -301,7 +301,7 @@ void image_png_shutdown (void)
     if (!image_png_i)
         return;
 
-    image_png_i = 0;
+    image_png_i = false;
     sys_printf("-image_png\n");
 }
 
@@ -309,21 +309,21 @@ void image_png_shutdown (void)
 
 #include "common.h"
 
-int image_png_load (GNUC_UNUSED const char *name,
-                    GNUC_UNUSED image_t *im,
-                    GNUC_UNUSED mem_pool_t pool)
+bool image_png_load (GNUC_UNUSED const char *name,
+                     GNUC_UNUSED image_t *im,
+                     GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int image_png_save (GNUC_UNUSED const char *name,
-                    GNUC_UNUSED image_t *im)
+bool image_png_save (GNUC_UNUSED const char *name,
+                     GNUC_UNUSED image_t *im)
 {
     sys_printf("png support was not compiled in\n");
-    return -1;
+    return false;
 }
 
-int image_png_init (void) { return -1; }
+bool image_png_init (void) { return false; }
 void image_png_shutdown (void) { }
 
 #endif /* ENGINE_IMAGE_PNG */

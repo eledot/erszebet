@@ -39,7 +39,7 @@ static r_texture_t *textures;
 r_texture_load
 =================
 */
-int r_texture_load (const char *name, int type, r_texture_t **tex)
+bool r_texture_load (const char *name, int type, r_texture_t **tex)
 {
     int gltex, nlen, w, h;
     char tmp[MISC_MAX_FILENAME], *namecopy;
@@ -49,13 +49,13 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
     if (NULL == name || type < 0 || type >= STSIZE(types) || NULL == tex)
     {
         sys_printf("bad args (name=%p, type=%i, tex=%p)\n", name, type, tex);
-        return -1;
+        return false;
     }
 
     *tex = NULL;
 
     if (!filename_is_valid(name))
-        return -2;
+        return false;
 
     /* check if it was loaded earlier */
     clone.name = name;
@@ -65,18 +65,18 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
     {
         t->ref++;
         *tex = t;
-        return 0;
+        return true;
     }
 
     snprintf(tmp, sizeof(tmp), "tex/%s", name);
 
-    if (0 != image_load(tmp, &image))
+    if (!image_load(tmp, &image))
         goto error;
 
     w = image.width;
     h = image.height;
 
-    if (0 != gl_texture_create(&image, types[type], &gltex))
+    if (!gl_texture_create(&image, types[type], &gltex))
         goto error;
 
     mem_free(image.data);
@@ -104,14 +104,14 @@ int r_texture_load (const char *name, int type, r_texture_t **tex)
 
     sglib_r_texture_t_add(&textures, t);
 
-    return 0;
+    return true;
 
 error:
 
     if (NULL != image.data)
         mem_free(image.data);
 
-    return -3;
+    return false;
 }
 
 /*
@@ -173,13 +173,13 @@ static void r_list_textures_f (GNUC_UNUSED const struct cmd_s *cmd,
 r_texture_init
 =================
 */
-int r_texture_init (void)
+bool r_texture_init (void)
 {
     textures = NULL;
 
     cmd_register("r_list_textures", NULL, &r_list_textures_f, 0);
 
-    return 0;
+    return true;
 }
 
 /*

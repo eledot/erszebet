@@ -120,15 +120,15 @@ CGDataProviderRef fs_get_data_provider (const char *name_)
 fs_helpers_apple_init
 =================
 */
-int fs_helpers_apple_init (void)
+bool fs_helpers_apple_init (void)
 {
     if (NULL == (cg_main_bundle = CFBundleGetMainBundle()))
     {
         sys_printf("CFBundleGetMainBundle failed\n");
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 /*
@@ -143,7 +143,9 @@ void fs_helpers_apple_shutdown (void)
 
 #else /* !_FS_HELPERS_APPLE_H */
 
-int fs_helpers_apple_init (void) { return 0; }
+#include "common.h"
+
+bool fs_helpers_apple_init (void) { return true; }
 void fs_helpers_apple_shutdown (void) { }
 
 #endif /* _FS_HELPERS_APPLE_H */

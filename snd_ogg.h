@@ -20,12 +20,12 @@
 #ifndef _SND_OGG_H
 #define _SND_OGG_H
 
-int snd_ogg_load (const char   *name,
-                  snd_stream_t *stream,
-                  int          *streaming,
-                  mem_pool_t    pool) GNUC_NONNULL;
+bool snd_ogg_load (const char   *name,
+                   snd_stream_t *stream,
+                   int          *streaming,
+                   mem_pool_t    pool) GNUC_NONNULL;
 
-int snd_ogg_init (void);
+bool snd_ogg_init (void);
 void snd_ogg_shutdown (void);
 
 #endif /* !_SND_OGG_H */

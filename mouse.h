@@ -46,7 +46,7 @@ void mouse_event (int button, int down, int dx, int dy);
  *
  * @return 0 on success
  */
-int mouse_init (void);
+bool mouse_init (void);
 
 /**
  * @brief Mouse module deinitialization

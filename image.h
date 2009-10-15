@@ -56,30 +56,11 @@ typedef struct image_s
     struct image_s *next;
 }image_t;
 
-/**
- * @brief Tries to load an image
- *
- * @param name Filename
- * @param image Where to store image data
- *
- * @return 0 on success, -1 otherwise
- */
-int image_load (const char *name, image_t *image) GNUC_NONNULL;
-
+bool image_load (const char *name, image_t *image) GNUC_NONNULL;
 int image_mipmap (image_t *image) GNUC_NONNULL;
+bool image_resize (image_t *image, int width, int height) GNUC_NONNULL;
 
-int image_resize (image_t *image, int width, int height) GNUC_NONNULL;
-
-/**
- * @brief Image module initialization
- *
- * @return 0 on success
- */
-int image_init (void);
-
-/**
- * @brief Image module deinitialization
- */
+bool image_init (void);
 void image_shutdown (void);
 
 #endif /* !_IMAGE_H */

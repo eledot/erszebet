@@ -20,12 +20,12 @@
 #ifndef _SND_WAV_H
 #define _SND_WAV_H
 
-int snd_wav_load (const char   *name,
-                  snd_stream_t *stream,
-                  int          *streaming,
-                  mem_pool_t    pool) GNUC_NONNULL;
+bool snd_wav_load (const char   *name,
+                   snd_stream_t *stream,
+                   int          *streaming,
+                   mem_pool_t    pool) GNUC_NONNULL;
 
-int snd_wav_init (void);
+bool snd_wav_init (void);
 void snd_wav_shutdown (void);
 
 #endif /* !_SND_WAV_H */

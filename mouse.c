@@ -69,7 +69,7 @@ void mouse_event (int button, int down, int dx, int dy)
 mouse_init
 =================
 */
-int mouse_init (void)
+bool mouse_init (void)
 {
     cursor_x = cursor_y = 0.0;
 
@@ -81,7 +81,7 @@ int mouse_init (void)
 
     sys_printf("+mouse\n");
 
-    return 0;
+    return true;
 }
 
 /*

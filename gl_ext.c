@@ -25,7 +25,7 @@
 
 #define GL_ADD_EXT_VAR(cvar)                                   \
     cvar_t *cvar;                                              \
-    int ext_##cvar = 0
+    bool ext_##cvar = false
 
 #define GL_ADD_EXT_VAR2(cvar)                                   \
     GL_ADD_EXT_VAR(cvar);                                       \
@@ -77,11 +77,11 @@ int gl_max_clip_planes;
 gl_add_extension
 =================
 */
-static int gl_add_extension (GNUC_UNUSED const char   *name,
-                             GNUC_UNUSED cvar_t      **cvar,
-                             GNUC_UNUSED const char   *cvar_name,
-                             GNUC_UNUSED libgl_func_t *funcs,
-                             GNUC_UNUSED int         (*init_func) (int ok))
+static bool gl_add_extension (GNUC_UNUSED const char   *name,
+                              GNUC_UNUSED cvar_t      **cvar,
+                              GNUC_UNUSED const char   *cvar_name,
+                              GNUC_UNUSED libgl_func_t *funcs,
+                              GNUC_UNUSED bool        (*init_func) (bool ok))
 {
 #if 0
     const char *s;
@@ -95,22 +95,22 @@ static int gl_add_extension (GNUC_UNUSED const char   *name,
         if (' ' == s[strlen(s)] || '\0' == s[strlen(s)])
             break;
 
-    if (NULL == s || (NULL != funcs && 0 != lib_get_funcs(libgl, funcs, 0)))
+    if (NULL == s || (NULL != funcs && lib_get_funcs(libgl, funcs, 0)))
         goto no;
 
     sys_printf("+%s%s\n", name, !(*cvar)->i ? " (disabled)" : "");
 
     if (NULL != init_func)
-        if (0 != init_func(1))
-            return 0;
+        if (!init_func(true))
+            return false;
 
-    return 1;
+    return true;
 
 no:
     if (NULL != init_func)
-        init_func(0);
+        init_func(false);
 #endif
-    return 0;
+    return false;
 }
 
 /*
@@ -118,17 +118,12 @@ no:
 nvfog_init
 =================
 */
-static int nvfog_init (int ok)
+static bool nvfog_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
-#ifdef GL_GENERATE_MIPMAP_HINT_SGIS
-    glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
-    GLERROR();
-#endif
-
-    return 0;
+    return true;
 }
 
 /*
@@ -136,17 +131,17 @@ static int nvfog_init (int ok)
 lod_bias_get_max
 =================
 */
-static int lod_bias_get_max (int ok)
+static bool lod_bias_get_max (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_MAX_TEXTURE_LOD_BIAS_EXT
     glGetIntegerv(GL_MAX_TEXTURE_LOD_BIAS_EXT, &gl_lod_bias_max);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -154,17 +149,17 @@ static int lod_bias_get_max (int ok)
 aniso_get_max
 =================
 */
-static int aniso_get_max (int ok)
+static bool aniso_get_max (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_EXT_texture_filter_anisotropic
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_anisotropy_max);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -172,10 +167,10 @@ static int aniso_get_max (int ok)
 compressed_init
 =================
 */
-static int compressed_init (int ok)
+static bool compressed_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_ARB_texture_compression
     glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB, &gl_compressed_tex_num_formats);
@@ -186,14 +181,14 @@ static int compressed_init (int ok)
     if (NULL == gl_compressed_tex_formats)
     {
         sys_printf("failed to allocate memory for compressed format enums\n");
-        return -1;
+        return false;
     }
 
     glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS_ARB, gl_compressed_tex_formats);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -201,17 +196,17 @@ static int compressed_init (int ok)
 gen_mipmap_init
 =================
 */
-static int gen_mipmap_init (int ok)
+static bool gen_mipmap_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_SGIS_generate_mipmap
     glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -219,17 +214,17 @@ static int gen_mipmap_init (int ok)
 tex3d_init
 =================
 */
-static int tex3d_init (int ok)
+static bool tex3d_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_EXT_texture3D
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE_EXT, &gl_texture3d_size_max);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -237,17 +232,17 @@ static int tex3d_init (int ok)
 texcubemap_init
 =================
 */
-static int texcubemap_init (int ok)
+static bool texcubemap_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_ARB_texture_cube_map
     glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB, &gl_texture_cube_map_size_max);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*
@@ -255,17 +250,17 @@ static int texcubemap_init (int ok)
 clipvol_init
 =================
 */
-static int clipvol_init (int ok)
+static bool clipvol_init (bool ok)
 {
     if (!ok)
-        return 0;
+        return true;
 
 #ifdef GL_EXT_clip_volume_hint
     glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT, GL_NICEST);
     GLERROR();
 #endif
 
-    return 0;
+    return true;
 }
 
 /*

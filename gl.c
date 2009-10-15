@@ -21,7 +21,7 @@
 #include "gl_private.h"
 #include "r_texture.h"
 
-static int gl_i = 0;
+static bool gl_i = false;
 
 mem_pool_t mempool;
 
@@ -89,14 +89,14 @@ void gl_clear (void)
 gl_get_screen_rgb
 =================
 */
-int gl_get_screen_rgb (image_t *image)
+bool gl_get_screen_rgb (image_t *image)
 {
     int size;
 
     if (NULL == image)
     {
         sys_printf("NULL image\n");
-        return -1;
+        return false;
     }
 
     size = video_width * video_height * 3;
@@ -104,7 +104,7 @@ int gl_get_screen_rgb (image_t *image)
     if (NULL == (image->data = mem_alloc(mempool, size)))
     {
         sys_printf("failed to allocate %i bytes\n", size);
-        return -3;
+        return false;
     }
 
     image->width = video_width;
@@ -113,7 +113,7 @@ int gl_get_screen_rgb (image_t *image)
     glReadPixels(0, 0, video_width, video_height, GL_RGB, GL_UNSIGNED_BYTE, image->data);
     GLERROR();
 
-    return 0;
+    return true;
 }
 
 /*
@@ -492,7 +492,7 @@ void gl_switch_3d (void)
 gl_create_internal_font
 =================
 */
-static int gl_create_internal_font (void)
+static bool gl_create_internal_font (void)
 {
     image_t im;
     int     i, k, pix;
@@ -507,7 +507,7 @@ static int gl_create_internal_font (void)
     if (NULL == (im.data = mem_alloc_static(pix << 2)))
     {
         sys_printf("no memory for internal font\n");
-        return -1;
+        return false;
     }
 
     memset(im.data, 0xff, pix << 2);
@@ -525,7 +525,7 @@ static int gl_create_internal_font (void)
 
     mem_free(im.data);
 
-    return 0;
+    return true;
 }
 
 /*
@@ -533,13 +533,13 @@ static int gl_create_internal_font (void)
 gl_init
 =================
 */
-int gl_init (void)
+bool gl_init (void)
 {
     const char *s;
 
     mem_alloc_static_pool("gl", 0);
 
-    gl_i = 1;
+    gl_i = true;
 
     s = (void *)glGetString(GL_VENDOR);
     GLERROR();
@@ -609,15 +609,15 @@ int gl_init (void)
 
     gl_set_viewport(0, 0, video_width, video_height);
 
-    if (0 != gl_texture_init())
-        return -2;
+    if (!gl_texture_init())
+        return false;
 
-    if (0 != gl_create_internal_font())
-        return -3;
+    if (!gl_create_internal_font())
+        return false;
 
     sys_printf("+gl\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -633,7 +633,7 @@ void gl_shutdown (void)
     gl_texture_delete(internal_font);
     gl_texture_shutdown();
 
-    gl_i = 0;
+    gl_i = false;
 
     sys_printf("-gl\n");
 }

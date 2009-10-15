@@ -63,7 +63,7 @@ void snd_set_listener_velocity (const float *vel) GNUC_NONNULL;
 
 void snd_frame (void);
 
-int snd_init (void);
+bool snd_init (void);
 void snd_shutdown (void);
 
 #endif /* !_SND_OPENAL_H */

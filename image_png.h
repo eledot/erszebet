@@ -28,36 +28,10 @@
 #ifndef _IMAGE_PNG_H
 #define _IMAGE_PNG_H
 
-/**
- * @brief Tries to load an image as if it was a PNG one
- *
- * @param name Filename
- * @param im Image structure to fill in
- *
- * @return 0 - success
- */
-int image_png_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
+bool image_png_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
+bool image_png_save (const char *name, image_t *im) GNUC_NONNULL;
 
-/**
- * @brief Tries to save an image in PNG format
- *
- * @param name Filename
- * @param im Image to save
- *
- * @return 0 - success
- */
-int image_png_save (const char *name, image_t *im) GNUC_NONNULL;
-
-/**
- * @brief PNG module initialization
- *
- * @return 0 on success
- */
-int image_png_init (void);
-
-/**
- * @brief PNG module deinitialization
- */
+bool image_png_init (void);
 void image_png_shutdown (void);
 
 #endif /* !_IMAGE_PNG_H */

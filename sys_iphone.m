@@ -37,7 +37,7 @@
     [glView createFramebuffer];
     [glView startAnimation];
 
-    engine_init();
+    engine_start();
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application

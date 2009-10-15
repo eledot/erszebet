@@ -128,34 +128,12 @@ int fs_seek (fs_file_t f, int offset, int origin) GNUC_NONNULL;
  */
 int fs_tell (fs_file_t f) GNUC_NONNULL;
 
-/**
- * @brief Creates a direcrory
- *
- * @param name Directory pathname
- *
- * @return 0 on success, -1 on error
- */
-int fs_mkdir (const char *name) GNUC_NONNULL;
+bool fs_mkdir (const char *name) GNUC_NONNULL;
 
-/**
- * @brief Removes file or directory
- *
- * @param name File/Directory name
- *
- * @return 0 on success (or if it doesn't exist already), -1 on error
- */
-int fs_unlink (const char *name) GNUC_NONNULL;
+bool fs_unlink (const char *name) GNUC_NONNULL;
 
-/**
- * @brief FS module initialization
- *
- * @return 0 on success
- */
-int fs_init (void);
+bool fs_init (void);
 
-/**
- * @brief FS module deinitialization
- */
 void fs_shutdown (void);
 
 #endif /* !_FS_H */

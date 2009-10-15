@@ -28,36 +28,10 @@
 #ifndef _IMAGE_JPEG_H
 #define _IMAGE_JPEG_H
 
-/**
- * @brief Tries to load an image as if it was a JPEG one
- *
- * @param name Filename
- * @param im Image structure to fill in
- *
- * @return 0 - success
- */
-int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
+bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL;
+bool image_jpeg_save (const char *name, image_t *im) GNUC_NONNULL;
 
-/**
- * @brief Tries to save an image in JPEG format
- *
- * @param name Filename
- * @param im Image to save
- *
- * @return 0 - success
- */
-int image_jpeg_save (const char *name, image_t *im) GNUC_NONNULL;
-
-/**
- * @brief JPEG module initialization
- *
- * @return 0 on success
- */
-int image_jpeg_init (void);
-
-/**
- * @brief JPEG module deinitialization
- */
+bool image_jpeg_init (void);
 void image_jpeg_shutdown (void);
 
 #endif /* !_IMAGE_JPEG_H */

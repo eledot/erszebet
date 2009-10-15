@@ -125,16 +125,16 @@ static const int ent_fields_free[] =
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
-GNUC_NONNULL static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
+GNUC_NONNULL static bool ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
 GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent);
-GNUC_NONNULL static int ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
+GNUC_NONNULL static bool ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
 GNUC_NONNULL static void ent_render_unload_text (g_entity_t *ent);
-GNUC_NONNULL static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
+GNUC_NONNULL static bool ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
 GNUC_NONNULL static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
 
 static const struct
 {
-    int (*load) (const char *name, const double *parms, g_entity_t *ent);
+    bool (*load) (const char *name, const double *parms, g_entity_t *ent);
     void (*unload) (g_entity_t *ent);
 }ent_render_load_unload_funcs[] =
 {
@@ -155,16 +155,15 @@ static int         point_query_shapes_num;
 ent_render_load_sprite
 =================
 */
-GNUC_NONNULL static int ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
+GNUC_NONNULL static bool ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
 {
     r_sprite_t *sprite;
-    int res;
 
-    if (0 != (res = r_sprite_load(name,
-                                  ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
-                                  &sprite)))
+    if (!r_sprite_load(name,
+                       ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
+                       &sprite))
     {
-        return res;
+        return false;
     }
 
     ent->render_type = 0;
@@ -180,7 +179,7 @@ GNUC_NONNULL static int ent_render_load_sprite (const char *name, const double *
     if (!ent->height)
         ent->height = sprite->frames[0]->h;
 
-    return 0;
+    return true;
 }
 
 /*
@@ -199,7 +198,7 @@ GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent)
 ent_render_load_text
 =================
 */
-GNUC_NONNULL static int ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static bool ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
 {
     return 1;
 }
@@ -218,7 +217,7 @@ GNUC_NONNULL static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
 ent_render_load_model
 =================
 */
-GNUC_NONNULL static int ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static bool ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
 {
     /* FIXME */
     return 1;
@@ -899,7 +898,7 @@ GNUC_NONNULL static int ent_lua_point_query (lua_State *lst)
 
     point_query_shapes_num = 0;
 
-    if (0 != g_pop_vector(1, point, 3))
+    if (!g_pop_vector(1, point, 3))
     {
         sys_printf("called phys_point_query without origin\n");
         return 0;
@@ -930,13 +929,13 @@ GNUC_NONNULL static int ent_lua_apply_impulse (lua_State *lst)
         return 0;
     }
 
-    if (0 != g_pop_vector(2, point, 2))
+    if (!g_pop_vector(2, point, 2))
     {
         sys_printf("called phys_apply_impulse without point\n");
         return 0;
     }
 
-    if (0 != g_pop_vector(3, impulse, 2))
+    if (!g_pop_vector(3, impulse, 2))
     {
         sys_printf("called phys_apply_impulse without impulse\n");
         return 0;

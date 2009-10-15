@@ -26,7 +26,7 @@
 
 #define STREAM_BUFFER_SIZE 65536
 
-static int snd_ogg_i = 0;
+static bool snd_ogg_i = false;
 
 /*
 =================
@@ -116,10 +116,10 @@ static int snd_ogg_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_ogg_load
 =================
 */
-int snd_ogg_load (const char   *name,
-                  snd_stream_t *stream,
-                  int          *streaming,
-                  mem_pool_t    pool)
+bool snd_ogg_load (const char   *name,
+                   snd_stream_t *stream,
+                   int          *streaming,
+                   mem_pool_t    pool)
 {
     fs_file_t       f;
     int             file_size, length, buffer_size, add, cursec;
@@ -127,7 +127,7 @@ int snd_ogg_load (const char   *name,
     vorbis_info    *vorbisinfo = NULL;
 
     if (!snd_ogg_i)
-        return -1;
+        return false;
 
     if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
     {
@@ -137,13 +137,13 @@ int snd_ogg_load (const char   *name,
                    streaming,
                    pool);
 
-        return -1;
+        return false;
     }
 
     memset(stream, 0, sizeof(*stream));
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
-        return -2;
+        return false;
 
     if (NULL == (vorbisfile = mem_alloc(pool, sizeof(*vorbisfile))))
     {
@@ -234,7 +234,7 @@ int snd_ogg_load (const char   *name,
         mem_free(stream->private);
     }
 
-    return 0;
+    return true;
 
 error:
     sys_printf("failed to load \"%s\"\n", name);
@@ -250,7 +250,7 @@ error:
     if (NULL != stream->data)
         mem_free(stream->data);
 
-    return -3;
+    return false;
 }
 
 /*
@@ -258,15 +258,15 @@ error:
 snd_ogg_init
 =================
 */
-int snd_ogg_init (void)
+bool snd_ogg_init (void)
 {
     if (sys_arg_find("-nolibvorbis"))
-        return 0;
+        return true;
 
-    snd_ogg_i = 1;
+    snd_ogg_i = true;
     sys_printf("+snd_ogg\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -279,6 +279,7 @@ void snd_ogg_shutdown (void)
     if (!snd_ogg_i)
         return;
 
+    snd_ogg_i = false;
     sys_printf("-snd_ogg\n");
 }
 
@@ -286,15 +287,15 @@ void snd_ogg_shutdown (void)
 
 #include "common.h"
 
-int snd_ogg_load (GNUC_UNUSED const char *name,
-                  GNUC_UNUSED snd_stream_t *stream,
-                  GNUC_UNUSED int *streaming,
-                  GNUC_UNUSED mem_pool_t pool)
+bool snd_ogg_load (GNUC_UNUSED const char *name,
+                   GNUC_UNUSED snd_stream_t *stream,
+                   GNUC_UNUSED int *streaming,
+                   GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int snd_ogg_init (void) { return -1; }
+bool snd_ogg_init (void) { return false; }
 void snd_ogg_shutdown (void) { }
 
 #endif /* ENGINE_SND_OGG */

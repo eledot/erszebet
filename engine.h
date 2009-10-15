@@ -28,15 +28,8 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-int engine_frame (void);
-
-int engine_init (void);
-
-/**
- * @brief Deinitializes the engine
- *
- * @return Return code, 0 on success
- */
-int engine_stop (void);
+bool engine_frame (void);
+bool engine_start (void);
+void engine_stop (void);
 
 #endif /* !_ENGINE_H */

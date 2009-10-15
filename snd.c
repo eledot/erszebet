@@ -45,8 +45,8 @@ typedef struct sound_s
     struct sound_s *prev;
 }sound_t;
 
-static int snd_i = 0;
-static int alc_done = 0;
+static bool snd_i = false;
+static bool alc_done = false;
 
 static ALCdevice  *snd_device;
 static ALCcontext *snd_context;
@@ -62,10 +62,10 @@ static const char *extensions;
 static const struct
 {
     char  ext[8];
-    int (*func) (const char   *name,
-                 snd_stream_t *stream,
-                 int          *streaming,
-                 mem_pool_t    pool);
+    bool (*func) (const char   *name,
+                  snd_stream_t *stream,
+                  int          *streaming,
+                  mem_pool_t    pool);
 }loaders[] =
 {
     { "wav",  (void *)&snd_wav_load  },
@@ -267,7 +267,7 @@ snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
     {
         snprintf(tmp, sizeof(tmp), "%s.%s", name, loaders[i].ext);
 
-        if (0 == loaders[i].func(tmp, &sound->stream, &streaming, mempool))
+        if (loaders[i].func(tmp, &sound->stream, &streaming, mempool))
         {
             sys_printf("found \"%s\"\n", name);
 
@@ -362,11 +362,10 @@ void snd_frame (void)
 snd_init
 =================
 */
-int snd_init (void)
+bool snd_init (void)
 {
     const char *s;
 
-    alc_done = 0;
     sounds = sounds_streaming = NULL;
 
     /* sound volume (0.0 - 1.0) */
@@ -375,7 +374,7 @@ int snd_init (void)
     s_volume->callback = &s_volume_callback;
 
     if (sys_arg_find("-nosound"))
-        return 0;
+        return true;
 
     /* open default device */
     snd_device = alcOpenDevice(NULL);
@@ -384,7 +383,7 @@ int snd_init (void)
     if (NULL == snd_device)
     {
         sys_printf("failed to open default sound device\n");
-        return -2;
+        return false;
     }
 
     /* create default context */
@@ -394,12 +393,12 @@ int snd_init (void)
     if (NULL == snd_context)
     {
         sys_printf("failed to create sound context\n");
-        return -3;
+        return false;
     }
 
     /* set current context. alGetError becomes available, btw */
     alcMakeContextCurrent(snd_context);
-    alc_done = 1;
+    alc_done = true;
     ALERROR();
 
     errno = 0;
@@ -425,14 +424,14 @@ int snd_init (void)
 
     mem_alloc_static_pool("snd", 0);
 
-    snd_i = 1;
+    snd_i = true;
 
     /* set volume */
     s_volume_callback(s_volume);
 
     sys_printf("+snd\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -446,7 +445,7 @@ void snd_shutdown (void)
         return;
 
     alcMakeContextCurrent(NULL);
-    alc_done = 0; /* no context here -- can't use alGetError */
+    alc_done = false; /* no context here -- can't use alGetError */
     ALERROR();
     alcDestroyContext(snd_context);
     ALERROR();
@@ -459,7 +458,7 @@ void snd_shutdown (void)
     snd_ogg_shutdown();
     snd_flac_shutdown();
 
-    snd_i = 0;
+    snd_i = false;
 
     sys_printf("-snd\n");
 }
@@ -475,7 +474,7 @@ snd_sound_t snd_load (GNUC_UNUSED const char *name, GNUC_UNUSED int flags) { ret
 void snd_unload (GNUC_UNUSED snd_sound_t *sound) { }
 void snd_frame (void) { }
 
-int snd_init (void) { return 0; }
+bool snd_init (void) { return true; }
 void snd_shutdown (void) { }
 
 #endif /* ENGINE_SND */

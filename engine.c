@@ -21,7 +21,7 @@
 #include "engine.h"
 
 #define INIT(a)                                 \
-    if (0 != a##_init())                        \
+    if (!a##_init())                            \
         goto error;
 
 #define SHUTDOWN(a)                             \
@@ -81,10 +81,10 @@ static void exec_f (GNUC_UNUSED const struct cmd_s *cmd,
 engine_frame
 =================
 */
-int engine_frame (void)
+bool engine_frame (void)
 {
     if (engine_quit_flag)
-        return -1;
+        return false;
 
     sys_get_time();
 
@@ -94,15 +94,15 @@ int engine_frame (void)
     g_frame();
     cmdbuf_frame();
 
-    return 0;
+    return true;
 }
 
 /*
 =================
-engine_init
+engine_start
 =================
 */
-int engine_init (void)
+bool engine_start (void)
 {
     init_time();
     sys_get_time();
@@ -148,11 +148,13 @@ int engine_init (void)
     sys_arg_to_cmdbuf('+');
     cmdbuf_frame();
 
-    return 0;
+    return true;
 
 error:
 
-    return engine_stop();
+    engine_stop();
+
+    return false;
 }
 
 /*
@@ -160,14 +162,14 @@ error:
 engine_stop
 =================
 */
-int engine_stop (void)
+void engine_stop (void)
 {
     static int stopping = 0;
 
     if (stopping)
     {
         /* already stopping */
-        return 1;
+        return;
     }
 
     stopping = 1;
@@ -184,6 +186,4 @@ int engine_stop (void)
     SHUTDOWN(cmdbuf);
     SHUTDOWN(cmd);
     SHUTDOWN(fs);
-
-    return 0;
 }

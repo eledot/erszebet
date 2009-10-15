@@ -73,7 +73,7 @@ double sys_get_time (void)
 sys_mkdir
 =================
 */
-int sys_mkdir (char *path)
+bool sys_mkdir (char *path)
 {
     int i;
 
@@ -82,7 +82,7 @@ int sys_mkdir (char *path)
     if (NULL == path || !path[0])
     {
         sys_printf("bad pathname\n");
-        return -1;
+        return false;
     }
 
     for (i = 1; path[i] ;i++)
@@ -94,7 +94,7 @@ int sys_mkdir (char *path)
             if (-1 == mkdir(path, MKDIRMODE) && errno != EEXIST)
             {
                 sys_printf("mkdir \"%s\" failed\n", path);
-                return -1;
+                return false;
             }
 
             path[i] = '/';
@@ -104,12 +104,12 @@ int sys_mkdir (char *path)
     if (-1 == mkdir(path, MKDIRMODE) && errno != EEXIST)
     {
         sys_printf("mkdir \"%s\" failed\n", path);
-        return -1;
+        return false;
     }
 
     errno = 0;
 
-    return 0;
+    return true;
 }
 
 /*
@@ -117,23 +117,21 @@ int sys_mkdir (char *path)
 sys_unlink
 =================
 */
-int sys_unlink (const char *filename)
+bool sys_unlink (const char *filename)
 {
-    int res;
-
     if (NULL == filename || !filename[0])
     {
         sys_printf("bad pathname\n");
-        return -1;
+        return false;
     }
 
-    if (-1 != (res = unlink(filename)) || ENOENT == errno)
-        return 0;
+    if (-1 != unlink(filename) || ENOENT == errno)
+        return true;
 
-    if (-1 != (res = rmdir(filename)) || ENOENT == errno)
-        return 0;
+    if (-1 != rmdir(filename) || ENOENT == errno)
+        return true;
 
-    return -1;
+    return false;
 }
 
 /*
@@ -159,7 +157,8 @@ static void signal_handler (GNUC_UNUSED int sig)
     signal(SIGALRM, signal_handler);
     alarm(5);
 
-    exit(engine_stop());
+    engine_stop();
+    exit(1);
 }
 
 /*
@@ -189,6 +188,8 @@ int SDL_main (int argc, char **argv)
 {
     int res;
 
+    errno = 0;
+
     signal(SIGFPE, SIG_IGN);
     sys_arg_set(argc, argv);
 
@@ -197,11 +198,11 @@ int SDL_main (int argc, char **argv)
 
     sys_printf("starting engine...\n");
 
-    if (0 == (res = engine_init()))
+    if ((res = engine_start()))
     {
-        while (0 == engine_frame());
+        while (engine_frame());
 
-        res = engine_stop();
+        engine_stop();
     }
 
     sys_printf("exiting...\n");

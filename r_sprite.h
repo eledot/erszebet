@@ -51,9 +51,9 @@ typedef struct r_sprite_s
     r_texture_t *frames[0];
 }r_sprite_t;
 
-int r_sprite_load (const char  *name,
-                   int          type,
-                   r_sprite_t **sprite) GNUC_NONNULL;
+bool r_sprite_load (const char  *name,
+                    int          type,
+                    r_sprite_t **sprite) GNUC_NONNULL;
 void r_sprite_unload (r_sprite_t *sprite) GNUC_NONNULL;
 
 void r_sprite_draw (const r_sprite_t *sprite,
@@ -65,7 +65,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
                     double scale,
                     double angle) GNUC_NONNULL;
 
-int r_sprite_init (void);
+bool r_sprite_init (void);
 void r_sprite_shutdown (void);
 
 #endif /* !_R_SPRITE_H */

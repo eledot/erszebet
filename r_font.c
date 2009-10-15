@@ -27,15 +27,15 @@ static r_font_t *fonts;
 r_font_load
 =================
 */
-int r_font_load (GNUC_UNUSED const char *name, GNUC_UNUSED int first, GNUC_UNUSED r_font_t **font)
+bool r_font_load (GNUC_UNUSED const char *name, GNUC_UNUSED int first, GNUC_UNUSED r_font_t **font)
 {
     goto error;
 
-    return 0;
+    return true;
 
 error:
 
-    return -3;
+    return false;
 }
 
 /*
@@ -52,11 +52,11 @@ void r_font_unload (GNUC_UNUSED r_font_t *font)
 r_font_init
 =================
 */
-int r_font_init (void)
+bool r_font_init (void)
 {
     fonts = NULL;
 
-    return 0;
+    return true;
 }
 
 /*

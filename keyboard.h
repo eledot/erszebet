@@ -146,16 +146,7 @@ void key_set_repeat (int repeat);
  */
 void key_event (int printable, int printable_shift, int normal, int mod, int down);
 
-/**
- * @brief Keyboard module initialization
- *
- * @return 0 on success
- */
-int keyboard_init (void);
-
-/**
- * @brief Keyboard module deinitialization
- */
+bool keyboard_init (void);
 void keyboard_shutdown (void);
 
 #endif /* !_KEYBOARD_H */

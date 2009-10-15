@@ -21,7 +21,7 @@
 
 #define CMDBUF_SIZE 32768
 
-static int cmdbuf_i = 0;
+static bool cmdbuf_i = false;
 
 static char *cmdbuf;
 static int   cmdbuf_len;
@@ -260,7 +260,7 @@ static void set_f (const struct cmd_s *cmd, int source, int argc, const char **a
 cmdbuf_init
 =================
 */
-int cmdbuf_init (void)
+bool cmdbuf_init (void)
 {
     mem_alloc_static_pool("cmdbuf", CMDBUF_SIZE * 2);
 
@@ -273,11 +273,11 @@ int cmdbuf_init (void)
     cmd_register("set",  NULL, &set_f, 0); /* normal set              */
     cmd_register("aset", NULL, &set_f, 0); /* set with CVAR_FL_SAVE   */
 
-    cmdbuf_i = 1;
+    cmdbuf_i = true;
 
     sys_printf("+cmdbuf\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -292,7 +292,7 @@ void cmdbuf_shutdown (void)
 
     mem_free_static_pool();
 
-    cmdbuf_i = 0;
+    cmdbuf_i = false;
 
     sys_printf("-cmdbuf\n");
 }

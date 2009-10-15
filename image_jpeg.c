@@ -25,7 +25,7 @@
 
 #include "common.h"
 
-static int image_jpeg_i = 0;
+static bool image_jpeg_i = false;
 
 static jmp_buf   jpeg_jmpbuf;
 static fs_file_t jpeg_file;
@@ -205,7 +205,7 @@ static void ejpeg_dest (j_compress_ptr cinfo, void *outfile)
 image_jpeg_load
 =================
 */
-int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
+bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
 {
     fs_file_t                     f;
     unsigned char                *p, *image = NULL;
@@ -214,10 +214,10 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     struct jpeg_error_mgr         em;
 
     if (!image_jpeg_i)
-        return -1;
+        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
-        return -2;
+        return false;
 
     ds.err = jpeg_std_error(&em);
 
@@ -227,7 +227,7 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     if (setjmp(jpeg_jmpbuf))
     {
         fs_close(f);
-        return -3;
+        return false;
     }
 
     jpeg_CreateDecompress(&ds, JPEG_LIB_VERSION, sizeof(ds));
@@ -278,7 +278,7 @@ int image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     im->height = height;
     im->data   = image;
 
-    return 0;
+    return true;
 
 error:
     jpeg_destroy_decompress(&ds);
@@ -288,7 +288,7 @@ error:
     if (NULL != image)
         mem_free(image);
 
-    return -4;
+    return false;
 }
 
 /*
@@ -296,7 +296,7 @@ error:
 image_jpeg_save
 =================
 */
-int image_jpeg_save (const char *name, image_t *im)
+bool image_jpeg_save (const char *name, image_t *im)
 {
     fs_file_t                   f;
     struct jpeg_compress_struct cs;
@@ -304,10 +304,10 @@ int image_jpeg_save (const char *name, image_t *im)
     int                         r, inc;
 
     if (!image_jpeg_i)
-        return -1;
+        return false;
 
     if (NULL == (f = fs_open(name, FS_WRONLY, NULL, 0)))
-        return -2;
+        return false;
 
     cs.err = jpeg_std_error(&em);
 
@@ -317,7 +317,7 @@ int image_jpeg_save (const char *name, image_t *im)
     if (setjmp(jpeg_jmpbuf))
     {
         fs_close(f);
-        return -3;
+        return false;
     }
 
     jpeg_CreateCompress(&cs, JPEG_LIB_VERSION, sizeof(cs));
@@ -350,14 +350,14 @@ int image_jpeg_save (const char *name, image_t *im)
 
     fs_close(f);
 
-    return 0;
+    return true;
 
 error:
     jpeg_destroy_compress(&cs);
 
     fs_close(f);
 
-    return -4;
+    return false;
 }
 
 /*
@@ -365,15 +365,15 @@ error:
 image_jpeg_init
 =================
 */
-int image_jpeg_init (void)
+bool image_jpeg_init (void)
 {
     if (sys_arg_find("-nolibjpeg"))
-        return 0;
+        return true;
 
-    image_jpeg_i = 1;
+    image_jpeg_i = true;
     sys_printf("+image_jpeg\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -386,7 +386,7 @@ void image_jpeg_shutdown (void)
     if (!image_jpeg_i)
         return;
 
-    image_jpeg_i = 0;
+    image_jpeg_i = false;
     sys_printf("-image_jpeg\n");
 }
 
@@ -394,21 +394,21 @@ void image_jpeg_shutdown (void)
 
 #include "common.h"
 
-int image_jpeg_load (GNUC_UNUSED const char *name,
-                     GNUC_UNUSED image_t *im,
-                     GNUC_UNUSED mem_pool_t pool)
+bool image_jpeg_load (GNUC_UNUSED const char *name,
+                      GNUC_UNUSED image_t *im,
+                      GNUC_UNUSED mem_pool_t pool)
 {
-    return -1;
+    return false;
 }
 
-int image_jpeg_save (GNUC_UNUSED const char *name,
-                     GNUC_UNUSED image_t *im)
+bool image_jpeg_save (GNUC_UNUSED const char *name,
+                      GNUC_UNUSED image_t *im)
 {
     sys_printf("jpeg support was not compiled in\n");
-    return -1;
+    return false;
 }
 
-int image_jpeg_init (void) { return -1; }
+bool image_jpeg_init (void) { return false; }
 void image_jpeg_shutdown (void) { }
 
 #endif /* ENGINE_IMAGE_JPEG */

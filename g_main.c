@@ -31,7 +31,7 @@
 #define GAME_MAIN_FILE fs_get_resource_path("main.lua", mempool)
 #endif
 
-static int g_i = 0;
+static bool g_i = false;
 
 static mem_pool_t mempool;
 
@@ -325,12 +325,12 @@ void g_push_vector (const double *vector, int num)
 g_pop_vector
 =================
 */
-int g_pop_vector (int index, double *vector, int num)
+bool g_pop_vector (int index, double *vector, int num)
 {
     int i;
 
     if (!lua_istable(lst, index))
-        return -1;
+        return false;
 
     lua_pushnil(lst);
 
@@ -342,7 +342,7 @@ int g_pop_vector (int index, double *vector, int num)
 
     lua_pop(lst, 1);
 
-    return 0;
+    return true;
 }
 
 /*
@@ -382,7 +382,7 @@ void g_frame (void)
 g_lua_call_real
 =================
 */
-int g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
+bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
 {
     int base = lua_gettop(lst) - args;
     lua_pushcfunction(lst, g_lua_traceback);
@@ -390,7 +390,7 @@ int g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV 
     g_error_real(lua_pcall(lst, args, ret, base), "lua_pcall failed", file, line, func);
     lua_remove(lst, base);
 
-    return 0;
+    return true;
 }
 
 /*
@@ -636,7 +636,7 @@ static void g_init_video (void)
 g_init
 =================
 */
-int g_init (void)
+bool g_init (void)
 {
     const char *file;
 
@@ -645,7 +645,7 @@ int g_init (void)
     if (NULL == (lst = lua_open()))
     {
         sys_printf("lua_open failed\n");
-        return -1;
+        return false;
     }
 
     luaL_openlibs(lst);
@@ -668,20 +668,20 @@ int g_init (void)
 
     if (0 != g_error(luaL_loadfile(lst, file), "failed to load gamecode"))
     {
-        return -2;
+        return false;
     }
 
     g_lua_call(0, LUA_MULTRET);
     lua_pop(lst, 1);
 
-    g_i = 1;
+    g_i = true;
 
     g_start_time = sys_get_time();
     g_time = 0.0;
 
     sys_printf("+g\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -701,7 +701,7 @@ void g_shutdown (void)
 
     mem_free_static_pool();
 
-    g_i = 0;
+    g_i = false;
 
     sys_printf("-g\n");
 }

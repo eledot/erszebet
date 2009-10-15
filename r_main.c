@@ -25,7 +25,7 @@
 #include "g_entity.h"
 #include "g_physics.h"
 
-static int r_i = 0;
+static bool r_i = false;
 mem_pool_t mempool;
 
 static cvar_t *r_show_fps;
@@ -45,7 +45,7 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
     const char *ext;
     image_t     im;
     int         i, *last_number;
-    int       (*save) (const char *name, image_t *im);
+    bool       (*save) (const char *name, image_t *im);
     static int  last_number_jpeg = 0;
     static int  last_number_png = 0;
 
@@ -69,10 +69,10 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
         return;
     }
 
-    if (0 != fs_mkdir("scr"))
+    if (!fs_mkdir("scr"))
         return;
 
-    if (0 != gl_get_screen_rgb(&im))
+    if (!gl_get_screen_rgb(&im))
         return;
 
     for (i = *last_number; i <= 99999 ;i++)
@@ -84,7 +84,7 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
 
         if (!fs_file_exists(tmp) || argc > 1)
         {
-            if (0 == save(tmp, &im))
+            if (save(tmp, &im))
             {
                 sys_printf("screenshot saved as \"%s\"\n", tmp);
                 *last_number = i;
@@ -170,7 +170,7 @@ void r_frame (void)
 r_init
 =================
 */
-int r_init (void)
+bool r_init (void)
 {
     r_show_fps = cvar_get("r_show_fps", "0", 0);
     r_show_collisions = cvar_get("r_show_collisions", "0", 0);
@@ -181,23 +181,19 @@ int r_init (void)
 
     mem_alloc_static_pool("renderer", 0);
 
-    if (0 != r_texture_init())
-        return -1;
+    if (!r_texture_init() ||
+        !r_sprite_init() ||
+        !r_font_init() ||
+        !r_text_init())
+    {
+        return false;
+    }
 
-    if (0 != r_sprite_init())
-        return -1;
-
-    if (0 != r_font_init())
-        return -1;
-
-    if (0 != r_text_init())
-        return -1;
-
-    r_i = 1;
+    r_i = true;
 
     sys_printf("+r\n");
 
-    return 0;
+    return true;
 }
 
 /*
@@ -210,12 +206,12 @@ void r_shutdown (void)
     if (!r_i)
         return;
 
+    r_i = false;
+
     r_text_shutdown();
     r_font_shutdown();
     r_sprite_shutdown();
     r_texture_shutdown();
-
-    r_i = 0;
 
     sys_printf("-r\n");
 }

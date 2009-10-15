@@ -26,7 +26,7 @@
 #define GL_INTERNAL_FONT_CH 12.0f
 
 void gl_clear (void);
-int gl_get_screen_rgb (image_t *image) GNUC_NONNULL;
+bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL;
 void gl_color (float r, float g, float b, float a);
 void gl_draw_stretched (int gltex);
 void gl_draw_texture (int gltex,
@@ -51,7 +51,7 @@ void gl_set_viewport (int x, int y, int w, int h);
 void gl_switch_2d (void);
 void gl_switch_3d (void);
 
-int gl_init (void);
+bool gl_init (void);
 void gl_shutdown (void);
 
 #endif /* !_GL_H */
