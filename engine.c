@@ -62,22 +62,6 @@ static void echo_f (GNUC_UNUSED const struct cmd_s *cmd,
 
 /*
 =================
-exec_f
-=================
-*/
-static void exec_f (GNUC_UNUSED const struct cmd_s *cmd,
-                    GNUC_UNUSED int source,
-                    int argc,
-                    const char **argv)
-{
-    if (argc < 2)
-        return;
-
-    cmdbuf_add_file(argv[1]);
-}
-
-/*
-=================
 engine_frame
 =================
 */
@@ -113,7 +97,6 @@ bool engine_start (void)
 
     cmd_register("quit", NULL, &quit_f, 0);
     cmd_register("echo", NULL, &echo_f, 0);
-    cmd_register("exec", NULL, &exec_f, 0);
 
     INIT(fs);
     INIT(keyboard);

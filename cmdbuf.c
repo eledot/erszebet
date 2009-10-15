@@ -261,6 +261,22 @@ static void set_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int argc, co
 
 /*
 =================
+exec_f
+=================
+*/
+static void exec_f (GNUC_UNUSED const struct cmd_s *cmd,
+                    GNUC_UNUSED int source,
+                    int argc,
+                    const char **argv)
+{
+    if (argc < 2)
+        return;
+
+    cmdbuf_add_file(argv[1]);
+}
+
+/*
+=================
 cmdbuf_init
 =================
 */
@@ -276,6 +292,7 @@ bool cmdbuf_init (void)
 
     cmd_register("set",  NULL, &set_f, 0); /* normal set              */
     cmd_register("seta", NULL, &set_f, 0); /* set with CVAR_FL_SAVE   */
+    cmd_register("exec", NULL, &exec_f, 0);
 
     cmdbuf_i = true;
 
