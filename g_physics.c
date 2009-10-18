@@ -566,20 +566,21 @@ static int g_default_coll_func (cpShape   *a,
                                 GNUC_UNUSED void *data)
 {
     int i;
-    int afl = 0, bfl = 0;
-    int aintfl = 0, bintfl = 0;
+    int zero = 0;
+    const int *afl = &zero, *bfl = &zero;
+    const int *aintfl = &zero, *bintfl = &zero;
     g_entity_t *ae = a->data, *be = b->data;
 
     if (NULL != ae)
     {
-        afl = ae->flags;
-        aintfl = ae->internal_flags;
+        afl = &ae->flags;
+        aintfl = &ae->internal_flags;
     }
 
     if (NULL != be)
     {
-        bfl = be->flags;
-        bintfl = be->internal_flags;
+        bfl = &be->flags;
+        bintfl = &be->internal_flags;
     }
 
     for (i = 0; i < num_contacts ;i++)
@@ -596,13 +597,13 @@ static int g_default_coll_func (cpShape   *a,
         normal[1] = normal_coef * contacts[i].n.y;
         normal[2] = 0.0;
 
-        if (aintfl & ENT_INTFL_TOUCH && !(bfl & ENT_FL_NON_SOLID))
+        if (*aintfl & ENT_INTFL_TOUCH && !(*bfl & ENT_FL_NON_SOLID))
             atouch_blocked = g_entity_touch(ae, be, origin, normal);
 
-        if (bintfl & ENT_INTFL_TOUCH && !(afl & ENT_FL_NON_SOLID))
+        if (*bintfl & ENT_INTFL_TOUCH && !(*afl & ENT_FL_NON_SOLID))
             btouch_blocked = g_entity_touch(be, ae, origin, normal);
 
-        if (!(!(atouch_blocked & btouch_blocked) || ((afl | bfl) & ENT_FL_NON_SOLID)))
+        if (!(!(atouch_blocked & btouch_blocked) || ((*afl | *bfl) & ENT_FL_NON_SOLID)))
             return 1;
     }
 
