@@ -66,7 +66,7 @@ static bool new_figure (const char *name, r_figure_t **f)
 
     if (NULL == *f)
     {
-        if (!r_texture_load(name, R_TEX_SCREEN_UI, &texture))
+        if (!r_texture_load(name, R_TEX_DEFAULT, &texture))
         {
             sys_printf("failed to load texture \"%s\"\n", name);
             return false;
