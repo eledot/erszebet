@@ -1,0 +1,59 @@
+diff -r dc212f7fff50 3rd/luajit/ljit_x86.h
+--- a/3rd/luajit/ljit_x86.h	Mon Oct 19 23:16:41 2009 +0300
++++ b/3rd/luajit/ljit_x86.h	Mon Oct 19 23:45:09 2009 +0300
+@@ -9,6 +9,8 @@
+ #error "Version mismatch between DynASM and included encoding engine"
+ #endif
+ 
++#include "../../gnuc.h"
++
+ /*
+ ** Bytecode to machine code translation for x86 CPUs.
+ ** Copyright (C) 2005-2008 Mike Pall. See Copyright Notice in luajit.h
+@@ -467,7 +469,7 @@
+ }
+ 
+ /* Patch a jmp into existing mcode. */
+-static void jit_patch_jmp(jit_State *J, void *mcode, void *to)
++static void jit_patch_jmp(GNUC_UNUSED jit_State *J, void *mcode, void *to)
+ {
+   unsigned char *patch = (unsigned char *)mcode;
+   int rel = ((unsigned char *)to)-(patch+5);
+@@ -608,6 +610,7 @@
+ static StkId jit_coroutine_resume(lua_State *L, StkId base, int nresults)
+ {
+   lua_State *co = thvalue(base-1);
++  int ndelta, nargs, status;
+   /* Check for proper usage. Merge of lua_resume() and auxresume() checks. */
+   if (co->status != LUA_YIELD) {
+     if (co->status > LUA_YIELD) {
+@@ -623,9 +626,8 @@
+     }
+   }
+   {
+-    unsigned int ndelta = (char *)L->top - (char *)base;
+-    int nargs = ndelta/sizeof(TValue);  /* Compute nargs. */
+-    int status;
++    ndelta = (char *)L->top - (char *)base;
++    nargs = ndelta/sizeof(TValue);  /* Compute nargs. */
+     if ((char *)co->stack_last-(char *)co->top <= ndelta) {
+       co->ci->top = (StkId)(((char *)co->top) + ndelta);  /* Ok before grow. */
+       luaD_growstack(co, nargs);  /* Grow thread stack. */
+@@ -982,7 +984,7 @@
+ 
+ /* Helper function for inlined iterator code. Paraphrased from luaH_next. */
+ /* TODO: GCC has trouble optimizing this. */
+-static int jit_table_next(lua_State *L, TValue *ra)
++static int jit_table_next(GNUC_UNUSED lua_State *L, TValue *ra)
+ {
+   Table *t = hvalue(&ra[TFOR_TAB]);
+   int i = ra[TFOR_CTL].value.b;  /* Hidden control variable. */
+@@ -1006,7 +1008,7 @@
+ }
+ 
+ /* Try to inline a TFORLOOP instruction. */
+-static int jit_inline_tforloop(jit_State *J, int ra, int nresults, int target)
++static int jit_inline_tforloop(jit_State *J, int ra, GNUC_UNUSED int nresults, int target)
+ {
+   const TValue *oidx = hint_get(J, INLINE);  /* INLINE hint = lib/func idx. */
+   int idx;
