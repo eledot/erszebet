@@ -472,6 +472,14 @@ GNUC_NONNULL static int ent_lua_tostring (lua_State *lst)
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("invalid entity\n");
+        lua_pushstring(lst, "entity: NULL");
+        return 1;
+    }
+
     ent_entity_string(ent, tmp, sizeof(tmp));
     lua_pushstring(lst, tmp);
 
@@ -490,6 +498,13 @@ GNUC_NONNULL static int ent_lua_index (lua_State *lst)
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("invalid entity\n");
+        lua_pushnil(lst);
+        return 1;
+    }
 
     if (!ent_get_field(ent, key))
     {
@@ -528,7 +543,7 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 
     if (NULL == ent)
     {
-        sys_printf("tried to set field on non-entity object\n");
+        sys_printf("invalid entity\n");
         return 0;
     }
 
