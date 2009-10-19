@@ -41,6 +41,7 @@ void init_time (void)
     /* start from 0.0 */
     gettimeofday(&tp, NULL);
     oldtime = (double)tp.tv_sec + tp.tv_usec / 1000000.0;
+    srand(tp.tv_sec + tp.tv_usec);
 }
 
 /*
