@@ -22,8 +22,8 @@
 
 void eglDepthMask (GLboolean flag);
 void eglBindTexture (GLenum target, GLuint tex);
-void eglColor3f (GLfloat r, GLfloat g, GLfloat b);
-void eglColor4f (GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void eglColor3d (GLdouble r, GLdouble g, GLdouble b);
+void eglColor4d (GLdouble r, GLdouble g, GLdouble b, GLdouble a);
 void eglEnable (GLenum cap);
 void eglDisable (GLenum cap);
 

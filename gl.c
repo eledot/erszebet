@@ -121,9 +121,9 @@ bool gl_get_screen_rgb (image_t *image)
 gl_color
 =================
 */
-void gl_color (float r, float g, float b, float a)
+void gl_color (double r, double g, double b, double a)
 {
-    eglColor4f(r, g, b, a);
+    eglColor4d(r, g, b, a);
     GLERROR();
 }
 
@@ -433,7 +433,7 @@ void gl_switch_2d (void)
     GLERROR();
     eglEnable(GL_BLEND);
     GLERROR();
-    gl_tex_env(GL_REPLACE);
+    gl_tex_env(GL_MODULATE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLERROR();
     gl_color(1, 1, 1, 1);

@@ -20,7 +20,7 @@
 #include "gl_private.h"
 
 static GLboolean depth_mask_flag;
-static GLfloat color_r, color_g, color_b, color_a;
+static GLdouble color_r, color_g, color_b, color_a;
 static GLboolean alpha_test, blend, cull_face, depth_test, fog;
 static GLuint texture;
 
@@ -54,10 +54,10 @@ void eglBindTexture (GLenum target, GLuint tex)
 
 /*
 =================
-eglColor3f
+eglColor3d
 =================
 */
-void eglColor3f (GLfloat r, GLfloat g, GLfloat b)
+void eglColor3d (GLdouble r, GLdouble g, GLdouble b)
 {
     if (color_r == r && color_g == g && color_b == b && color_a == 1.0f)
         return;
@@ -67,15 +67,15 @@ void eglColor3f (GLfloat r, GLfloat g, GLfloat b)
     color_b = b;
     color_a = 1;
 
-    glColor4f(color_r, color_g, color_b, color_a);
+    glColor4d(color_r, color_g, color_b, color_a);
 }
 
 /*
 =================
-eglColor4f
+eglColor4d
 =================
 */
-void eglColor4f (GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+void eglColor4d (GLdouble r, GLdouble g, GLdouble b, GLdouble a)
 {
     if (color_r == r && color_g == g && color_b == b && color_a == a)
         return;
@@ -85,7 +85,7 @@ void eglColor4f (GLfloat r, GLfloat g, GLfloat b, GLfloat a)
     color_b = b;
     color_a = a;
 
-    glColor4f(color_r, color_g, color_b, color_a);
+    glColor4d(color_r, color_g, color_b, color_a);
 }
 
 /*
@@ -232,7 +232,7 @@ void gl_reset_helpers (void)
     GLERROR();
 
     color_r = color_g = color_b = color_a = 0;
-    glColor4f(color_r, color_g, color_b, color_a);
+    glColor4d(color_r, color_g, color_b, color_a);
     GLERROR();
 
     alpha_test = blend = cull_face = depth_test = fog = GL_FALSE;
