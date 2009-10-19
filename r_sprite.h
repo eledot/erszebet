@@ -58,8 +58,9 @@ void r_sprite_unload (r_sprite_t *sprite) GNUC_NONNULL;
 
 void r_sprite_draw (const r_sprite_t *sprite,
                     int frame,
-                    double centerx,
-                    double centery,
+                    const double *origin,
+                    const double *color,
+                    double alpha,
                     double width,
                     double height,
                     double scale,

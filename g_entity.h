@@ -70,6 +70,8 @@ typedef struct g_entity_s
     int    shapes_num;
 
     /* graphics stuff */
+    double color[3];
+    double alpha;
     double scale;
     int    frame;
     int    frames_num;

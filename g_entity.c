@@ -80,6 +80,8 @@ static ent_field_t ent_fields_known[] =
     DOFF(nextthink,   ENT_F_DOUBLE,  NULL),
     DOFF(origin,      ENT_F_VECTOR,  &ent_set_origin_callback),
     DOFF(velocity,    ENT_F_VECTOR,  NULL),
+    DOFF(color,       ENT_F_VECTOR,  NULL),
+    DOFF(alpha,       ENT_F_DOUBLE,  NULL),
     DOFF(angle,       ENT_F_DOUBLE,  NULL),
     DOFF(rotation,    ENT_F_DOUBLE,  NULL),
     DOFF(gravity,     ENT_F_DOUBLE,  NULL),
@@ -97,7 +99,10 @@ static ent_field_t ent_fields_known[] =
     DOFF2(origin_z,   origin[2],   ENT_F_DOUBLE, &ent_set_origin_callback),
     DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE, NULL),
     DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE, NULL),
-    DOFF2(velocity_z, velocity[2], ENT_F_DOUBLE, NULL)
+    DOFF2(velocity_z, velocity[2], ENT_F_DOUBLE, NULL),
+    DOFF2(color_r,    color[0],    ENT_F_DOUBLE, NULL),
+    DOFF2(color_g,    color[1],    ENT_F_DOUBLE, NULL),
+    DOFF2(color_b,    color[2],    ENT_F_DOUBLE, NULL)
 };
 
 #undef DOFF
@@ -610,6 +615,11 @@ GNUC_WARN_UNUSED_RES static g_entity_t *g_entity_create (void)
     ent->inertia     = 100.0;
     ent->phys_group  = 0;
     ent->phys_layers = INT_MAX;
+
+    ent->color[0]    = 1.0;
+    ent->color[1]    = 1.0;
+    ent->color[2]    = 1.0;
+    ent->alpha       = 1.0;
     ent->scale       = 1.0;
     ent->frame       = 0;
     ent->frames_num  = 0;
@@ -1095,8 +1105,9 @@ void g_entity_draw_entities (int draw2d)
                     /* 2d sprite */
                     r_sprite_draw(ent->render_data,
                                   ent->frame,
-                                  ent->origin[0],
-                                  ent->origin[1],
+                                  ent->origin,
+                                  ent->color,
+                                  ent->alpha,
                                   ent->width,
                                   ent->height,
                                   ent->scale,

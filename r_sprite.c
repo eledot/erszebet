@@ -243,8 +243,9 @@ r_sprite_draw
 */
 void r_sprite_draw (const r_sprite_t *sprite,
                     int frame,
-                    double originx,
-                    double originy,
+                    const double *origin,
+                    const double *color,
+                    double alpha,
                     double width,
                     double height,
                     double scale,
@@ -252,17 +253,21 @@ void r_sprite_draw (const r_sprite_t *sprite,
 {
     const r_texture_t *tex;
     float vt[8];
+    double originx, originy;
 
-    if (NULL == sprite)
+    if (NULL == sprite || NULL == origin || NULL == color)
     {
-        sys_printf("bad args (sprite=%p, frame=%i, originx=%-2.2lf, originy=%-2.2lf"
+        sys_printf("bad args (sprite=%p, frame=%i, origin=%p, color=%p, alpha=%-2.2lf"
                    ", width=%-2.2lf, height=%-2.2lf, scale=%-2.2lf angle=%-2.2lf)\n",
-                   sprite, frame, originx, originy, width, height, scale, angle);
+                   sprite, frame, origin, color, alpha, width, height, scale, angle);
         return;
     }
 
     if (frame >= sprite->frames_num || frame < 0)
         return;
+
+    originx = origin[0];
+    originy = origin[1];
 
     tex = sprite->frames[0];
 
@@ -289,6 +294,10 @@ void r_sprite_draw (const r_sprite_t *sprite,
     {
         return;
     }
+
+    gl_color(color[0], color[1], color[2], alpha);
+
+    sys_printf("%-2.2lf %-2.2lf %-2.2lf\n", color[0], color[1], color[2]);
 
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
