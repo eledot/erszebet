@@ -47,6 +47,53 @@
 #define CLAMP(v, min, max) (MAX(MIN((v), (max)), (min)))
 #define IS_PWROV2(n)       (!((n) & ((n) - 1)))
 
+#define vector_mul(a, d, dest)                  \
+    {                                           \
+        (dest)[0] = (a)[0] * d;                 \
+        (dest)[1] = (a)[1] * d;                 \
+        (dest)[2] = (a)[2] * d;                 \
+    }
+
+#define vector_div(a, d, dest)                  \
+    {                                           \
+        (dest)[0] = (a)[0] / d;                 \
+        (dest)[1] = (a)[1] / d;                 \
+        (dest)[2] = (a)[2] / d;                 \
+    }
+
+#define vector_sub(a, b, dest)                  \
+    {                                           \
+        (dest)[0] = (a)[0] - (b)[0];            \
+        (dest)[1] = (a)[1] - (b)[1];            \
+        (dest)[2] = (a)[2] - (b)[2];            \
+    }
+
+#define vector_add(a, b, dest)                  \
+    {                                           \
+        (dest)[0] = (a)[0] + (b)[0];            \
+        (dest)[1] = (a)[1] + (b)[1];            \
+        (dest)[2] = (a)[2] + (b)[2];            \
+    }
+
+#define vector_length(v)                                        \
+    (sqrt((v)[0]*(v)[0] + (v)[1]*(v)[1] + (v)[2]*(v)[2]))
+
+#define vector_normal(a, b, dest)                         \
+    {                                                     \
+        (dest)[0] = (a)[1]*(b)[2] - (a)[2]*(b)[1];        \
+        (dest)[1] = (a)[2]*(b)[0] - (a)[0]*(b)[2];        \
+        (dest)[2] = (a)[0]*(b)[1] - (a)[1]*(b)[0];        \
+    }
+
+#define vector_normalize(v)                       \
+    {                                             \
+        double len = vector_length((v));          \
+        (v)[0] /= len;                            \
+        (v)[1] /= len;                            \
+        (v)[2] /= len;                            \
+    }
+
+
 int ceil_pwrov2 (int n) GNUC_CONST;
 
 #endif /* !_EMATH_H */
