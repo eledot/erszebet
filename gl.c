@@ -256,12 +256,40 @@ void gl_draw_texture2 (int gltex,
 
 /*
 =================
+gl_draw_quad
+=================
+*/
+void gl_draw_quad (int gltex,
+                   const double *verts,
+                   const double *texcoords)
+{
+    eglBindTexture(GL_TEXTURE_2D, gltex);
+    GLERROR();
+
+#ifndef ENGINE_OS_IPHONE
+    glBegin(GL_QUADS);
+    glTexCoord2d(texcoords[0], texcoords[1]); glVertex2d(verts[0], verts[1]);
+    glTexCoord2d(texcoords[2], texcoords[3]); glVertex2d(verts[2], verts[3]);
+    glTexCoord2d(texcoords[6], texcoords[7]); glVertex2d(verts[4], verts[5]);
+    glTexCoord2d(texcoords[4], texcoords[5]); glVertex2d(verts[6], verts[7]);
+    glEnd();
+#else
+    glVertexPointer(2, GL_DOUBLE, 0, verts);
+    glTexCoordPointer(2, GL_DOUBLE, 0, texcoords);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#endif
+    GLERROR();
+}
+
+/*
+=================
 gl_disable_textures
 =================
 */
 void gl_disable_textures (void)
 {
     eglDisable(GL_TEXTURE_2D);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     GLERROR();
 }
 
@@ -273,6 +301,7 @@ gl_enable_textures
 void gl_enable_textures (void)
 {
     eglEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     GLERROR();
 }
 
@@ -604,9 +633,7 @@ bool gl_init (void)
     glClearDepth(1.0f);
     GLERROR();
 
-#ifdef ENGINE_OS_IPHONE
     glEnableClientState(GL_VERTEX_ARRAY);
-#endif
 
     gl_set_viewport(0, 0, video_width, video_height);
 
