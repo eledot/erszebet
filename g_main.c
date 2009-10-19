@@ -17,12 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-#include "3rd/lua/lua.h"
-#include "3rd/lua/lualib.h"
-#include "3rd/lua/lauxlib.h"
-#include "g_entity.h"
-#include "g_physics.h"
+#include "g_private.h"
 
 #ifndef ENGINE_OS_IPHONE
 #define GAME_MAIN_FILE "game/main.lua"
@@ -652,6 +647,10 @@ bool g_init (void)
     }
 
     luaL_openlibs(lst);
+
+#ifdef ENGINE_LUA_JIT
+    luaopen_jit(lst);
+#endif
 
     g_init_cmd();
     g_init_cvar();

@@ -39,7 +39,9 @@ endif(DEBUG)
 add_subdirectory(3rd)
 add_subdirectory(tools)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}/3rd/sglib")
+set(DIR_3RD ${CMAKE_CURRENT_SOURCE_DIR}/3rd)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${DIR_3RD}/sglib")
 
 option(WITH_IMAGE_PNG   "PNG image format support" ON)
 option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
@@ -49,6 +51,16 @@ option(WITH_SND         "enable sound" ON)
 option(WITH_SND_WAV     "WAV audio format support" ON)
 option(WITH_SND_OGG     "OGG VORBIS audio format support" ON)
 option(WITH_SND_FLAC    "FLAC audio format support" ON)
+option(WITH_LUAJIT      "Use LuaJIT" OFF)
+
+if(WITH_LUAJIT)
+  add_definitions(-I${DIR_3RD}/luajit -DENGINE_LUA_JIT)
+  message(">>> LuaJIT enabled")
+else(WITH_LUAJIT)
+  add_definitions(-I${DIR_3RD}/lua)
+endif(WITH_LUAJIT)
+
+add_definitions(-I${DIR_3RD}/chipmunk)
 
 option(DEBUG_SYS_PRINTF      "print debug messages" ON)
 option(DEBUG_SYS_PRINTF_LOC  "print location in debug messages" ON)

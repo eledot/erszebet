@@ -281,7 +281,7 @@ static int loadjitmodule (lua_State *L, const char *notfound) {
 /* JIT engine control command: try jit library first or load add-on module */
 static int dojitcmd (lua_State *L, const char *cmd) {
   const char *val = strchr(cmd, '=');
-  lua_pushlstring(L, cmd, val ? val - cmd : strlen(cmd));
+  lua_pushlstring(L, cmd, val ? val - cmd : (int)strlen(cmd));
   lua_getglobal(L, "jit");  /* get jit.* table */
   lua_pushvalue(L, -2);
   lua_gettable(L, -2);  /* lookup library function */

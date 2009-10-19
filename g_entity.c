@@ -19,13 +19,8 @@
 
 #include <limits.h>
 
-#include "common.h"
-#include "g_entity.h"
+#include "g_private.h"
 #include "g_entity_render.h"
-#include "g_physics.h"
-#include "3rd/lua/lua.h"
-#include "3rd/lua/lualib.h"
-#include "3rd/lua/lauxlib.h"
 #include "sglib.h"
 
 typedef enum

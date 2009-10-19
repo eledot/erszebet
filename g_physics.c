@@ -17,10 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-#include "g_entity.h"
-#include "g_physics.h"
-#include "3rd/chipmunk/chipmunk.h"
+#include "g_private.h"
+#include "chipmunk.h"
 
 #define PHYS_STEPS 3
 
