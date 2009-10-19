@@ -26,6 +26,8 @@ static cvar_t *gl_picmip;
 
 /* FIXME -- implement compressed textures & 3d textures support */
 
+#define GL_MIN_TEXTURE_DIMENSION 64
+
 #define GL_IMAGE_DATA2D(mip, im)                                        \
     {                                                                   \
         glTexImage2D(GL_TEXTURE_2D,                                     \
@@ -85,6 +87,9 @@ bool gl_texture_create (image_t *image, int flags, int *gltex)
         sw = ceil_pwrov2(sw);
         sh = ceil_pwrov2(sh);
     }
+
+    sw = CLAMP(sw, GL_MIN_TEXTURE_DIMENSION, max);
+    sh = CLAMP(sh, GL_MIN_TEXTURE_DIMENSION, max);
 
     if (!image_resize(image, sw, sh))
         return false;
