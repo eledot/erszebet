@@ -41,7 +41,7 @@ r_texture_load
 */
 bool r_texture_load (const char *name, int type, r_texture_t **tex)
 {
-    int gltex, nlen, w, h;
+    int gltex, nlen, w, h, texw, texh;
     char tmp[MISC_MAX_FILENAME], *namecopy;
     image_t image;
     r_texture_t *t, clone;
@@ -76,8 +76,11 @@ bool r_texture_load (const char *name, int type, r_texture_t **tex)
     w = image.width;
     h = image.height;
 
-    if (!gl_texture_create(&image, types[type], &gltex))
+    if (!gl_texture_create(&image, types[type], &gltex, &texw, &texh))
+    {
+        sys_printf("failed to create gl texture \"%s\" (%ix%i)\n", name, w, h);
         goto error;
+    }
 
     mem_free(image.data);
     image.data = NULL;
@@ -99,6 +102,8 @@ bool r_texture_load (const char *name, int type, r_texture_t **tex)
     t->ref = 1;
     t->w = w;
     t->h = h;
+    t->texw = (float)w/(float)texw;
+    t->texh = (float)h/(float)texh;
 
     *tex = t;
 

@@ -47,14 +47,15 @@ static cvar_t *gl_picmip;
 gl_texture_create
 =================
 */
-bool gl_texture_create (image_t *image, int flags, int *gltex)
+bool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh)
 {
     int    max, sw, sh, mip;
     GLuint tex;
 
-    if (NULL == image || NULL == gltex)
+    if (NULL == image || NULL == gltex || NULL == texw || NULL == texh)
     {
-        sys_printf("bad args (image=%p, flags=%i, gltex=%p)\n", image, flags, gltex);
+        sys_printf("bad args (image=%p, flags=%i, gltex=%p, texw=%p, texh=%p)\n",
+                   image, flags, gltex, texw, texh);
         return false;
     }
 
@@ -91,8 +92,22 @@ bool gl_texture_create (image_t *image, int flags, int *gltex)
     sw = CLAMP(sw, GL_MIN_TEXTURE_DIMENSION, max);
     sh = CLAMP(sh, GL_MIN_TEXTURE_DIMENSION, max);
 
-    if (!image_resize(image, sw, sh))
-        return false;
+    if (flags & GL_TEX_FL_NOSCALE)
+    {
+        *texw = sw;
+        *texh = sh;
+
+        if (!image_resize(image, sw, sh))
+            return false;
+    }
+    else
+    {
+        *texw = image->width;
+        *texh = image->height;
+
+        if (!image_scale(image, sw, sh))
+            return false;
+    }
 
     glGenTextures(1, &tex);
     GLERROR();

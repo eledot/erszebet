@@ -154,7 +154,7 @@ bool r_sprite_load (const char  *name,
 
         s->type = R_SPRITE_TYPE_LINE;
         namecopy = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
-        s->inc = 1.0f / (float)num;
+        s->inc = s->frames[0]->texw / (float)num;
     }
     else
     {
@@ -272,7 +272,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
     tex = sprite->frames[0];
 
     if (!width)
-        width = tex->w * sprite->inc;
+        width = tex->w / sprite->frames_num;
 
     if (!height)
         height = tex->h;
@@ -301,12 +301,18 @@ void r_sprite_draw (const r_sprite_t *sprite,
     {
         tex = sprite->frames[frame];
 
-        gl_draw_texture(tex->gltex,
-                        originx,
-                        originy,
-                        width * scale,
-                        height * scale,
-                        angle);
+        vt[0] = vt[6] = 0.0;
+        vt[1] = vt[3] = 0.0f;
+        vt[5] = vt[7] = tex->texh;
+        vt[4] = vt[2] = tex->texw;
+
+        gl_draw_texture2(tex->gltex,
+                         originx,
+                         originy,
+                         width * scale,
+                         height * scale,
+                         angle,
+                         vt);
     }
     else
     {
@@ -314,7 +320,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
 
         vt[0] = vt[6] = frame * sprite->inc;
         vt[1] = vt[3] = 0.0f;
-        vt[5] = vt[7] = 1.0f;
+        vt[5] = vt[7] = tex->texh;
         vt[4] = vt[2] = vt[0] + sprite->inc;
 
         gl_draw_texture2(tex->gltex,

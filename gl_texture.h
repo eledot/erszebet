@@ -28,16 +28,18 @@ typedef enum
     GL_TEX_FL_NOFILTER   = (1 << 3),
     GL_TEX_FL_NOLOD      = (1 << 4),
     GL_TEX_FL_TEX3D      = (1 << 5),
-    GL_TEX_FL_CUBEMAP    = (1 << 6)
+    GL_TEX_FL_CUBEMAP    = (1 << 6),
+    GL_TEX_FL_NOSCALE    = (1 << 7)
 }gl_tex_create_flags_e;
 
 #define GL_TEX_FL_UI (GL_TEX_FL_NOPICMIP |                              \
                       GL_TEX_FL_NOFILTER |                              \
                       GL_TEX_FL_NOCOMPRESS |                            \
                       GL_TEX_FL_NOANISO |                               \
-                      GL_TEX_FL_NOLOD)
+                      GL_TEX_FL_NOLOD |                                 \
+                      GL_TEX_FL_NOSCALE)
 
-bool gl_texture_create (image_t *image, int flags, int *gltex) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+bool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_texture_delete (int gltex);
 
 bool gl_texture_init (void);

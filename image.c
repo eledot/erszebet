@@ -168,6 +168,50 @@ image_resize
 */
 bool image_resize (image_t *image, int outwidth, int outheight)
 {
+    uint8_t *outdata;
+    int      inrowlen, outrowlen, i;
+
+    if (NULL == image || outwidth < 1 || outheight < 1)
+    {
+        sys_printf("bad args (image=%p, outwidth=%i, outheight=%i)\n", image, outwidth, outheight);
+        return false;
+    }
+
+    if (image->format || (outwidth == image->width && image->height == outheight))
+        return true;
+
+    if (NULL == (outdata = mem_alloc_static((outwidth * outheight) << 2)))
+    {
+        sys_printf("not enough memory to resize image\n");
+        return false;
+    }
+
+    inrowlen = image->width << 2;
+    outrowlen = outwidth << 2;
+
+    for (i = 0; i < image->height ;i++)
+    {
+        memcpy(outdata + i * outrowlen,
+               image->data + i * inrowlen,
+               inrowlen);
+    }
+
+    mem_free(image->data);
+
+    image->data   = outdata;
+    image->width  = outwidth;
+    image->height = outheight;
+
+    return true;
+}
+
+/*
+=================
+image_scale
+=================
+*/
+bool image_scale (image_t *image, int outwidth, int outheight)
+{
     int            i, j, yi, oldy, f, fstep, endy;
     uint8_t       *out, *outdata, *row1, *row2;
     const uint8_t *inrow, *indata;
@@ -188,7 +232,7 @@ bool image_resize (image_t *image, int outwidth, int outheight)
 
     if (NULL == (outdata = mem_alloc_static((outwidth * outheight) << 2)))
     {
-        sys_printf("not enough memory to resize image\n");
+        sys_printf("not enough memory to scale image\n");
         return false;
     }
 

@@ -188,11 +188,12 @@ void gl_draw_texture (int gltex,
     glEnd();
 #else
     {
-        GLfloat square[] = { -width/2, -height/2,
-                             width/2, -height,
+        GLfloat square[] = { -width/2, height/2,
                              width/2, height/2,
-                             -width/2, height/2 };
+                             -width/2, -height/2,
+                             width/2, -height/2 };
         GLfloat texcoords[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
+
         glVertexPointer(2, GL_FLOAT, 0, square);
         glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -228,6 +229,7 @@ void gl_draw_texture2 (int gltex,
     glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
     GLERROR();
 
+/*
 #ifndef ENGINE_OS_IPHONE
     glBegin(GL_QUADS);
     glTexCoord2f(vt[0], vt[1]); glVertex2f(-width/2, height/2);
@@ -236,18 +238,19 @@ void gl_draw_texture2 (int gltex,
     glTexCoord2f(vt[6], vt[7]); glVertex2f(-width/2, -height/2);
     glEnd();
 #else
+*/
     {
-        GLfloat square[] = { -width/2, -height/2,
-                             width/2, -height,
+        GLfloat square[] = { -width/2, height/2,
                              width/2, height/2,
-                             -width/2, height/2 };
+                             -width/2, -height/2,
+                             width/2, -height/2 };
         GLfloat texcoords[] = { vt[0], vt[1], vt[2], vt[3], vt[6], vt[7], vt[4], vt[5] };
         glVertexPointer(2, GL_FLOAT, 0, square);
         glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
-#endif
+//#endif
     GLERROR();
 
     glPopMatrix();
@@ -524,7 +527,7 @@ gl_create_internal_font
 static bool gl_create_internal_font (void)
 {
     image_t im;
-    int     i, k, pix;
+    int     i, k, pix, unused;
 
     memset(&im, 0, sizeof(im));
 
@@ -550,7 +553,7 @@ static bool gl_create_internal_font (void)
         }
     }
 
-    if (!gl_texture_create(&im, GL_TEX_FL_UI, &internal_font))
+    if (!gl_texture_create(&im, GL_TEX_FL_UI, &internal_font, &unused, &unused))
         internal_font = -1;
 
     mem_free(im.data);

@@ -37,6 +37,7 @@ typedef struct r_texture_s
     int ref;
 
     int w, h;
+    float texw, texh;
 
     struct r_texture_s *next;
     struct r_texture_s *prev;
