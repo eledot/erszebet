@@ -297,8 +297,6 @@ void r_sprite_draw (const r_sprite_t *sprite,
 
     gl_color(color[0], color[1], color[2], alpha);
 
-    sys_printf("%-2.2lf %-2.2lf %-2.2lf\n", color[0], color[1], color[2]);
-
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
         tex = sprite->frames[frame];
