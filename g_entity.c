@@ -20,12 +20,12 @@
 #include <limits.h>
 
 #include "common.h"
+#include "g_entity.h"
+#include "g_entity_render.h"
+#include "g_physics.h"
 #include "3rd/lua/lua.h"
 #include "3rd/lua/lualib.h"
 #include "3rd/lua/lauxlib.h"
-#include "g_entity.h"
-#include "g_physics.h"
-#include "r_sprite.h"
 #include "sglib.h"
 
 typedef enum
@@ -36,13 +36,6 @@ typedef enum
     PHYS_BODY_POLYGON,
     PHYS_BODY_POLYGON_CENTERED
 }phys_body_types_e;
-
-typedef enum
-{
-    RENDER_TYPE_SPRITE = 0,
-    RENDER_TYPE_TEXT,
-    RENDER_TYPE_MODEL
-}render_types_e;
 
 typedef enum
 {
@@ -130,113 +123,12 @@ static const int ent_fields_free[] =
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
-GNUC_NONNULL static bool ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent);
-GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent);
-GNUC_NONNULL static bool ent_render_load_text (const char *name, const double *parms, g_entity_t *ent);
-GNUC_NONNULL static void ent_render_unload_text (g_entity_t *ent);
-GNUC_NONNULL static bool ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent);
-GNUC_NONNULL static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent);
-
-static const struct
-{
-    bool (*load) (const char *name, const double *parms, g_entity_t *ent);
-    void (*unload) (g_entity_t *ent);
-}ent_render_load_unload_funcs[] =
-{
-    [RENDER_TYPE_SPRITE] = { &ent_render_load_sprite, &ent_render_unload_sprite },
-    [RENDER_TYPE_TEXT]   = { &ent_render_load_text,   &ent_render_unload_text   },
-    [RENDER_TYPE_MODEL]  = { &ent_render_load_model,  &ent_render_unload_model  }
-};
-
 static mem_pool_t mempool;
 
 g_entity_t        *entities;
 static g_entity_t *remove_entities;
 static lua_State  *lst;
 static int         point_query_shapes_num;
-
-/*
-=================
-ent_render_load_sprite
-=================
-*/
-GNUC_NONNULL static bool ent_render_load_sprite (const char *name, const double *parms, g_entity_t *ent)
-{
-    r_sprite_t *sprite;
-
-    if (!r_sprite_load(name,
-                       ((int)parms[0]) ? R_TEX_DEFAULT : R_TEX_SCREEN_UI,
-                       &sprite))
-    {
-        return false;
-    }
-
-    ent->render_type = 0;
-    ent->render_data = sprite;
-    ent->frame = 0;
-    ent->frames_num = sprite->frames_num;
-    ent->width = parms[1];
-    ent->height = parms[2];
-
-    if (!ent->width)
-        ent->width = sprite->frames[0]->w * sprite->inc;
-
-    if (!ent->height)
-        ent->height = sprite->frames[0]->h;
-
-    return true;
-}
-
-/*
-=================
-ent_render_unload_sprite
-=================
-*/
-GNUC_NONNULL static void ent_render_unload_sprite (g_entity_t *ent)
-{
-    r_sprite_unload(ent->render_data);
-    ent->render_data = NULL;
-}
-
-/*
-=================
-ent_render_load_text
-=================
-*/
-GNUC_NONNULL static bool ent_render_load_text (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
-{
-    return 1;
-}
-
-/*
-=================
-ent_render_unload_text
-=================
-*/
-GNUC_NONNULL static void ent_render_unload_text (GNUC_UNUSED g_entity_t *ent)
-{
-}
-
-/*
-=================
-ent_render_load_model
-=================
-*/
-GNUC_NONNULL static bool ent_render_load_model (GNUC_UNUSED const char *name, GNUC_UNUSED const double *parms, GNUC_UNUSED g_entity_t *ent)
-{
-    /* FIXME */
-    return 1;
-}
-
-/*
-=================
-ent_render_unload_model
-=================
-*/
-GNUC_NONNULL static void ent_render_unload_model (GNUC_UNUSED g_entity_t *ent)
-{
-    /* FIXME */
-}
 
 /*
 =================
@@ -680,7 +572,7 @@ GNUC_NONNULL static void g_entity_mem_free (g_entity_t *ent)
     }
 
     if (NULL != ent->render_data)
-        ent_render_load_unload_funcs[ent->render_type].unload(ent);
+        ent_render_funcs[ent->render_type].unload(ent);
 
     mem_free(ent);
 }
@@ -754,16 +646,16 @@ GNUC_NONNULL static int ent_lua_set_sprite (lua_State *lst)
         return 0;
     }
 
-    if (NULL != ent->render_data)
+    if (NULL != ent->render_data && RENDER_TYPE_SPRITE != ent->render_type)
     {
-        ent_render_load_unload_funcs[ent->render_type].unload(ent);
+        ent_render_funcs[ent->render_type].unload(ent);
         ent->render_data = NULL;
         ent->render_type = -1;
     }
 
     name = luaL_checkstring(lst, 2);
     g_pop_vector(3, parms, 3);
-    ent_render_load_unload_funcs[RENDER_TYPE_SPRITE].load(name, parms, ent);
+    ent_render_funcs[RENDER_TYPE_SPRITE].load(name, parms, ent);
 
     return 0;
 }
@@ -788,16 +680,16 @@ GNUC_NONNULL static int ent_lua_set_text (lua_State *lst)
         return 0;
     }
 
-    if (NULL != ent->render_data)
+    if (NULL != ent->render_data && RENDER_TYPE_TEXT != ent->render_type)
     {
-        ent_render_load_unload_funcs[ent->render_type].unload(ent);
+        ent_render_funcs[ent->render_type].unload(ent);
         ent->render_data = NULL;
         ent->render_type = -1;
     }
 
     text = luaL_checkstring(lst, 2);
     g_pop_vector(3, parms, 3);
-    ent_render_load_unload_funcs[RENDER_TYPE_TEXT].load(text, parms, ent);
+    ent_render_funcs[RENDER_TYPE_TEXT].load(text, parms, ent);
 
     return 0;
 }
@@ -820,14 +712,82 @@ GNUC_NONNULL static int ent_lua_set_model (lua_State *lst)
         return 0;
     }
 
-    if (NULL != ent->render_data)
+    if (NULL != ent->render_data && RENDER_TYPE_MODEL != ent->render_type)
     {
-        ent_render_load_unload_funcs[ent->render_type].unload(ent);
+        ent_render_funcs[ent->render_type].unload(ent);
         ent->render_data = NULL;
         ent->render_type = -1;
     }
 
     /* FIXME */
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_set_circle
+=================
+*/
+GNUC_NONNULL static int ent_lua_set_circle (lua_State *lst)
+{
+    g_entity_t *ent;
+    const char *name;
+    double parms[3] = { 0.0, 0.0, 0.0 };
+
+    lua_getfield(lst, 1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_circle\" without entity\n");
+        return 0;
+    }
+
+    if (NULL != ent->render_data && RENDER_TYPE_CIRCLE != ent->render_type)
+    {
+        ent_render_funcs[ent->render_type].unload(ent);
+        ent->render_data = NULL;
+        ent->render_type = -1;
+    }
+
+    name = luaL_checkstring(lst, 2);
+    g_pop_vector(3, parms, 3);
+    ent_render_funcs[RENDER_TYPE_CIRCLE].load(name, parms, ent);
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_set_line
+=================
+*/
+GNUC_NONNULL static int ent_lua_set_line (lua_State *lst)
+{
+    g_entity_t *ent;
+    const char *name;
+    double parms[4] = { 0.0, 0.0, 0.0, 0.0 };
+
+    lua_getfield(lst, 1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_circle\" without entity\n");
+        return 0;
+    }
+
+    if (NULL != ent->render_data && RENDER_TYPE_LINE != ent->render_type)
+    {
+        ent_render_funcs[ent->render_type].unload(ent);
+        ent->render_data = NULL;
+        ent->render_type = -1;
+    }
+
+    name = luaL_checkstring(lst, 2);
+    g_pop_vector(3, parms, 4);
+    ent_render_funcs[RENDER_TYPE_LINE].load(name, parms, ent);
 
     return 0;
 }
@@ -1097,31 +1057,11 @@ void g_entity_draw_entities (int draw2d)
              NULL != ent;
              ent = sglib_g_entity_t_it_next(&it))
         {
-            if (NULL != ent->render_data)
+            if (NULL != ent->render_data &&
+                ent->render_type >= 0 &&
+                ent->render_type < STSIZE(ent_render_funcs))
             {
-                switch (ent->render_type)
-                {
-                case 0:
-                    /* 2d sprite */
-                    r_sprite_draw(ent->render_data,
-                                  ent->frame,
-                                  ent->origin,
-                                  ent->color,
-                                  ent->alpha,
-                                  ent->width,
-                                  ent->height,
-                                  ent->scale,
-                                  ent->angle);
-                    break;
-
-                case 1:
-                    /* 3d model */
-                    /* FIXME */
-                    break;
-
-                default:
-                    break;
-                }
+                ent_render_funcs[ent->render_type].draw(ent);
             }
 
             if (ent->internal_flags & ENT_INTFL_DRAW && LUA_REFNIL != ent->ref)
@@ -1252,6 +1192,8 @@ void g_entity_init (void *_lst, mem_pool_t pool)
     lua_register(lst, "ent_set_sprite", &ent_lua_set_sprite);
     lua_register(lst, "ent_set_text", &ent_lua_set_text);
     lua_register(lst, "ent_set_model", &ent_lua_set_model);
+    lua_register(lst, "ent_set_circle", &ent_lua_set_circle);
+    lua_register(lst, "ent_set_line", &ent_lua_set_line);
     lua_register(lst, "phys_set_body", &ent_lua_set_body);
     lua_register(lst, "phys_attach_pin", &ent_lua_attach_pin);
     lua_register(lst, "phys_detach", &ent_lua_detach);

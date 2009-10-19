@@ -17,16 +17,25 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _R_PRIVATE_H
-#define _R_PRIVATE_H
+#ifndef _R_FIGURE_H
+#define _R_FIGURE_H
 
-#include "common.h"
-#include "r_texture.h"
-#include "r_sprite.h"
-#include "r_font.h"
-#include "r_text.h"
-#include "r_figure.h"
+bool r_figure_set_circle (const char *name,
+                          double radius,
+                          double width,
+                          void **data) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
-extern mem_pool_t mempool;
+bool r_figure_set_line (const char *name,
+                        const double *end,
+                        double width,
+                        void **data) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
-#endif /* !_R_PRIVATE_H */
+void r_figure_unset (void *data) GNUC_NONNULL;
+
+void r_figure_draw (const void *data,
+                    const double *origin,
+                    const double *color,
+                    double alpha,
+                    double scale) GNUC_NONNULL;
+
+#endif /* !_R_FIGURE_H */

@@ -329,6 +329,9 @@ bool g_pop_vector (int index, double *vector, int num)
 {
     int i;
 
+    for (i = 0; i < num ;i++)
+        vector[i] = 0.0;
+
     if (!lua_istable(lst, index))
         return false;
 
