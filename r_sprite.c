@@ -306,13 +306,13 @@ void r_sprite_draw (const r_sprite_t *sprite,
         vt[5] = vt[7] = tex->texh;
         vt[4] = vt[2] = tex->texw;
 
-        gl_draw_texture2(tex->gltex,
-                         originx,
-                         originy,
-                         width * scale,
-                         height * scale,
-                         angle,
-                         vt);
+        gl_draw_texture(tex->gltex,
+                        originx,
+                        originy,
+                        width * scale,
+                        height * scale,
+                        angle,
+                        vt);
     }
     else
     {
@@ -323,13 +323,13 @@ void r_sprite_draw (const r_sprite_t *sprite,
         vt[5] = vt[7] = tex->texh;
         vt[4] = vt[2] = vt[0] + sprite->inc;
 
-        gl_draw_texture2(tex->gltex,
-                         originx,
-                         originy,
-                         width * scale,
-                         height * scale,
-                         angle,
-                         vt);
+        gl_draw_texture(tex->gltex,
+                        originx,
+                        originy,
+                        width * scale,
+                        height * scale,
+                        angle,
+                        vt);
     }
 }
 

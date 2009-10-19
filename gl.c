@@ -129,36 +129,6 @@ void gl_color (double r, double g, double b, double a)
 
 /*
 =================
-gl_draw_stretched
-=================
-*/
-void gl_draw_stretched (int gltex)
-{
-    eglBindTexture(GL_TEXTURE_2D, gltex);
-    GLERROR();
-
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(0, 0);
-    glTexCoord2f(1, 0); glVertex2f(video_width, 0);
-    glTexCoord2f(1, 1); glVertex2f(video_width, video_height);
-    glTexCoord2f(0, 1); glVertex2f(0, video_height);
-    glEnd();
-#else
-    {
-        GLfloat square[] = { 0, 0, video_width, 0, 0, video_height, video_width, video_height };
-        GLfloat texcoords[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
-        glVertexPointer(2, GL_FLOAT, 0, square);
-        glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
-#endif
-    GLERROR();
-}
-
-/*
-=================
 gl_draw_texture
 =================
 */
@@ -167,8 +137,15 @@ void gl_draw_texture (int gltex,
                       double centery,
                       double width,
                       double height,
-                      double angle)
+                      double angle,
+                      const float *vt)
 {
+    GLfloat square[] = { -width/2, height/2,
+                         width/2, height/2,
+                         -width/2, -height/2,
+                         width/2, -height/2 };
+    GLfloat texcoords[] = { vt[0], vt[1], vt[2], vt[3], vt[6], vt[7], vt[4], vt[5] };
+
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
 
@@ -179,78 +156,9 @@ void gl_draw_texture (int gltex,
     glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
     GLERROR();
 
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(-width/2, height/2);
-    glTexCoord2f(1, 0); glVertex2f(width/2, height/2);
-    glTexCoord2f(1, 1); glVertex2f(width/2, -height/2);
-    glTexCoord2f(0, 1); glVertex2f(-width/2, -height/2);
-    glEnd();
-#else
-    {
-        GLfloat square[] = { -width/2, height/2,
-                             width/2, height/2,
-                             -width/2, -height/2,
-                             width/2, -height/2 };
-        GLfloat texcoords[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
-
-        glVertexPointer(2, GL_FLOAT, 0, square);
-        glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
-#endif
-    GLERROR();
-
-    glPopMatrix();
-    GLERROR();
-}
-
-/*
-=================
-gl_draw_texture2
-=================
-*/
-void gl_draw_texture2 (int gltex,
-                       double centerx,
-                       double centery,
-                       double width,
-                       double height,
-                       double angle,
-                       const float *vt)
-{
-    eglBindTexture(GL_TEXTURE_2D, gltex);
-    GLERROR();
-
-    glPushMatrix();
-    GLERROR();
-    glTranslatef(centerx, centery, 0);
-    GLERROR();
-    glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
-    GLERROR();
-
-/*
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_QUADS);
-    glTexCoord2f(vt[0], vt[1]); glVertex2f(-width/2, height/2);
-    glTexCoord2f(vt[2], vt[3]); glVertex2f(width/2, height/2);
-    glTexCoord2f(vt[4], vt[5]); glVertex2f(width/2, -height/2);
-    glTexCoord2f(vt[6], vt[7]); glVertex2f(-width/2, -height/2);
-    glEnd();
-#else
-*/
-    {
-        GLfloat square[] = { -width/2, height/2,
-                             width/2, height/2,
-                             -width/2, -height/2,
-                             width/2, -height/2 };
-        GLfloat texcoords[] = { vt[0], vt[1], vt[2], vt[3], vt[6], vt[7], vt[4], vt[5] };
-        glVertexPointer(2, GL_FLOAT, 0, square);
-        glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
-//#endif
+    glVertexPointer(2, GL_FLOAT, 0, square);
+    glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     GLERROR();
 
     glPopMatrix();
@@ -269,18 +177,9 @@ void gl_draw_quad (int gltex,
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
 
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_QUADS);
-    glTexCoord2d(texcoords[0], texcoords[1]); glVertex2d(verts[0], verts[1]);
-    glTexCoord2d(texcoords[2], texcoords[3]); glVertex2d(verts[2], verts[3]);
-    glTexCoord2d(texcoords[6], texcoords[7]); glVertex2d(verts[4], verts[5]);
-    glTexCoord2d(texcoords[4], texcoords[5]); glVertex2d(verts[6], verts[7]);
-    glEnd();
-#else
     glVertexPointer(2, GL_DOUBLE, 0, verts);
     glTexCoordPointer(2, GL_DOUBLE, 0, texcoords);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-#endif
     GLERROR();
 }
 
@@ -315,21 +214,10 @@ gl_draw_line2d_loop
 */
 void gl_draw_line2d_loop (const float *coords, int num)
 {
-    int i;
-
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_LINE_LOOP);
-
-    for(i = 0; i < num; i++)
-        glVertex2f(coords[(i << 1) + 0], coords[(i << 1) + 1]);
-
-    glEnd();
-#else
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, coords);
     glEnableClientState(GL_VERTEX_ARRAY);
     glDrawArrays(GL_LINE_LOOP, 0, num);
-#endif
     GLERROR();
 }
 
@@ -340,19 +228,10 @@ gl_draw_line2d
 */
 void gl_draw_line2d (float x0, float y0, float x1, float y1)
 {
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_LINES);
-    glVertex2f(x0, y0);
-    glVertex2f(x1, y1);
-    glEnd();
-#else
-    {
-        GLfloat coords[] = { x0, y0, x1, y1 };
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        glVertexPointer(2, GL_FLOAT, 0, coords);
-        glDrawArrays(GL_LINE_LOOP, 0, 2);
-    }
-#endif
+    GLfloat coords[] = { x0, y0, x1, y1 };
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, coords);
+    glDrawArrays(GL_LINE_LOOP, 0, 2);
     GLERROR();
 }
 

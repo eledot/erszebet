@@ -28,20 +28,13 @@
 void gl_clear (void);
 bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_color (double r, double g, double b, double a);
-void gl_draw_stretched (int gltex);
 void gl_draw_texture (int gltex,
                       double centerx,
                       double centery,
                       double width,
                       double height,
-                      double angle);
-void gl_draw_texture2 (int gltex,
-                       double centerx,
-                       double centery,
-                       double width,
-                       double height,
-                       double angle,
-                       const float *vt) GNUC_NONNULL;
+                      double angle,
+                      const float *vt) GNUC_NONNULL;
 void gl_draw_quad (int gltex,
                    const double *verts,
                    const double *texcoords) GNUC_NONNULL;

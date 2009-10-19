@@ -212,8 +212,8 @@ void r_figure_draw (const void *data,
         vector_normalize(n);
         vector_mul(n, f->width / 2.0, n);
 
-        vector_sub(origin, n, &verts[0]);
-        vector_add(origin, n, &verts[2]);
+        vector_add(origin, n, &verts[0]);
+        vector_sub(origin, n, &verts[2]);
         vector_add(f->data.line.coords_end, n, &verts[4]);
         vector_sub(f->data.line.coords_end, n, &verts[6]);
 
