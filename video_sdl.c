@@ -225,7 +225,7 @@ video_init
 */
 bool video_init (void)
 {
-    int w, h, i, num_modes;
+    int w, h, i;
 
     nograb = sys_arg_find("-nograb");
 
@@ -254,6 +254,7 @@ bool video_init (void)
 #if (SDL_MINOR_VERSION >= 3)
     {
         SDL_DisplayMode mode;
+        int num_modes;
 
         if (0 > (num_modes = SDL_GetNumDisplayModes()))
         {
