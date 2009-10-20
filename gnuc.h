@@ -21,10 +21,10 @@
 #define _GNUC_H
 
 #if __GNUC__ > 2
-#define GNUC_MALLOC __attribute__((__malloc__))
-#define GNUC_PURE __attribute__((__pure__))
-#define GNUC_CONST __attribute__((__const__))
-#define GNUC_UNUSED __attribute__((__unused__))
+#define GNUC_MALLOC __attribute__((malloc))
+#define GNUC_PURE __attribute__((pure))
+#define GNUC_CONST __attribute__((const))
+#define GNUC_UNUSED __attribute__((unused))
 #define GNUC_NONNULL __attribute__((nonnull))
 #define GNUC_WARN_UNUSED_RES __attribute__((warn_unused_result))
 #define GNUC_NONNULL_ARGS(a...) __attribute__((nonnull(a)))
