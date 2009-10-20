@@ -27,4 +27,21 @@
 #include "g_entity.h"
 #include "g_physics.h"
 
+void g_set_double (const char *name, double value) GNUC_NONNULL;
+void g_set_integer (const char *name, int value) GNUC_NONNULL;
+void g_set_string (const char *name, const char *value) GNUC_NONNULL;
+
+void g_push_vector (const double *vector, int num) GNUC_NONNULL;
+bool g_pop_vector (int index, double *vector, int num) GNUC_NONNULL;
+void g_push_strings (const char **strings, int num) GNUC_NONNULL;
+
+bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func);
+#define g_lua_call(args, ret) g_lua_call_real(args, ret, __FILE__, __LINE__, __FUNCTION__)
+
+#define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
+
+extern mem_pool_t mempool;
+extern double g_time;
+extern lua_State *lua_state;
+
 #endif /* !_G_PRIVATE_H */

@@ -22,14 +22,11 @@
 #include "gl.h"
 #include "image_jpeg.h"
 #include "image_png.h"
-#include "g_entity.h"
-#include "g_physics.h"
 
 static bool r_i = false;
 mem_pool_t mempool;
 
 static cvar_t *r_show_fps;
-static cvar_t *r_show_collisions;
 cvar_t *r_fov;
 
 /* FIXME -- threaded screenshot cmd and shout if failed to take a shot */
@@ -142,17 +139,10 @@ void r_frame (void)
 {
     gl_enable_textures();
     gl_clear();
-    //g_entity_draw_entities(0);
     //gl_switch_3d();
+    //g_draw(0);
     gl_switch_2d();
-    g_entity_draw_entities(1);
-
-    if (r_show_collisions->i)
-    {
-        gl_disable_textures();
-        g_physics_draw_collisions();
-        gl_enable_textures();
-    }
+    g_draw(1);
 
     if (r_show_fps->i)
     {
@@ -173,7 +163,6 @@ r_init
 bool r_init (void)
 {
     r_show_fps = cvar_get("r_show_fps", "0", 0);
-    r_show_collisions = cvar_get("r_show_collisions", "0", 0);
     r_fov = cvar_get("r_fov", "90", 0);
 
     cmd_register("screenshot_jpeg", NULL, &screenshot_f, 0);

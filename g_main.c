@@ -28,11 +28,11 @@
 
 static bool g_i = false;
 
-static mem_pool_t mempool;
+mem_pool_t mempool;
+lua_State *lua_state;
+double g_time;
 
-static lua_State *lst = NULL;
-static double     g_start_time;
-double            g_time;
+static double g_start_time;
 
 enum
 {
@@ -64,9 +64,9 @@ static int g_error_real (int             status,
     if (!status || !g_i)
         return status;
 
-    err = lua_tostring(lst, -1);
+    err = lua_tostring(lua_state, -1);
     sys_printf_real(file, line, func, "%s (%s)\n", msg, err);
-    lua_pop(lst, 1);
+    lua_pop(lua_state, 1);
 
     return status;
 }
@@ -111,16 +111,19 @@ static int g_lua_traceback (lua_State *lst)
 g_call_cmd
 =================
 */
-void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv)
+static void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv)
 {
-    lua_getref(lst, cmd->lua_func);
-    lua_pushstring(lst, cmd->name);
-    lua_pushinteger(lst, source);
-    lua_pushinteger(lst, argc);
+    if (!g_i || !cmd->userdata)
+        return;
+
+    lua_getref(lua_state, cmd->userdata);
+    lua_pushstring(lua_state, cmd->name);
+    lua_pushinteger(lua_state, source);
+    lua_pushinteger(lua_state, argc);
     g_push_strings(argv, argc);
 
     g_lua_call(4, 0);
-    lua_pop(lst, 1);
+    lua_pop(lua_state, 1);
 }
 
 /*
@@ -128,13 +131,13 @@ void g_call_cmd (const cmd_t *cmd, int source, int argc, const char **argv)
 g_destroy_cmd
 =================
 */
-void g_destroy_cmd (cmd_t *cmd)
+static void g_destroy_cmd (cmd_t *cmd)
 {
     if (!g_i)
         return;
 
-    if (cmd->lua_func)
-        lua_unref(lst, cmd->lua_func);
+    if (cmd->userdata)
+        lua_unref(lua_state, cmd->userdata);
 }
 
 /*
@@ -153,11 +156,11 @@ void g_call_func (const char *func, const char *types, ...)
         return;
     }
 
-    lua_getglobal(lst, func);
+    lua_getglobal(lua_state, func);
 
-    if (lua_isnil(lst, -1))
+    if (lua_isnil(lua_state, -1))
     {
-        lua_pop(lst, 1);
+        lua_pop(lua_state, 1);
         return;
     }
 
@@ -169,15 +172,15 @@ void g_call_func (const char *func, const char *types, ...)
         switch (*types++)
         {
         case 'd':
-            lua_pushnumber(lst, va_arg(args, double));
+            lua_pushnumber(lua_state, va_arg(args, double));
             break;
 
         case 'i':
-            lua_pushinteger(lst, va_arg(args, int));
+            lua_pushinteger(lua_state, va_arg(args, int));
             break;
 
         case 's':
-            lua_pushstring(lst, va_arg(args, char *));
+            lua_pushstring(lua_state, va_arg(args, char *));
             break;
 
         case '.':
@@ -185,18 +188,18 @@ void g_call_func (const char *func, const char *types, ...)
 
         default:
             sys_printf("unknown argument type \"%c\"\n", *(types - 1));
-            lua_pop(lst, 1);
+            lua_pop(lua_state, 1);
             return;
         }
 
         args_num++;
-        luaL_checkstack(lst, 1, "too many arguments");
+        luaL_checkstack(lua_state, 1, "too many arguments");
     }
 
 done:
 
     res_num = strlen(types);
-    lua_pcall(lst, args_num, res_num, 0);
+    lua_pcall(lua_state, args_num, res_num, 0);
 
     pop = res_num;
     res_num = -res_num;
@@ -206,30 +209,30 @@ done:
         switch (*types++)
         {
         case 'd':
-            if (!lua_isnumber(lst, res_num))
+            if (!lua_isnumber(lua_state, res_num))
             {
                 sys_printf("result at %i is not a number when calling %s\n", res_num, func);
                 return;
             }
-            *va_arg(args, double *) = lua_tonumber(lst, res_num);
+            *va_arg(args, double *) = lua_tonumber(lua_state, res_num);
             break;
 
         case 'i':
-            if (!lua_isnumber(lst, res_num))
+            if (!lua_isnumber(lua_state, res_num))
             {
                 sys_printf("result at %i is not a number when calling %s\n", res_num, func);
                 return;
             }
-            *va_arg(args, int *) = (int)lua_tointeger(lst, res_num);
+            *va_arg(args, int *) = (int)lua_tointeger(lua_state, res_num);
             break;
 
         case 's':
-            if (!lua_isstring(lst, res_num))
+            if (!lua_isstring(lua_state, res_num))
             {
                 sys_printf("result at %i is not a string when calling %s\n", res_num, func);
                 return;
             }
-            *va_arg(args, const char **) = lua_tostring(lst, res_num);
+            *va_arg(args, const char **) = lua_tostring(lua_state, res_num);
             break;
 
         default:
@@ -240,7 +243,7 @@ done:
         res_num++;
     }
 
-    lua_pop(lst, pop);
+    lua_pop(lua_state, pop);
 
     va_end(args);
 }
@@ -258,8 +261,8 @@ void g_set_double (const char *name, double value)
         return;
     }
 
-    lua_pushnumber(lst, value);
-    lua_setglobal(lst, name);
+    lua_pushnumber(lua_state, value);
+    lua_setglobal(lua_state, name);
 }
 
 /*
@@ -275,8 +278,8 @@ void g_set_integer (const char *name, int value)
         return;
     }
 
-    lua_pushinteger(lst, value);
-    lua_setglobal(lst, name);
+    lua_pushinteger(lua_state, value);
+    lua_setglobal(lua_state, name);
 }
 
 /*
@@ -292,8 +295,8 @@ void g_set_string (const char *name, const char *value)
         return;
     }
 
-    lua_pushstring(lst, value);
-    lua_setglobal(lst, name);
+    lua_pushstring(lua_state, value);
+    lua_setglobal(lua_state, name);
 }
 
 /*
@@ -305,13 +308,13 @@ void g_push_vector (const double *vector, int num)
 {
     int i;
 
-    lua_createtable(lst, num, 0);
+    lua_createtable(lua_state, num, 0);
 
     for (i = 0; i < num ;i++)
     {
-        lua_pushinteger(lst, i + 1);
-        lua_pushnumber(lst, vector[i]);
-        lua_settable(lst, -3);
+        lua_pushinteger(lua_state, i + 1);
+        lua_pushnumber(lua_state, vector[i]);
+        lua_settable(lua_state, -3);
     }
 }
 
@@ -327,18 +330,18 @@ bool g_pop_vector (int index, double *vector, int num)
     for (i = 0; i < num ;i++)
         vector[i] = 0.0;
 
-    if (!lua_istable(lst, index))
+    if (!lua_istable(lua_state, index))
         return false;
 
-    lua_pushnil(lst);
+    lua_pushnil(lua_state);
 
-    for (i = 0; i < num && lua_next(lst, index) != 0 ;i++)
+    for (i = 0; i < num && lua_next(lua_state, index) != 0 ;i++)
     {
-        vector[i] = lua_tonumber(lst, -1);
-        lua_pop(lst, 1);
+        vector[i] = lua_tonumber(lua_state, -1);
+        lua_pop(lua_state, 1);
     }
 
-    lua_pop(lst, 1);
+    lua_pop(lua_state, 1);
 
     return true;
 }
@@ -352,13 +355,13 @@ void g_push_strings (const char **strings, int num)
 {
     int i;
 
-    lua_createtable(lst, num, 0);
+    lua_createtable(lua_state, num, 0);
 
     for (i = 0; i < num ;i++)
     {
-        lua_pushinteger(lst, i + 1);
-        lua_pushstring(lst, strings[i]);
-        lua_settable(lst, -3);
+        lua_pushinteger(lua_state, i + 1);
+        lua_pushstring(lua_state, strings[i]);
+        lua_settable(lua_state, -3);
     }
 }
 
@@ -382,65 +385,13 @@ g_lua_call_real
 */
 bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
 {
-    int base = lua_gettop(lst) - args;
-    lua_pushcfunction(lst, g_lua_traceback);
-    lua_insert(lst, base);
-    g_error_real(lua_pcall(lst, args, ret, base), "lua_pcall failed", file, line, func);
-    lua_remove(lst, base);
+    int base = lua_gettop(lua_state) - args;
+    lua_pushcfunction(lua_state, g_lua_traceback);
+    lua_insert(lua_state, base);
+    g_error_real(lua_pcall(lua_state, args, ret, base), "lua_pcall failed", file, line, func);
+    lua_remove(lua_state, base);
 
     return true;
-}
-
-/*
-=================
-game_lua_set_gravity
-=================
-*/
-static int game_lua_set_gravity (lua_State *lst)
-{
-    double gravity = luaL_checknumber(lst, 1);
-
-    g_physics_set_gravity(gravity);
-
-    return 0;
-}
-
-/*
-=================
-game_lua_get_gravity
-=================
-*/
-static int game_lua_get_gravity (lua_State *lst)
-{
-    lua_pushnumber(lst, g_physics_get_gravity());
-
-    return 1;
-}
-
-/*
-=================
-game_lua_set_speed
-=================
-*/
-static int game_lua_set_speed (lua_State *lst)
-{
-    double speed = luaL_checknumber(lst, 1);
-
-    g_physics_set_speed(speed);
-
-    return 0;
-}
-
-/*
-=================
-game_lua_get_speed
-=================
-*/
-static int game_lua_get_speed (lua_State *lst)
-{
-    lua_pushnumber(lst, g_physics_get_speed());
-
-    return 1;
 }
 
 /*
@@ -450,18 +401,19 @@ game_lua_register_cmd
 */
 static int game_lua_register_cmd (lua_State *lst)
 {
-    const char *name  = luaL_checkstring(lst, 1);
-    int         flags = luaL_checknumber(lst, 3);
-    cmd_t      *cmd   = cmd_register(name, NULL, &g_call_cmd, flags);
-    int         func;
-
-    lua_pushvalue(lst, 2);
-    func = lua_ref(lst, 1);
+    const char *name = luaL_checkstring(lst, 1);
+    int flags = luaL_checknumber(lst, 3);
+    cmd_t *cmd = cmd_register(name, NULL, &g_call_cmd, flags);
+    int func;
 
     if (NULL == cmd)
         return 0;
 
-    cmd->lua_func = func;
+    lua_pushvalue(lst, 2);
+    func = lua_ref(lst, 1);
+
+    cmd->delete = &g_destroy_cmd;
+    cmd->userdata = func;
 
     return 0;
 }
@@ -593,8 +545,8 @@ static void g_init_cmd (void)
     g_set_integer("CMD_SRC_GAME", CMD_SRC_GAME);
     g_set_integer("CMD_SRC_REMOTE", CMD_SRC_REMOTE);
 
-    lua_register(lst, "register_cmd", &game_lua_register_cmd);
-    lua_register(lst, "execute", &game_lua_execute);
+    lua_register(lua_state, "register_cmd", &game_lua_register_cmd);
+    lua_register(lua_state, "execute", &game_lua_execute);
 }
 
 /*
@@ -604,9 +556,9 @@ g_init_cvar
 */
 static void g_init_cvar (void)
 {
-    lua_register(lst, "get_cvar_string", &game_lua_get_cvar_string);
-    lua_register(lst, "get_cvar_integer", &game_lua_get_cvar_integer);
-    lua_register(lst, "get_cvar_number", &game_lua_get_cvar_number);
+    lua_register(lua_state, "get_cvar_string", &game_lua_get_cvar_string);
+    lua_register(lua_state, "get_cvar_integer", &game_lua_get_cvar_integer);
+    lua_register(lua_state, "get_cvar_number", &game_lua_get_cvar_number);
 }
 
 /*
@@ -625,8 +577,18 @@ static void g_init_video (void)
     g_set_integer("VIDEO_INFO_GRABBED", VIDEO_INFO_GRABBED);
     g_set_integer("VIDEO_INFO_ORIENTATION", VIDEO_INFO_ORIENTATION);
 
-    lua_register(lst, "set_orientation", &game_lua_set_orientation);
-    lua_register(lst, "get_video_info", &game_lua_get_video_info);
+    lua_register(lua_state, "set_orientation", &game_lua_set_orientation);
+    lua_register(lua_state, "get_video_info", &game_lua_get_video_info);
+}
+
+/*
+=================
+g_draw
+=================
+*/
+void g_draw (int draw2d)
+{
+    g_entity_draw_entities(draw2d);
 }
 
 /*
@@ -640,40 +602,35 @@ bool g_init (void)
 
     mem_alloc_static_pool("game", 0);
 
-    if (NULL == (lst = lua_open()))
+    if (NULL == (lua_state = lua_open()))
     {
         sys_printf("lua_open failed\n");
         return false;
     }
 
-    luaL_openlibs(lst);
+    luaL_openlibs(lua_state);
 
 #ifdef ENGINE_LUA_JIT
-    luaopen_jit(lst);
+    luaopen_jit(lua_state);
 #endif
 
     g_init_cmd();
     g_init_cvar();
     g_init_video();
     g_set_double("time", 0.0);
-    g_physics_init(mempool);
-    g_entity_init(lst, mempool);
-
-    lua_register(lst, "phys_set_gravity", &game_lua_set_gravity);
-    lua_register(lst, "phys_get_gravity", &game_lua_get_gravity);
-    lua_register(lst, "phys_set_speed", &game_lua_set_speed);
-    lua_register(lst, "phys_get_speed", &game_lua_get_speed);
+    g_physics_init();
+    g_entity_init();
 
     file = GAME_MAIN_FILE;
     sys_printf("loading gamecode from \"%s\"\n", file);
 
-    if (0 != g_error(luaL_loadfile(lst, file), "failed to load gamecode"))
+    if (0 != g_error(luaL_loadfile(lua_state, file), "failed to load gamecode"))
     {
         return false;
     }
 
     g_lua_call(0, LUA_MULTRET);
-    lua_pop(lst, 1);
+    lua_pop(lua_state, 1);
 
     g_i = true;
 
@@ -698,7 +655,8 @@ void g_shutdown (void)
     g_call_func("g_shutdown", "");
     g_entity_shutdown();
     g_physics_shutdown();
-    lua_close(lst);
+    lua_close(lua_state);
+    lua_state = NULL;
 
     mem_free_static_pool();
 

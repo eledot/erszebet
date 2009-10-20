@@ -25,15 +25,6 @@
 
 typedef enum
 {
-    PHYS_BODY_EMPTY = -1,
-    PHYS_BODY_CIRCLE = 0,
-    PHYS_BODY_SEGMENT,
-    PHYS_BODY_POLYGON,
-    PHYS_BODY_POLYGON_CENTERED
-}phys_body_types_e;
-
-typedef enum
-{
     ENT_F_STRING = 0,
     ENT_F_INTEGER,
     ENT_F_DOUBLE,
@@ -118,12 +109,8 @@ static const int ent_fields_free[] =
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
-static mem_pool_t mempool;
-
 g_entity_t        *entities;
 static g_entity_t *remove_entities;
-static lua_State  *lst;
-static int         point_query_shapes_num;
 
 /*
 =================
@@ -146,17 +133,17 @@ GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
         {
         case ENT_F_STRING:
             if (NULL == *(char **)data)
-                lua_pushstring(lst, "");
+                lua_pushstring(lua_state, "");
             else
-                lua_pushstring(lst, *(const char **)data);
+                lua_pushstring(lua_state, *(const char **)data);
             break;
 
         case ENT_F_INTEGER:
-            lua_pushinteger(lst, *(const int *)data);
+            lua_pushinteger(lua_state, *(const int *)data);
             break;
 
         case ENT_F_DOUBLE:
-            lua_pushnumber(lst, *(const double *)data);
+            lua_pushnumber(lua_state, *(const double *)data);
             break;
 
         case ENT_F_VECTOR:
@@ -227,15 +214,15 @@ GNUC_NONNULL static int ent_set_field (g_entity_t *ent, const char *field, int i
             if (NULL != *(char **)data)
                 mem_free(*(char **)data);
 
-            *(char **)data = mem_strdup_static(luaL_checkstring(lst, index));
+            *(char **)data = mem_strdup_static(luaL_checkstring(lua_state, index));
             break;
 
         case ENT_F_INTEGER:
-            *(int *)data = lua_tointeger(lst, index);
+            *(int *)data = lua_tointeger(lua_state, index);
             break;
 
         case ENT_F_DOUBLE:
-            *(double *)data = lua_tonumber(lst, index);
+            *(double *)data = lua_tonumber(lua_state, index);
             break;
 
         case ENT_F_VECTOR:
@@ -286,9 +273,6 @@ GNUC_NONNULL static const char *ent_flags_string (const g_entity_t *ent)
 
     if (ent->internal_flags & ENT_INTFL_PHYS_STATIC)
         strlcat(flags, "phys_static ", s);
-
-    if (ent->internal_flags & ENT_INTFL_DRAW)
-        strlcat(flags, "draw ", s);
 
     if (unknown)
     {
@@ -426,8 +410,7 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
          {
              { "think", ENT_INTFL_THINK },
              { "touch", ENT_INTFL_TOUCH },
-             { "block", ENT_INTFL_BLOCK },
-             { "draw",  ENT_INTFL_DRAW  }
+             { "block", ENT_INTFL_BLOCK }
          };
 
     lua_getfield(lst, 1, "__ref");
@@ -533,16 +516,16 @@ GNUC_NONNULL static void g_entity_delete (g_entity_t *ent)
     remove_entities = ent;
 
     /* mark entity as removed (set pointer to NULL) */
-    lua_getref(lst, ent->ref);
-    lua_pushlightuserdata(lst, NULL);
-    lua_setfield(lst, -2, "__ref");
-    lua_pop(lst, 1);
+    lua_getref(lua_state, ent->ref);
+    lua_pushlightuserdata(lua_state, NULL);
+    lua_setfield(lua_state, -2, "__ref");
+    lua_pop(lua_state, 1);
 
-    lua_unref(lst, ent->ref);
-    lua_unref(lst, ent->dataref);
+    lua_unref(lua_state, ent->ref);
+    lua_unref(lua_state, ent->dataref);
 
     /* remove all handlers, mark invalid */
-    ent->internal_flags -= ent->internal_flags & (ENT_INTFL_THINK | ENT_INTFL_TOUCH | ENT_INTFL_BLOCK | ENT_INTFL_DRAW);
+    ent->internal_flags -= ent->internal_flags & (ENT_INTFL_THINK | ENT_INTFL_TOUCH | ENT_INTFL_BLOCK);
     ent->flags |= ENT_FL_NON_SOLID;
 
     ent->ref = LUA_REFNIL;
@@ -789,255 +772,6 @@ GNUC_NONNULL static int ent_lua_set_line (lua_State *lst)
 
 /*
 =================
-ent_lua_attach_pin
-=================
-*/
-GNUC_NONNULL static int ent_lua_attach_pin (lua_State *lst)
-{
-    g_entity_t *a, *b;
-
-    lua_getfield(lst, 1, "__ref");
-    a = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == a)
-    {
-        sys_printf("called \"phys_attach_pin\" without entity\n");
-        return 0;
-    }
-
-    lua_getfield(lst, 2, "__ref");
-    b = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == b)
-    {
-        sys_printf("called \"phys_attach_pin\" without entity\n");
-        return 0;
-    }
-
-    g_physics_attach_pin(a, b);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_detach
-=================
-*/
-GNUC_NONNULL static int ent_lua_detach (lua_State *lst)
-{
-    int         top = lua_gettop(lst);
-    g_entity_t *a, *b = NULL;
-
-    lua_getfield(lst, 1, "__ref");
-    a = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == a)
-    {
-        sys_printf("called \"phys_detach\" without entity\n");
-        return 0;
-    }
-
-    if (top > 1)
-    {
-        lua_getfield(lst, 2, "__ref");
-        b = (g_entity_t *)lua_touserdata(lst, -1);
-    }
-
-    g_physics_detach(a, b);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_point_query_callback
-=================
-*/
-GNUC_NONNULL static void ent_lua_point_query_callback (g_entity_t *ent)
-{
-    point_query_shapes_num++;
-    lua_pushinteger(lst, point_query_shapes_num);
-
-    if (NULL == ent)
-        lua_pushnil(lst);
-    else
-        lua_getref(lst, ent->ref);
-
-    lua_settable(lst, -3);
-}
-
-/*
-=================
-ent_lua_point_query
-=================
-*/
-GNUC_NONNULL static int ent_lua_point_query (lua_State *lst)
-{
-    double point[3];
-
-    point_query_shapes_num = 0;
-
-    if (!g_pop_vector(1, point, 3))
-    {
-        sys_printf("called phys_point_query without origin\n");
-        return 0;
-    }
-
-    lua_newtable(lst);
-    g_physics_point_query(point, &ent_lua_point_query_callback);
-
-    return 1;
-}
-
-/*
-=================
-ent_lua_apply_impulse
-=================
-*/
-GNUC_NONNULL static int ent_lua_apply_impulse (lua_State *lst)
-{
-    double point[2], impulse[2];
-    g_entity_t *ent;
-
-    lua_getfield(lst, 1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"phys_apply_impulse\" without entity\n");
-        return 0;
-    }
-
-    if (!g_pop_vector(2, point, 2))
-    {
-        sys_printf("called phys_apply_impulse without point\n");
-        return 0;
-    }
-
-    if (!g_pop_vector(3, impulse, 2))
-    {
-        sys_printf("called phys_apply_impulse without impulse\n");
-        return 0;
-    }
-
-    g_physics_apply_impulse(ent, point, impulse);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_set_body
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_body (lua_State *lst)
-{
-    g_entity_t *ent;
-    double      radius, points[4], *coords;
-    int         arg, i, type, num, shapes_num, *vertices_num;
-
-    arg = 1;
-    lua_getfield(lst, arg++, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_physics\" without entity\n");
-        return 0;
-    }
-
-    type = luaL_checknumber(lst, arg++);
-
-    switch (type)
-    {
-    case PHYS_BODY_EMPTY:
-        g_physics_free_obj(ent);
-        break;
-
-    case PHYS_BODY_CIRCLE:
-        radius = luaL_checknumber(lst, arg++);
-        g_physics_set_circle(ent, radius);
-        break;
-
-    case PHYS_BODY_SEGMENT:
-        radius = luaL_checknumber(lst, arg++);
-        g_pop_vector(arg, points, 4);
-        g_physics_set_segment(ent, radius, points);
-        break;
-
-    case PHYS_BODY_POLYGON:
-    case PHYS_BODY_POLYGON_CENTERED:
-        shapes_num = lua_gettop(lst) - arg;
-
-        vertices_num = mem_alloc_static(sizeof(*vertices_num) * shapes_num);
-
-        for (num = i = 0; i < shapes_num ;i++)
-        {
-            vertices_num[i] = lua_objlen(lst, arg + i);
-            num += vertices_num[i];
-
-            if (vertices_num[i]/2 < 3)
-            {
-                sys_printf("bad polygon (got %i vertices)\n", vertices_num[i]/2);
-                mem_free(vertices_num);
-                break;
-            }
-        }
-
-        coords = mem_alloc_static(sizeof(double) * num);
-
-        for (num = i = 0; i < shapes_num ;i++)
-        {
-            g_pop_vector(arg + i, &coords[num], vertices_num[i]);
-            num += vertices_num[i];
-            vertices_num[i] >>= 1;
-        }
-
-        g_physics_set_poly(ent, shapes_num, coords, vertices_num, type == PHYS_BODY_POLYGON_CENTERED);
-        mem_free(vertices_num);
-        mem_free(coords);
-        break;
-
-    default:
-        sys_printf("unknown body shape %i\n", type);
-        break;
-    }
-
-    return 0;
-}
-
-/*
-=================
-g_entity_touch
-=================
-*/
-int g_entity_touch (g_entity_t *self, g_entity_t *other, const double *origin, const double *normal)
-{
-    int ret;
-
-    lua_getref(lst, self->dataref);
-    lua_getfield(lst, -1, "touch");
-    lua_getref(lst, self->ref);
-
-    if (NULL == other)
-        lua_pushnil(lst);
-    else
-        lua_getref(lst, other->ref);
-
-    g_push_vector(origin, 3);
-    g_push_vector(normal, 3);
-
-    g_lua_call(4, 1);
-    lua_pop(lst, 1);
-    ret = lua_toboolean(lst, 0);
-    lua_pop(lst, 1);
-
-    return ret;
-}
-
-/*
-=================
 g_entity_draw_entities
 =================
 */
@@ -1057,15 +791,6 @@ void g_entity_draw_entities (int draw2d)
                 ent->render_type < STSIZE(ent_render_funcs))
             {
                 ent_render_funcs[ent->render_type].draw(ent);
-            }
-
-            if (ent->internal_flags & ENT_INTFL_DRAW && LUA_REFNIL != ent->ref)
-            {
-                lua_getref(lst, ent->dataref);
-                lua_getfield(lst, -1, "draw");
-                lua_getref(lst, ent->ref);
-                g_lua_call(1, 0);
-                lua_pop(lst, 1);
             }
         }
     }
@@ -1110,11 +835,11 @@ void g_entity_frame (void)
             LUA_REFNIL != ent->ref)
         {
             ent->lastthink = ent->nextthink;
-            lua_getref(lst, ent->dataref);
-            lua_getfield(lst, -1, "think");
-            lua_getref(lst, ent->ref);
+            lua_getref(lua_state, ent->dataref);
+            lua_getfield(lua_state, -1, "think");
+            lua_getref(lua_state, ent->ref);
             g_lua_call(1, 0);
-            lua_pop(lst, 1);
+            lua_pop(lua_state, 1);
         }
     }
 }
@@ -1152,7 +877,7 @@ GNUC_NONNULL static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
 g_entity_init
 =================
 */
-void g_entity_init (void *_lst, mem_pool_t pool)
+void g_entity_init (void)
 {
     const luaL_reg entity_metamap[] =
         {
@@ -1166,41 +891,28 @@ void g_entity_init (void *_lst, mem_pool_t pool)
     entities = NULL;
     remove_entities = NULL;
     ent_fields = NULL;
-    lst = _lst;
-
-    mempool = pool;
 
     for (i = 0; i < STSIZE(ent_fields_known) ;i++)
         sglib_ent_field_t_add(&ent_fields, &ent_fields_known[i]);
 
-    luaL_newmetatable(lst, "entity");
-    lua_pushvalue(lst, -1);
-    lua_setfield(lst, -2, "__index");
-    luaL_register(lst, NULL, entity_metamap);
-    lua_pop(lst, 1);
+    luaL_newmetatable(lua_state, "entity");
+    lua_pushvalue(lua_state, -1);
+    lua_setfield(lua_state, -2, "__index");
+    luaL_register(lua_state, NULL, entity_metamap);
+    lua_pop(lua_state, 1);
 
     cmd_register("g_list_entities", NULL, &g_list_entities_f, 0);
 
     /* register funcs to work with entity */
-    lua_register(lst, "ent_spawn", &ent_lua_spawn);
-    lua_register(lst, "ent_remove", &ent_lua_remove);
-    lua_register(lst, "ent_set_sprite", &ent_lua_set_sprite);
-    lua_register(lst, "ent_set_text", &ent_lua_set_text);
-    lua_register(lst, "ent_set_model", &ent_lua_set_model);
-    lua_register(lst, "ent_set_circle", &ent_lua_set_circle);
-    lua_register(lst, "ent_set_line", &ent_lua_set_line);
-    lua_register(lst, "phys_set_body", &ent_lua_set_body);
-    lua_register(lst, "phys_attach_pin", &ent_lua_attach_pin);
-    lua_register(lst, "phys_detach", &ent_lua_detach);
-    lua_register(lst, "phys_point_query", &ent_lua_point_query);
-    lua_register(lst, "phys_apply_impulse", &ent_lua_apply_impulse);
+    lua_register(lua_state, "ent_spawn", &ent_lua_spawn);
+    lua_register(lua_state, "ent_remove", &ent_lua_remove);
+    lua_register(lua_state, "ent_set_sprite", &ent_lua_set_sprite);
+    lua_register(lua_state, "ent_set_text", &ent_lua_set_text);
+    lua_register(lua_state, "ent_set_model", &ent_lua_set_model);
+    lua_register(lua_state, "ent_set_circle", &ent_lua_set_circle);
+    lua_register(lua_state, "ent_set_line", &ent_lua_set_line);
 
     /* register global constants */
-    g_set_integer("BODY_EMPTY", PHYS_BODY_EMPTY);
-    g_set_integer("BODY_CIRCLE", PHYS_BODY_CIRCLE);
-    g_set_integer("BODY_SEGMENT", PHYS_BODY_SEGMENT);
-    g_set_integer("BODY_POLYGON", PHYS_BODY_POLYGON);
-    g_set_integer("BODY_POLYGON_CENTERED", PHYS_BODY_POLYGON_CENTERED);
     g_set_integer("FL_STATIC", ENT_FL_STATIC);
     g_set_integer("FL_NON_SOLID", ENT_FL_NON_SOLID);
 

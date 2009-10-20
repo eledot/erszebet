@@ -22,11 +22,19 @@
 
 #define PHYS_STEPS 3
 
-static mem_pool_t mempool;
+typedef enum
+{
+    PHYS_BODY_EMPTY = -1,
+    PHYS_BODY_CIRCLE = 0,
+    PHYS_BODY_SEGMENT,
+    PHYS_BODY_POLYGON,
+    PHYS_BODY_POLYGON_CENTERED
+}phys_body_types_e;
 
 static cpSpace *phys_space;
 static double   phys_last_update;
 static double   phys_speed;
+static int      point_query_shapes_num;
 
 /*
 =================
@@ -120,6 +128,32 @@ GNUC_NONNULL static void g_delete_shapes (g_entity_t *ent)
 
 /*
 =================
+g_physics_detach
+=================
+*/
+GNUC_NONNULL_ARGS(1) static void g_physics_detach (g_entity_t *a, g_entity_t *b)
+{
+    cpBody *bodies[2] = { a->body, NULL };
+
+    if (NULL == a->body || (NULL != b && NULL == b->body))
+    {
+        sys_printf("tried to detach entities without bodies\n");
+        return;
+    }
+
+    if (NULL == b)
+    {
+        cpArrayEach(phys_space->constraints, &g_delete_constraint_full, a->body);
+    }
+    else
+    {
+        bodies[1] = b->body;
+        cpArrayEach(phys_space->constraints, &g_delete_constraint, bodies);
+    }
+}
+
+/*
+=================
 g_delete_body
 =================
 */
@@ -185,7 +219,7 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
 g_physics_set_segment
 =================
 */
-void g_physics_set_segment (g_entity_t *ent, double radius, const double *coords)
+GNUC_NONNULL static void g_physics_set_segment (g_entity_t *ent, double radius, const double *coords)
 {
     g_physics_new_obj(ent, 1);
     g_add_shape(ent, cpSegmentShapeNew(ent->body,
@@ -199,7 +233,7 @@ void g_physics_set_segment (g_entity_t *ent, double radius, const double *coords
 g_physics_set_circle
 =================
 */
-void g_physics_set_circle (g_entity_t *ent, double radius)
+GNUC_NONNULL static void g_physics_set_circle (g_entity_t *ent, double radius)
 {
     g_physics_new_obj(ent, 1);
     g_add_shape(ent, cpCircleShapeNew(ent->body, radius, cpvzero));
@@ -210,11 +244,11 @@ void g_physics_set_circle (g_entity_t *ent, double radius)
 g_physics_set_poly
 =================
 */
-void g_physics_set_poly (g_entity_t   *ent,
-                         int           shapes_num,
-                         const double *vertices,
-                         const int    *vertices_num,
-                         int           centered)
+GNUC_NONNULL static void g_physics_set_poly (g_entity_t   *ent,
+                                             int           shapes_num,
+                                             const double *vertices,
+                                             const int    *vertices_num,
+                                             int           centered)
 {
     cpVect *v;
     int     offset, shape, max_num;
@@ -269,85 +303,12 @@ void g_physics_set_poly (g_entity_t   *ent,
 
 /*
 =================
-g_physics_attach_pin
-=================
-*/
-void g_physics_attach_pin (g_entity_t *a, g_entity_t *b)
-{
-    if (NULL == a->body || NULL == b->body)
-    {
-        sys_printf("tried to attach entities without bodies\n");
-        return;
-    }
-
-    cpSpaceAddConstraint(phys_space, cpPinJointNew(a->body, b->body, cpvzero, cpvzero));
-}
-
-/*
-=================
-g_physics_detach
-=================
-*/
-void g_physics_detach (g_entity_t *a, g_entity_t *b)
-{
-    cpBody *bodies[2] = { a->body, NULL };
-
-    if (NULL == a->body || (NULL != b && NULL == b->body))
-    {
-        sys_printf("tried to detach entities without bodies\n");
-        return;
-    }
-
-    if (NULL == b)
-    {
-        cpArrayEach(phys_space->constraints, &g_delete_constraint_full, a->body);
-    }
-    else
-    {
-        bodies[1] = b->body;
-        cpArrayEach(phys_space->constraints, &g_delete_constraint, bodies);
-    }
-}
-
-/*
-=================
 g_point_query
 =================
 */
-static void g_point_query (cpShape *shape, void (*callback) (g_entity_t *shape))
+GNUC_NONNULL static void g_point_query (cpShape *shape, void (*callback) (g_entity_t *shape))
 {
     callback(shape->data);
-}
-
-/*
-=================
-g_physics_point_query
-=================
-*/
-void g_physics_point_query (const double *point, void (*callback) (g_entity_t *shape))
-{
-    cpSpacePointQuery(phys_space,
-                      cpv(point[0], point[1]),
-                      (cpLayers)-1,
-                      0,
-                      (cpSpacePointQueryFunc)&g_point_query,
-                      (void *)callback);
-}
-
-/*
-=================
-g_physics_apply_impulse
-=================
-*/
-void g_physics_apply_impulse (g_entity_t *ent, const double *point, const double *impulse)
-{
-    if (NULL == ent->body)
-    {
-        sys_printf("tried to apply impulse on entity without body\n");
-        return;
-    }
-
-    cpBodyApplyImpulse(ent->body, cpv(impulse[0], impulse[1]), cpv(point[0], point[1]));
 }
 
 /*
@@ -414,83 +375,6 @@ void g_physics_update_body (g_entity_t *ent)
 
 /*
 =================
-g_physics_draw_collisions
-=================
-*/
-void g_physics_draw_collisions (void)
-{
-    const int segs = 9;
-    const double coeff = 2.0 * M_PI / (double)segs;
-    const g_entity_t *ent;
-    cpVect a, b;
-    float coords[segs * 2];
-    int i, shn;
-
-    for (ent = entities; NULL != ent ;ent = ent->next)
-    {
-        const cpBody *body = ent->body;
-
-        if (NULL == body)
-            continue;
-
-        for (shn = 0; shn < ent->shapes_num ;shn++)
-        {
-            const cpShape *shape = ent->shapes[shn];
-            const cpSegmentShape *segment = ent->shapes[shn];
-            const cpPolyShape *poly = ent->shapes[shn];
-            const cpCircleShape *circle = ent->shapes[shn];
-
-///*
-  #define CLENGTH 16
-  gl_color(0, 1, 0, 1);
-  gl_draw_line2d(body->p.x, body->p.y - CLENGTH,
-  body->p.x, body->p.y + CLENGTH);
-  gl_draw_line2d(body->p.x - CLENGTH, body->p.y,
-  body->p.x + CLENGTH, body->p.y);
-  gl_color(1, 1, 1, 1);
-//*/
-
-            switch (shape->klass->type)
-            {
-            case CP_SEGMENT_SHAPE:
-                a = cpvadd(body->p, cpvrotate(segment->a, body->rot));
-                b = cpvadd(body->p, cpvrotate(segment->b, body->rot));
-                gl_draw_line2d(a.x, a.y, b.x, b.y);
-                break;
-
-            case CP_POLY_SHAPE:
-                for (i = 0; i < poly->numVerts ;i++)
-                {
-                    a = cpvadd(body->p, cpvrotate(poly->verts[i], body->rot));
-                    coords[(i << 1) + 0] = a.x;
-                    coords[(i << 1) + 1] = a.y;
-                }
-
-                gl_draw_line2d_loop(coords, poly->numVerts);
-                break;
-
-            case CP_CIRCLE_SHAPE:
-                a = cpvadd(body->p, cpvrotate(circle->c, body->rot));
-
-                for (i = 0; i < segs ;i++)
-                {
-                    double rads = i * coeff;
-                    coords[(i << 1) + 0] = circle->r * cos(rads + body->a) + a.x;
-                    coords[(i << 1) + 1] = circle->r * sin(rads + body->a) + a.y;
-                }
-
-                gl_draw_line2d_loop(coords, segs);
-                break;
-
-            default:
-                break;
-            }
-        }
-    }
-}
-
-/*
-=================
 g_physics_frame
 =================
 */
@@ -512,43 +396,34 @@ void g_physics_frame (void)
 
 /*
 =================
-g_physics_set_gravity
+g_physics_touch
 =================
 */
-void g_physics_set_gravity (double gravity)
+GNUC_NONNULL_ARGS(1, 3, 4) static int g_physics_touch (g_entity_t *self,
+                                                       g_entity_t *other,
+                                                       const double *origin,
+                                                       const double *normal)
 {
-    phys_space->gravity = cpv(0.0, -gravity);
-}
+    int ret;
 
-/*
-=================
-g_physics_get_gravity
-=================
-*/
-double g_physics_get_gravity (void)
-{
-    return -phys_space->gravity.y;
-}
+    lua_getref(lua_state, self->dataref);
+    lua_getfield(lua_state, -1, "touch");
+    lua_getref(lua_state, self->ref);
 
-/*
-=================
-g_physics_set_speed
-=================
-*/
-void g_physics_set_speed (double speed)
-{
-    if (speed >= 0.01)
-        phys_speed = speed;
-}
+    if (NULL == other)
+        lua_pushnil(lua_state);
+    else
+        lua_getref(lua_state, other->ref);
 
-/*
-=================
-g_physics_get_speed
-=================
-*/
-double g_physics_get_speed (void)
-{
-    return phys_speed;
+    g_push_vector(origin, 3);
+    g_push_vector(normal, 3);
+
+    g_lua_call(4, 1);
+    lua_pop(lua_state, 1);
+    ret = lua_toboolean(lua_state, 0);
+    lua_pop(lua_state, 1);
+
+    return ret;
 }
 
 /*
@@ -596,10 +471,10 @@ static int g_default_coll_func (cpShape   *a,
         normal[2] = 0.0;
 
         if (*aintfl & ENT_INTFL_TOUCH && !(*bfl & ENT_FL_NON_SOLID))
-            atouch_blocked = g_entity_touch(ae, be, origin, normal);
+            atouch_blocked = g_physics_touch(ae, be, origin, normal);
 
         if (*bintfl & ENT_INTFL_TOUCH && !(*afl & ENT_FL_NON_SOLID))
-            btouch_blocked = g_entity_touch(be, ae, origin, normal);
+            btouch_blocked = g_physics_touch(be, ae, origin, normal);
 
         if (!(!(atouch_blocked & btouch_blocked) || ((*afl | *bfl) & ENT_FL_NON_SOLID)))
             return 1;
@@ -608,14 +483,305 @@ static int g_default_coll_func (cpShape   *a,
     return 0;
 }
 
+
+/*
+=================
+ent_lua_attach_pin
+=================
+*/
+GNUC_NONNULL static int ent_lua_attach_pin (lua_State *lst)
+{
+    g_entity_t *a, *b;
+
+    lua_getfield(lst, 1, "__ref");
+    a = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == a)
+    {
+        sys_printf("called \"phys_attach_pin\" without entity\n");
+        return 0;
+    }
+
+    lua_getfield(lst, 2, "__ref");
+    b = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == b)
+    {
+        sys_printf("called \"phys_attach_pin\" without entity\n");
+        return 0;
+    }
+
+    if (NULL == a->body || NULL == b->body)
+    {
+        sys_printf("tried to attach entities without bodies\n");
+        return 0;
+    }
+
+    cpSpaceAddConstraint(phys_space, cpPinJointNew(a->body, b->body, cpvzero, cpvzero));
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_detach
+=================
+*/
+GNUC_NONNULL static int ent_lua_detach (lua_State *lst)
+{
+    int         top = lua_gettop(lst);
+    g_entity_t *a, *b = NULL;
+
+    lua_getfield(lst, 1, "__ref");
+    a = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == a)
+    {
+        sys_printf("called \"phys_detach\" without entity\n");
+        return 0;
+    }
+
+    if (top > 1)
+    {
+        lua_getfield(lst, 2, "__ref");
+        b = (g_entity_t *)lua_touserdata(lst, -1);
+    }
+
+    g_physics_detach(a, b);
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_point_query_callback
+=================
+*/
+GNUC_NONNULL static void ent_lua_point_query_callback (g_entity_t *ent)
+{
+    point_query_shapes_num++;
+    lua_pushinteger(lua_state, point_query_shapes_num);
+
+    if (NULL == ent)
+        lua_pushnil(lua_state);
+    else
+        lua_getref(lua_state, ent->ref);
+
+    lua_settable(lua_state, -3);
+}
+
+/*
+=================
+ent_lua_point_query
+=================
+*/
+GNUC_NONNULL static int ent_lua_point_query (lua_State *lst)
+{
+    double point[3];
+
+    point_query_shapes_num = 0;
+    g_pop_vector(1, point, 3);
+
+    lua_newtable(lst);
+
+    cpSpacePointQuery(phys_space,
+                      cpv(point[0], point[1]),
+                      (cpLayers)-1,
+                      0,
+                      (cpSpacePointQueryFunc)&g_point_query,
+                      &ent_lua_point_query_callback);
+
+    return 1;
+}
+
+/*
+=================
+ent_lua_apply_impulse
+=================
+*/
+GNUC_NONNULL static int ent_lua_apply_impulse (lua_State *lst)
+{
+    double point[2], impulse[2];
+    g_entity_t *ent;
+
+    lua_getfield(lst, 1, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"phys_apply_impulse\" without entity\n");
+        return 0;
+    }
+
+    if (NULL == ent->body)
+    {
+        sys_printf("tried to apply impulse on entity without body\n");
+        return 0;
+    }
+
+    g_pop_vector(2, point, 2);
+    g_pop_vector(3, impulse, 2);
+
+    cpBodyApplyImpulse(ent->body, cpv(impulse[0], impulse[1]), cpv(point[0], point[1]));
+
+    return 0;
+}
+
+/*
+=================
+ent_lua_set_body
+=================
+*/
+GNUC_NONNULL static int ent_lua_set_body (lua_State *lst)
+{
+    g_entity_t *ent;
+    double      radius, points[4], *coords;
+    int         arg, i, type, num, shapes_num, *vertices_num;
+
+    arg = 1;
+    lua_getfield(lst, arg++, "__ref");
+    ent = (g_entity_t *)lua_touserdata(lst, -1);
+
+    if (NULL == ent)
+    {
+        sys_printf("called \"set_physics\" without entity\n");
+        return 0;
+    }
+
+    type = luaL_checknumber(lst, arg++);
+
+    switch (type)
+    {
+    case PHYS_BODY_EMPTY:
+        g_physics_free_obj(ent);
+        break;
+
+    case PHYS_BODY_CIRCLE:
+        radius = luaL_checknumber(lst, arg++);
+        g_physics_set_circle(ent, radius);
+        break;
+
+    case PHYS_BODY_SEGMENT:
+        radius = luaL_checknumber(lst, arg++);
+        g_pop_vector(arg, points, 4);
+        g_physics_set_segment(ent, radius, points);
+        break;
+
+    case PHYS_BODY_POLYGON:
+    case PHYS_BODY_POLYGON_CENTERED:
+        shapes_num = lua_gettop(lst) - arg;
+
+        vertices_num = mem_alloc_static(sizeof(*vertices_num) * shapes_num);
+
+        for (num = i = 0; i < shapes_num ;i++)
+        {
+            vertices_num[i] = lua_objlen(lst, arg + i);
+            num += vertices_num[i];
+
+            if (vertices_num[i]/2 < 3)
+            {
+                sys_printf("bad polygon (got %i vertices)\n", vertices_num[i]/2);
+                mem_free(vertices_num);
+                break;
+            }
+        }
+
+        coords = mem_alloc_static(sizeof(double) * num);
+
+        for (num = i = 0; i < shapes_num ;i++)
+        {
+            g_pop_vector(arg + i, &coords[num], vertices_num[i]);
+            num += vertices_num[i];
+            vertices_num[i] >>= 1;
+        }
+
+        g_physics_set_poly(ent, shapes_num, coords, vertices_num, type == PHYS_BODY_POLYGON_CENTERED);
+        mem_free(vertices_num);
+        mem_free(coords);
+        break;
+
+    default:
+        sys_printf("unknown body shape %i\n", type);
+        break;
+    }
+
+    return 0;
+}
+
+/*
+=================
+game_lua_set_gravity
+=================
+*/
+static int game_lua_set_gravity (lua_State *lst)
+{
+    phys_space->gravity = cpv(0.0, -luaL_checknumber(lst, 1));
+
+    return 0;
+}
+
+/*
+=================
+game_lua_get_gravity
+=================
+*/
+static int game_lua_get_gravity (lua_State *lst)
+{
+    lua_pushnumber(lst, -phys_space->gravity.y);
+
+    return 1;
+}
+
+/*
+=================
+game_lua_set_speed
+=================
+*/
+static int game_lua_set_speed (lua_State *lst)
+{
+    double speed = luaL_checknumber(lst, 1);
+
+    if (speed >= 0.01)
+        phys_speed = speed;
+
+    return 0;
+}
+
+/*
+=================
+game_lua_get_speed
+=================
+*/
+static int game_lua_get_speed (lua_State *lst)
+{
+    lua_pushnumber(lst, phys_speed);
+
+    return 1;
+}
+
 /*
 =================
 g_physics_init
 =================
 */
-void g_physics_init (mem_pool_t pool)
+void g_physics_init (void)
 {
-    mempool = pool;
+    g_set_integer("BODY_EMPTY", PHYS_BODY_EMPTY);
+    g_set_integer("BODY_CIRCLE", PHYS_BODY_CIRCLE);
+    g_set_integer("BODY_SEGMENT", PHYS_BODY_SEGMENT);
+    g_set_integer("BODY_POLYGON", PHYS_BODY_POLYGON);
+    g_set_integer("BODY_POLYGON_CENTERED", PHYS_BODY_POLYGON_CENTERED);
+
+    lua_register(lua_state, "phys_set_body", &ent_lua_set_body);
+    lua_register(lua_state, "phys_attach_pin", &ent_lua_attach_pin);
+    lua_register(lua_state, "phys_detach", &ent_lua_detach);
+    lua_register(lua_state, "phys_point_query", &ent_lua_point_query);
+    lua_register(lua_state, "phys_apply_impulse", &ent_lua_apply_impulse);
+
+    lua_register(lua_state, "phys_set_gravity", &game_lua_set_gravity);
+    lua_register(lua_state, "phys_get_gravity", &game_lua_get_gravity);
+    lua_register(lua_state, "phys_set_speed", &game_lua_set_speed);
+    lua_register(lua_state, "phys_get_speed", &game_lua_get_speed);
 
     cpInitChipmunk();
 
