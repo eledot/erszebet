@@ -42,6 +42,8 @@ add_subdirectory(tools)
 set(DIR_3RD ${CMAKE_CURRENT_SOURCE_DIR}/3rd)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${DIR_3RD}/sglib")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wswitch-default -Wswitch-enum")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-security -Wundef")
 
 option(WITH_IMAGE_PNG   "PNG image format support" ON)
 option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
