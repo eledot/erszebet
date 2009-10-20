@@ -460,7 +460,7 @@ cpSpaceHashQueryRehash(cpSpaceHash *hash, cpSpaceHashQueryFunc func, void *data)
 }
 
 // modified from http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
-void raytrace(cpSpaceHash *hash, void *obj, cpVect a, cpVect b, cpSpaceHashQueryFunc func, void *data)
+GNUC_UNUSED static void raytrace(cpSpaceHash *hash, void *obj, cpVect a, cpVect b, cpSpaceHashQueryFunc func, void *data)
 {
 	a = cpvmult(a, 1.0f/hash->celldim);
 	b = cpvmult(b, 1.0f/hash->celldim);

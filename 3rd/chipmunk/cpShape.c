@@ -96,7 +96,7 @@ cpShapePointQuery(cpShape *shape, cpVect p, cpLayers layers, cpGroup group){
 	return 0;
 }
 
-int
+GNUC_UNUSED static int
 cpShapeSegmentQuery(cpShape *shape, cpVect a, cpVect b, cpLayers layers, cpGroup group, cpSegmentQueryInfo *info){
 	if(!(group && shape->group && group == shape->group) && (layers&shape->layers)){
 		shape->klass->segmentQuery(shape, a, b, info);
@@ -362,7 +362,7 @@ CP_DefineShapeGetter(cpSegmentShape, cpFloat, r, Radius)
 
 // Unsafe API (chipmunk_unsafe.h)
 
-void
+GNUC_UNUSED static void
 cpCircleShapeSetRadius(cpShape *shape, cpFloat radius)
 {
 	assert(shape->klass == &cpCircleShapeClass);
@@ -371,7 +371,7 @@ cpCircleShapeSetRadius(cpShape *shape, cpFloat radius)
 	circle->r = radius;
 }
 
-void
+GNUC_UNUSED static void
 cpCircleShapeSetOffset(cpShape *shape, cpVect offset)
 {
 	assert(shape->klass == &cpCircleShapeClass);
@@ -380,7 +380,7 @@ cpCircleShapeSetOffset(cpShape *shape, cpVect offset)
 	circle->c = offset;
 }
 
-void
+GNUC_UNUSED static void
 cpSegmentShapeSetEndpoints(cpShape *shape, cpVect a, cpVect b)
 {
 	assert(shape->klass == &cpSegmentShapeClass);
@@ -391,7 +391,7 @@ cpSegmentShapeSetEndpoints(cpShape *shape, cpVect a, cpVect b)
 	seg->n = cpvperp(cpvnormalize(cpvsub(b, a)));
 }
 
-void
+GNUC_UNUSED static void
 cpSegmentShapeSetRadius(cpShape *shape, cpFloat radius)
 {
 	assert(shape->klass == &cpSegmentShapeClass);

@@ -242,3 +242,96 @@ diff -r 060b8f72d47f 3rd/chipmunk/cpSpaceHash.c
  {
  	cpHandle *hand = (cpHandle *)elt;
  	cpHandleFree(hand);
+diff -r 5be1e1937fe7 3rd/chipmunk/cpArbiter.c
+--- a/3rd/chipmunk/cpArbiter.c	Wed Oct 21 00:41:53 2009 +0300
++++ b/3rd/chipmunk/cpArbiter.c	Wed Oct 21 00:53:38 2009 +0300
+@@ -69,7 +69,7 @@
+ 	return sum;
+ }
+ 
+-cpFloat
++GNUC_UNUSED static cpFloat
+ cpContactsEstimateCrushingImpulse(cpContact *contacts, int numContacts)
+ {
+ 	cpFloat fsum = 0.0f;
+diff -r 5be1e1937fe7 3rd/chipmunk/cpCollision.h
+--- a/3rd/chipmunk/cpCollision.h	Wed Oct 21 00:41:53 2009 +0300
++++ b/3rd/chipmunk/cpCollision.h	Wed Oct 21 00:53:38 2009 +0300
+@@ -21,3 +21,5 @@
+ 
+ // Collides two cpShape structures. (this function is lonely :( )
+ int cpCollideShapes(cpShape *a, cpShape *b, cpContact **arr);
++
++void cpInitCollisionFuncs(void);
+diff -r 5be1e1937fe7 3rd/chipmunk/cpPolyShape.c
+--- a/3rd/chipmunk/cpPolyShape.c	Wed Oct 21 00:41:53 2009 +0300
++++ b/3rd/chipmunk/cpPolyShape.c	Wed Oct 21 00:53:38 2009 +0300
+@@ -210,7 +210,7 @@
+ 
+ // Unsafe API (chipmunk_unsafe.h)
+ 
+-void
++GNUC_UNUSED static void
+ cpPolyShapeSetVerts(cpShape *shape, int numVerts, cpVect *verts, cpVect offset)
+ {
+ 	assert(shape->klass == &polyClass);
+diff -r 5be1e1937fe7 3rd/chipmunk/cpShape.c
+--- a/3rd/chipmunk/cpShape.c	Wed Oct 21 00:41:53 2009 +0300
++++ b/3rd/chipmunk/cpShape.c	Wed Oct 21 00:53:38 2009 +0300
+@@ -96,7 +96,7 @@
+ 	return 0;
+ }
+ 
+-int
++GNUC_UNUSED static int
+ cpShapeSegmentQuery(cpShape *shape, cpVect a, cpVect b, cpLayers layers, cpGroup group, cpSegmentQueryInfo *info){
+ 	if(!(group && shape->group && group == shape->group) && (layers&shape->layers)){
+ 		shape->klass->segmentQuery(shape, a, b, info);
+@@ -362,7 +362,7 @@
+ 
+ // Unsafe API (chipmunk_unsafe.h)
+ 
+-void
++GNUC_UNUSED static void
+ cpCircleShapeSetRadius(cpShape *shape, cpFloat radius)
+ {
+ 	assert(shape->klass == &cpCircleShapeClass);
+@@ -371,7 +371,7 @@
+ 	circle->r = radius;
+ }
+ 
+-void
++GNUC_UNUSED static void
+ cpCircleShapeSetOffset(cpShape *shape, cpVect offset)
+ {
+ 	assert(shape->klass == &cpCircleShapeClass);
+@@ -380,7 +380,7 @@
+ 	circle->c = offset;
+ }
+ 
+-void
++GNUC_UNUSED static void
+ cpSegmentShapeSetEndpoints(cpShape *shape, cpVect a, cpVect b)
+ {
+ 	assert(shape->klass == &cpSegmentShapeClass);
+@@ -391,7 +391,7 @@
+ 	seg->n = cpvperp(cpvnormalize(cpvsub(b, a)));
+ }
+ 
+-void
++GNUC_UNUSED static void
+ cpSegmentShapeSetRadius(cpShape *shape, cpFloat radius)
+ {
+ 	assert(shape->klass == &cpSegmentShapeClass);
+diff -r 5be1e1937fe7 3rd/chipmunk/cpSpaceHash.c
+--- a/3rd/chipmunk/cpSpaceHash.c	Wed Oct 21 00:41:53 2009 +0300
++++ b/3rd/chipmunk/cpSpaceHash.c	Wed Oct 21 00:53:38 2009 +0300
+@@ -460,7 +460,7 @@
+ }
+ 
+ // modified from http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
+-void raytrace(cpSpaceHash *hash, void *obj, cpVect a, cpVect b, cpSpaceHashQueryFunc func, void *data)
++GNUC_UNUSED static void raytrace(cpSpaceHash *hash, void *obj, cpVect a, cpVect b, cpSpaceHashQueryFunc func, void *data)
+ {
+ 	a = cpvmult(a, 1.0f/hash->celldim);
+ 	b = cpvmult(b, 1.0f/hash->celldim);

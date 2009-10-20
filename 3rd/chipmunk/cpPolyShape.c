@@ -210,7 +210,7 @@ cpPolyShapeNew(cpBody *body, int numVerts, cpVect *verts, cpVect offset)
 
 // Unsafe API (chipmunk_unsafe.h)
 
-void
+GNUC_UNUSED static void
 cpPolyShapeSetVerts(cpShape *shape, int numVerts, cpVect *verts, cpVect offset)
 {
 	assert(shape->klass == &polyClass);

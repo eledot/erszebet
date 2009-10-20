@@ -69,7 +69,7 @@ cpContactsSumImpulsesWithFriction(cpContact *contacts, int numContacts)
 	return sum;
 }
 
-cpFloat
+GNUC_UNUSED static cpFloat
 cpContactsEstimateCrushingImpulse(cpContact *contacts, int numContacts)
 {
 	cpFloat fsum = 0.0f;
