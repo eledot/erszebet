@@ -24,6 +24,7 @@
 #include <jpeglib.h>
 
 #include "common.h"
+#include "image_jpeg.h"
 
 static bool image_jpeg_i = false;
 
@@ -393,6 +394,7 @@ void image_jpeg_shutdown (void)
 #else /* !ENGINE_IMAGE_JPEG */
 
 #include "common.h"
+#include "image_jpeg.h"
 
 bool image_jpeg_load (GNUC_UNUSED const char *name,
                       GNUC_UNUSED image_t *im,

@@ -20,6 +20,7 @@
 #if defined(ENGINE_IMAGE_PVRTC) && defined(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG)
 
 #include "common.h"
+#include "image_pvrtc.h"
 #include "gl_private.h"
 
 typedef enum
@@ -238,6 +239,7 @@ void image_pvrtc_shutdown (void)
 #else /* !ENGINE_IMAGE_PVRTC || !GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG */
 
 #include "common.h"
+#include "image_pvrtc.h"
 
 bool image_pvrtc_load (GNUC_UNUSED const char *name,
                        GNUC_UNUSED image_t *im,

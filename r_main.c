@@ -103,7 +103,7 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
 r_get_fps
 =================
 */
-int r_get_fps (void)
+static int r_get_fps (void)
 {
 #define FPSCNT 32
     int        i, total, t, frame_time;

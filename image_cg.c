@@ -22,6 +22,7 @@
 #include <CoreGraphics.h>
 
 #include "common.h"
+#include "image_cg.h"
 #include "fs_helpers_apple.h"
 
 static bool image_cg_i = false;
@@ -162,6 +163,7 @@ void image_cg_shutdown (void)
 #else /* !ENGINE_IMAGE_CG */
 
 #include "common.h"
+#include "image_cg.h"
 
 bool image_cg_load (GNUC_UNUSED const char *name,
                     GNUC_UNUSED image_t *im,

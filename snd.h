@@ -61,6 +61,9 @@ void snd_set_listener_pos (const float *pos) GNUC_NONNULL;
 void snd_set_listener_orientation (const float *ori) GNUC_NONNULL;
 void snd_set_listener_velocity (const float *vel) GNUC_NONNULL;
 
+snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags);
+void snd_unload (snd_sound_t *sound);
+
 void snd_frame (void);
 
 bool snd_init (void);

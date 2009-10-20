@@ -20,6 +20,7 @@
 #ifdef ENGINE_SND_WAV
 
 #include "common.h"
+#include "snd_wav.h"
 
 #define STREAM_BUFFER_SIZE 16384
 
@@ -274,6 +275,7 @@ void snd_wav_shutdown (void)
 #else /* !ENGINE_SND_WAV */
 
 #include "common.h"
+#include "snd_wav.h"
 
 bool snd_wav_load (GNUC_UNUSED const char *name,
                    GNUC_UNUSED snd_stream_t *stream,

@@ -22,6 +22,7 @@
 #include <stream_decoder.h>
 
 #include "common.h"
+#include "snd_flac.h"
 
 #define STREAM_BUFFER_SIZE 65536
 
@@ -497,6 +498,7 @@ void snd_flac_shutdown (void)
 #else /* !ENGINE_SND_FLAC */
 
 #include "common.h"
+#include "snd_flac.h"
 
 bool snd_flac_load (GNUC_UNUSED const char *name,
                     GNUC_UNUSED snd_stream_t *stream,

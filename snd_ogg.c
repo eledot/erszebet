@@ -23,6 +23,7 @@
 #include <vorbisfile.h>
 
 #include "common.h"
+#include "snd_ogg.h"
 
 #define STREAM_BUFFER_SIZE 65536
 
@@ -286,6 +287,7 @@ void snd_ogg_shutdown (void)
 #else /* !ENGINE_SND_OGG */
 
 #include "common.h"
+#include "snd_ogg.h"
 
 bool snd_ogg_load (GNUC_UNUSED const char *name,
                    GNUC_UNUSED snd_stream_t *stream,

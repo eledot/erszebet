@@ -23,6 +23,7 @@
 #include <setjmp.h>
 
 #include "common.h"
+#include "image_png.h"
 
 static bool image_png_i = false;
 
@@ -308,6 +309,7 @@ void image_png_shutdown (void)
 #else /* !ENGINE_IMAGE_PNG */
 
 #include "common.h"
+#include "image_png.h"
 
 bool image_png_load (GNUC_UNUSED const char *name,
                      GNUC_UNUSED image_t *im,
