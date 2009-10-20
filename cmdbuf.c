@@ -60,7 +60,7 @@ void cmdbuf_exec (const char *c, int source)
             if (CMD_SRC_CONSOLE == source && NULL != cvar->help)
             {
                 /* FIXME -- print to console */
-                sys_printf(cvar->help);
+                sys_printf("%s\n", cvar->help);
             }
         }
         else if (!(cvar->flags & CVAR_FL_RDONLY))
