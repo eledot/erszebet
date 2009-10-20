@@ -44,6 +44,7 @@ typedef enum
 struct cmd_s;
 
 typedef void (*cmd_action_t) (const struct cmd_s *cmd, int source, int argc, const char **argv);
+typedef void (*cmd_delete_t) (struct cmd_s *cmd);
 
 typedef struct cmd_s
 {
@@ -51,9 +52,10 @@ typedef struct cmd_s
     char alias[CMD_MAX_ALIAS];
 
     cmd_action_t action;
-    int          lua_func;
+    cmd_delete_t delete;
 
     int flags;
+    int userdata;
 
     struct cmd_s *next;
 }cmd_t;
