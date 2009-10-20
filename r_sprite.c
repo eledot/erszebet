@@ -301,10 +301,10 @@ void r_sprite_draw (const r_sprite_t *sprite,
     {
         tex = sprite->frames[frame];
 
-        vt[0] = vt[6] = 0.0;
+        vt[0] = vt[4] = 0.0;
         vt[1] = vt[3] = 0.0f;
         vt[5] = vt[7] = tex->texh;
-        vt[4] = vt[2] = tex->texw;
+        vt[6] = vt[2] = tex->texw;
 
         gl_draw_texture(tex->gltex,
                         originx,
@@ -318,10 +318,10 @@ void r_sprite_draw (const r_sprite_t *sprite,
     {
         tex = sprite->frames[0];
 
-        vt[0] = vt[6] = frame * sprite->inc;
+        vt[0] = vt[4] = frame * sprite->inc;
         vt[1] = vt[3] = 0.0f;
         vt[5] = vt[7] = tex->texh;
-        vt[4] = vt[2] = vt[0] + sprite->inc;
+        vt[6] = vt[2] = vt[0] + sprite->inc;
 
         gl_draw_texture(tex->gltex,
                         originx,

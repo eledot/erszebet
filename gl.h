@@ -34,10 +34,10 @@ void gl_draw_texture (int gltex,
                       double width,
                       double height,
                       double angle,
-                      const float *vt) GNUC_NONNULL;
+                      const float *texcoords) GNUC_NONNULL;
 void gl_draw_quad (int gltex,
-                   const double *verts,
-                   const double *texcoords) GNUC_NONNULL;
+                   const float *verts,
+                   const float *texcoords) GNUC_NONNULL;
 void gl_disable_textures (void);
 void gl_enable_textures (void);
 void gl_draw_line2d_loop (const float *coords, int num) GNUC_NONNULL;

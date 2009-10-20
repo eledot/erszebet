@@ -29,6 +29,7 @@
 #define glClearDepth glClearDepthf
 #define glDepthRange glDepthRangef
 #define glFrustum    glFrustumf
+#define glColor4d    glColor4f
 #define GLdouble GLfloat
 #endif
 

@@ -54,28 +54,10 @@ void eglBindTexture (GLenum target, GLuint tex)
 
 /*
 =================
-eglColor3d
+eglColor4
 =================
 */
-void eglColor3d (GLdouble r, GLdouble g, GLdouble b)
-{
-    if (color_r == r && color_g == g && color_b == b && color_a == 1.0f)
-        return;
-
-    color_r = r;
-    color_g = g;
-    color_b = b;
-    color_a = 1;
-
-    glColor4d(color_r, color_g, color_b, color_a);
-}
-
-/*
-=================
-eglColor4d
-=================
-*/
-void eglColor4d (GLdouble r, GLdouble g, GLdouble b, GLdouble a)
+void eglColor4 (GLdouble r, GLdouble g, GLdouble b, GLdouble a)
 {
     if (color_r == r && color_g == g && color_b == b && color_a == a)
         return;
@@ -232,7 +214,7 @@ void gl_reset_helpers (void)
     GLERROR();
 
     color_r = color_g = color_b = color_a = 0;
-    glColor4d(color_r, color_g, color_b, color_a);
+    glColor4f(color_r, color_g, color_b, color_a);
     GLERROR();
 
     alpha_test = blend = cull_face = depth_test = fog = GL_FALSE;

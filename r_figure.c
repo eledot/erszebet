@@ -203,8 +203,8 @@ void r_figure_draw (const void *data,
     {
         double length;
         double n[3];
-        double verts[9];
-        double texcoords[8];
+        float verts[9];
+        float texcoords[8];
 
         vector_sub(f->data.line.coords_end, origin, v);
         length = vector_length(v);

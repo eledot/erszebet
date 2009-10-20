@@ -123,7 +123,7 @@ gl_color
 */
 void gl_color (double r, double g, double b, double a)
 {
-    eglColor4d(r, g, b, a);
+    eglColor4(r, g, b, a);
     GLERROR();
 }
 
@@ -138,13 +138,12 @@ void gl_draw_texture (int gltex,
                       double width,
                       double height,
                       double angle,
-                      const float *vt)
+                      const float *texcoords)
 {
     GLfloat square[] = { -width/2, height/2,
                          width/2, height/2,
                          -width/2, -height/2,
                          width/2, -height/2 };
-    GLfloat texcoords[] = { vt[0], vt[1], vt[2], vt[3], vt[6], vt[7], vt[4], vt[5] };
 
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
@@ -171,14 +170,14 @@ gl_draw_quad
 =================
 */
 void gl_draw_quad (int gltex,
-                   const double *verts,
-                   const double *texcoords)
+                   const float *verts,
+                   const float *texcoords)
 {
     eglBindTexture(GL_TEXTURE_2D, gltex);
     GLERROR();
 
-    glVertexPointer(2, GL_DOUBLE, 0, verts);
-    glTexCoordPointer(2, GL_DOUBLE, 0, texcoords);
+    glVertexPointer(2, GL_FLOAT, 0, verts);
+    glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     GLERROR();
 }
@@ -347,7 +346,7 @@ void gl_switch_2d (void)
     gl_tex_env(GL_MODULATE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLERROR();
-    gl_color(1, 1, 1, 1);
+    gl_color(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 /*
@@ -362,7 +361,7 @@ void gl_switch_3d (void)
     glLoadIdentity();
     GLERROR();
 
-    gl_set_perspective((GLdouble)r_fov->f, aspect, 4, 999999.0);
+    gl_set_perspective(r_fov->f, aspect, 4, 999999.0);
 
     glCullFace(GL_FRONT);
     GLERROR();

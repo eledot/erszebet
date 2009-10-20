@@ -102,8 +102,8 @@ bool r_texture_load (const char *name, int type, r_texture_t **tex)
     t->ref = 1;
     t->w = w;
     t->h = h;
-    t->texw = (float)w/(float)texw;
-    t->texh = (float)h/(float)texh;
+    t->texw = (float)w / (float)texw;
+    t->texh = (float)h / (float)texh;
 
     *tex = t;
 
@@ -164,12 +164,15 @@ static void r_list_textures_f (GNUC_UNUSED const struct cmd_s *cmd,
          NULL != tex;
          tex = sglib_r_texture_t_it_next(&it))
     {
-        sys_printf("texture: %p name=%s ref=%i w=%i h=%i\n",
+        sys_printf("texture: %p name=%s type=%i ref=%i w=%i h=%i texw=%-2.2lf texh=%-2.2lf\n",
                    tex,
                    tex->name,
+                   tex->type,
                    tex->ref,
                    tex->w,
-                   tex->h);
+                   tex->h,
+                   tex->texw,
+                   tex->texh);
     }
 }
 
