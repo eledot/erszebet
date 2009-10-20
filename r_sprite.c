@@ -271,10 +271,10 @@ void r_sprite_draw (const r_sprite_t *sprite,
 
     tex = sprite->frames[0];
 
-    if (!width)
+    if (!(int)width)
         width = tex->w / sprite->frames_num;
 
-    if (!height)
+    if (!(int)height)
         height = tex->h;
 
     if (sprite->align & SPRITE_ALIGN_LEFT)
