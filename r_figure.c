@@ -184,7 +184,7 @@ void r_figure_draw (const void *data,
     double v[3];
     const double zero[3] = { 0.0, 0.0, 1.0 };
 
-    if (NULL == data || NULL == origin || NULL == color || !scale)
+    if (NULL == data || NULL == origin || NULL == color)
     {
         sys_printf("bad args (data=%p, origin=%p, color=%p, alpha=%-2.2lf, scale=%-2.2lf\n",
                    data, origin, color, alpha, scale);
