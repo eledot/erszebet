@@ -309,6 +309,13 @@ static void eflac_decoder_print_init_status (FLAC__StreamDecoderInitStatus s)
         sys_printf("already initialized\n");
         break;
 
+    case FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE:
+        sys_printf("error opening file\n");
+        break;
+
+    case FLAC__STREAM_DECODER_INIT_STATUS_OK:
+        break;
+
     default:
         sys_printf("unknown error\n");
         break;
