@@ -197,7 +197,34 @@ void r_figure_draw (const void *data,
 
     if (FIGURE_TYPE_CIRCLE == f->type)
     {
-        /* FIXME */
+        int i;
+        const int segs = 24;
+        const double coeff = 2.0 * M_PI / (double)segs;
+        float coords[(segs + 1) << 2];
+        double radius = scale * f->data.circle.radius;
+
+        for (i = 0; i < segs ;i++)
+        {
+            double rads = i * coeff;
+            double x = cos(rads);
+            double y = sin(rads);
+
+            coords[(i << 2) + 0] = origin[0] + radius * x;
+            coords[(i << 2) + 1] = origin[1] + radius * y;
+            coords[(i << 2) + 2] = origin[0] + (radius + f->width) * x;
+            coords[(i << 2) + 3] = origin[1] + (radius + f->width) * y;
+        }
+
+        coords[(segs << 2) + 0] = coords[0];
+        coords[(segs << 2) + 1] = coords[1];
+        coords[(segs << 2) + 2] = coords[2];
+        coords[(segs << 2) + 3] = coords[3];
+
+        for (i = 0; i < segs ;i++)
+        {
+            const float texcoords[8] = { 0.0, 0.0, 0.0, 0.9, 1.0, 0.0, 1.0, 0.9 };
+            gl_draw_quad(f->texture->gltex, &coords[i << 2], texcoords);
+        }
     }
     else if (FIGURE_TYPE_LINE == f->type)
     {
@@ -210,7 +237,7 @@ void r_figure_draw (const void *data,
         length = vector_length(v);
         vector_normal(v, zero, n);
         vector_normalize(n);
-        vector_mul(n, f->width / 2.0, n);
+        vector_mul(n, scale * f->width / 2.0, n);
 
         vector_add(origin, n, &verts[0]);
         vector_sub(origin, n, &verts[2]);
