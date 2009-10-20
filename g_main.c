@@ -334,7 +334,7 @@ bool g_pop_vector (int index, double *vector, int num)
 
     for (i = 0; i < num && lua_next(lst, index) != 0 ;i++)
     {
-        vector[i] = lua_tointeger(lst, -1);
+        vector[i] = lua_tonumber(lst, -1);
         lua_pop(lst, 1);
     }
 
