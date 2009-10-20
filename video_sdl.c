@@ -28,7 +28,6 @@
 static bool video_i = false;
 
 static SDL_Surface *surf;
-static SDL_Rect   **modes;
 
 static cvar_t *r_mode;
 static cvar_t *r_custom_width;
@@ -58,13 +57,13 @@ void video_grab_toggle (void)
 
     if (!video_grabbed || video_fullscreen)
     {
-        SDL_ShowCursor(SDL_DISABLE);
+        SDL_ShowCursor(0);
         SDL_WM_GrabInput(SDL_GRAB_ON);
         video_grabbed = true;
     }
     else
     {
-        SDL_ShowCursor(SDL_ENABLE);
+        SDL_ShowCursor(1);
         SDL_WM_GrabInput(SDL_GRAB_OFF);
         video_grabbed = false;
     }
@@ -190,7 +189,10 @@ bool video_set_mode (int w, int h, bool fullscreen)
         flags |= SDL_RESIZABLE;
 */
 
-    sys_printf("using %ix%i video mode\n", w, h);
+    sys_printf("using %ix%i %s video mode\n",
+               w,
+               h,
+               fullscreen ? "fullscreen" : "windowed");
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -223,7 +225,7 @@ video_init
 */
 bool video_init (void)
 {
-    int flags, w = 0, h = 0, i;
+    int w, h, i, num_modes;
 
     nograb = sys_arg_find("-nograb");
 
@@ -243,50 +245,95 @@ bool video_init (void)
 
     SDL_EventState(SDL_VIDEOEXPOSE, SDL_IGNORE);
 
-    flags = DEFAULT_FLAGS | SDL_FULLSCREEN;
-
-    if (NULL == (modes = SDL_ListModes(NULL, flags)))
-    {
-        sys_printf("no available video modes\n");
-        SDL_Quit();
-        return false;
-    }
-
     errno = 0;
 
     /* use custom mode by default */
     w = r_custom_width->i;
     h = r_custom_height->i;
 
-    if ((SDL_Rect **)-1 == modes || NULL == modes[0])
+#if (SDL_MINOR_VERSION >= 3)
     {
-        sys_printf("all modes available\n");
+        SDL_DisplayMode mode;
 
-        modes = NULL;
-
-        cvar_set(r_mode, "c");
-    }
-    else
-    {
-        for (i = 0; NULL != modes[i] ;i++)
+        if (0 > (num_modes = SDL_GetNumDisplayModes()))
         {
+            sys_printf("no available video modes\n");
+            SDL_Quit();
+            return false;
+        }
+
+        for (i = 0; i < num_modes ;i++)
+        {
+            if (0 != SDL_GetDisplayMode(i, &mode))
+                continue;
+
             if (r_mode->s[0] != 'c' && r_mode->i == i)
             {
-                w = modes[i]->w;
-                h = modes[i]->h;
+                w = mode.w;
+                h = mode.h;
             }
 
-            sys_printf("%2i: %ix%i\n", i, modes[i]->w, modes[i]->h);
+            sys_printf("%2i: %ix%i\n", i, mode.w, mode.h);
         }
 
         if (!w || !h)
         {
-            w = modes[0]->w;
-            h = modes[0]->h;
+            if (0 != SDL_GetDisplayMode(0, &mode))
+            {
+                sys_printf("failed to get at least one video mode\n");
+                SDL_Quit();
+                return false;
+            }
+
+            w = mode.w;
+            h = mode.h;
 
             cvar_set(r_mode, "0");
         }
     }
+#else /* !(SDL_MINOR_VERSION >= 3) */
+    {
+        int flags = DEFAULT_FLAGS | SDL_FULLSCREEN;
+        SDL_Rect **modes;
+
+        if (NULL == (modes = SDL_ListModes(NULL, flags)))
+        {
+            sys_printf("no available video modes\n");
+            SDL_Quit();
+            return false;
+        }
+
+        if ((SDL_Rect **)-1 == modes || NULL == modes[0])
+        {
+            sys_printf("all modes available\n");
+
+            modes = NULL;
+
+            cvar_set(r_mode, "c");
+        }
+        else
+        {
+            for (i = 0; NULL != modes[i] ;i++)
+            {
+                if (r_mode->s[0] != 'c' && r_mode->i == i)
+                {
+                    w = modes[i]->w;
+                    h = modes[i]->h;
+                }
+
+                sys_printf("%2i: %ix%i\n", i, modes[i]->w, modes[i]->h);
+            }
+
+            if (!w || !h)
+            {
+                w = modes[0]->w;
+                h = modes[0]->h;
+
+                cvar_set(r_mode, "0");
+            }
+        }
+    }
+#endif /* (SDL_MINOR_VERSION >= 3) */
 
     if (!video_set_mode(w, h, r_fullscreen->i))
     {

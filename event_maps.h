@@ -68,7 +68,7 @@ static const unsigned char map_print_shift[] =
 /*   17  */   '=',   0
 };
 
-static const unsigned char map_normal[SDLK_LAST] =
+static const unsigned char map_normal[] =
 {
 /*             0     1     2     3     4     5     6     7     8     9    10    11    12    13    14    15 */
 /*    0  */    0,    0,    0,    0,    0,    0,    0,    0, KEY_BACKSPACE, KEY_TAB, 0, 0, 0, KEY_ENTER, 0, 0,
