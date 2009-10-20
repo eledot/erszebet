@@ -57,10 +57,10 @@ GNUC_NONNULL static bool ent_render_load_sprite (const char *name, const double 
     ent->width = parms[1];
     ent->height = parms[2];
 
-    if (!ent->width)
+    if (!(int)ent->width)
         ent->width = sprite->frames[0]->w / sprite->frames_num;
 
-    if (!ent->height)
+    if (!(int)ent->height)
         ent->height = sprite->frames[0]->h;
 
     return true;

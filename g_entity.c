@@ -102,9 +102,9 @@ static const int ent_fields_free[] =
 
 #undef FOFF
 
-#define ENT_ZORDER_COMPARATOR(e1, e2) (e1->origin[2] == e2->origin[2] ? \
+#define ENT_ZORDER_COMPARATOR(e1, e2) ((int)e1->origin[2] == (int)e2->origin[2] ? \
                                        -1 : \
-                                       e1->origin[2] - e2->origin[2])
+                                       (int)e1->origin[2] - (int)e2->origin[2])
 
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
