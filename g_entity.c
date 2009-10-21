@@ -31,27 +31,17 @@ typedef enum
     ENT_F_VECTOR
 }ent_fields_types_e;
 
-#define FOFF(f) ((const void *)&((const g_entity_t *)NULL)->f - (const void *)NULL)
-
 GNUC_NONNULL static void ent_set_frame_callback (g_entity_t *ent);
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
 GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent);
 
-typedef struct ent_field_s
-{
-    const char *name;
-    int         offset;
-    int         type;
-    void      (*callback) (g_entity_t *ent);
-    struct ent_field_s *next;
-}ent_field_t;
 
 #define DOFF(str, type, callback)               \
-    { #str, FOFF(str),   type, callback, NULL }
+    { #str, 0, FIELD_OFFSET(g_entity_t, str),   type, callback, NULL }
 #define DOFF2(str, field, type, callback)       \
-    { #str, FOFF(field), type, callback, NULL }
+    { #str, 0, FIELD_OFFSET(g_entity_t, field), type, callback, NULL }
 
-static ent_field_t ent_fields_known[] =
+static ent_field_t ent_fields_base[] =
 {
     DOFF(classname,   ENT_F_STRING,  NULL),
     DOFF(frame,       ENT_F_INTEGER, &ent_set_frame_callback),
@@ -97,10 +87,8 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(ent_field_t, ENT_FIELD_COMPARATOR, next);
 /* entity field offsets for strings that must be freed */
 static const int ent_fields_free[] =
 {
-    FOFF(classname)
+    FIELD_OFFSET(g_entity_t, classname)
 };
-
-#undef FOFF
 
 #define ENT_ZORDER_COMPARATOR(e1, e2) ((int)e1->origin[2] == (int)e2->origin[2] ? \
                                        -1 : \
@@ -892,8 +880,8 @@ void g_entity_init (void)
     remove_entities = NULL;
     ent_fields = NULL;
 
-    for (i = 0; i < STSIZE(ent_fields_known) ;i++)
-        sglib_ent_field_t_add(&ent_fields, &ent_fields_known[i]);
+    for (i = 0; i < STSIZE(ent_fields_base) ;i++)
+        sglib_ent_field_t_add(&ent_fields, &ent_fields_base[i]);
 
     luaL_newmetatable(lua_state, "entity");
     lua_pushvalue(lua_state, -1);

@@ -40,6 +40,27 @@ bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV
 
 #define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
 
+typedef struct ent_field_s
+{
+    const char *name;
+    int         render;
+    int         offset;
+    int         type;
+    void      (*callback) (g_entity_t *ent);
+    struct ent_field_s *next;
+}ent_field_t;
+
+typedef struct ent_render_plugin_s
+{
+    const char *name;
+    const ent_field_t *entity_fields;
+    bool (*set) (g_entity_t *ent);
+    void (*unset) (g_entity_t *ent);
+    void (*draw) (g_entity_t *ent);
+    bool (*init) (void);
+    void (*shutdown) (void);
+}ent_render_plugin_t;
+
 extern mem_pool_t g_mempool;
 extern double g_time;
 extern lua_State *lua_state;
