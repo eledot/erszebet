@@ -20,8 +20,6 @@
 #include "common.h"
 #include "r_private.h"
 #include "gl.h"
-#include "image_jpeg.h"
-#include "image_png.h"
 
 static bool r_i = false;
 mem_pool_t mempool;
@@ -42,7 +40,7 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
     const char *ext;
     image_t     im;
     int         i, *last_number;
-    bool       (*save) (const char *name, image_t *im);
+    bool       (*save) (const char *name, image_t *im) = NULL;
     static int  last_number_jpeg = 0;
     static int  last_number_png = 0;
 
@@ -52,19 +50,22 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
     if (!strcmp(cmd->name, "screenshot_jpeg"))
     {
         last_number = &last_number_jpeg;
-        save = &image_jpeg_save;
+        //save = &image_jpeg_save;
         ext = "jpg";
     }
     else if (!strcmp(cmd->name, "screenshot_png"))
     {
         last_number = &last_number_png;
-        save = &image_png_save;
+        //save = &image_png_save;
         ext = "png";
     }
     else
     {
         return;
     }
+
+    if (NULL == save)
+        return;
 
     if (!fs_mkdir("scr"))
         return;
