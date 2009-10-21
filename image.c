@@ -17,29 +17,36 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "common.h"
-#include "image_png.h"
-#include "image_jpeg.h"
-#include "image_cg.h"
-#include "image_pvrtc.h"
+#include "image_private.h"
 
 static bool image_i = false;
 
-static mem_pool_t mempool;
+mem_pool_t image_mempool;
 
-static const struct
+extern const image_plugin_t image_plugin_png;
+extern const image_plugin_t image_plugin_jpeg;
+extern const image_plugin_t image_plugin_cg;
+extern const image_plugin_t image_plugin_pvrtc;
+
+static const image_plugin_t * const image_plugins[] =
 {
-    char  ext[8];
-    int (*func) (const char *name, image_t *im, mem_pool_t pool);
-}loaders[] =
-{
-    { "png", (void *)&image_png_load   },
-    { "jpg", (void *)&image_jpeg_load  },
-/* FIXME -- CoreGraphics has premultipled alpha */
-/*    { "png", (void *)&image_cg_load    }, */
-    { "jpg", (void *)&image_cg_load    },
-    { "pvr", (void *)&image_pvrtc_load }
+#ifdef ENGINE_IMAGE_PNG
+    &image_plugin_png,
+#endif
+#ifdef ENGINE_IMAGE_JPEG
+    &image_plugin_jpeg,
+#endif
+#ifdef ENGINE_IMAGE_CG
+    &image_plugin_cg,
+#endif
+#ifdef ENGINE_IMAGE_PVRTC
+    &image_plugin_pvrtc
+#endif
 };
+
+enum { image_plugins_num = STSIZE(image_plugins) };
+
+static bool image_plugins_usable[image_plugins_num];
 
 /*
 =================
@@ -89,7 +96,8 @@ image_load
 */
 bool image_load (const char *name, image_t *image)
 {
-    int  i;
+    int i;
+    const char * const *exts;
     char tmp[MISC_MAX_FILENAME];
 
     if (NULL == name || NULL == image)
@@ -105,14 +113,20 @@ bool image_load (const char *name, image_t *image)
     image->format = 0;
     image->miplevels = 0;
 
-    for (i = 0; i < STSIZE(loaders) ;i++)
+    for (i = 0; i < image_plugins_num ;i++)
     {
-        snprintf(tmp, sizeof(tmp), "%s.%s", name, loaders[i].ext);
+        if (!image_plugins_usable[i] || NULL == image_plugins[i]->load)
+            continue;
 
-        if (loaders[i].func(tmp, image, mempool))
+        for (exts = image_plugins[i]->extensions; NULL != exts && NULL != *exts ;exts++)
         {
-            strlcpy(image->name, name, sizeof(image->name));
-            return true;
+            snprintf(tmp, sizeof(tmp), "%s.%s", name, *exts);
+
+            if (image_plugins[i]->load(tmp, image))
+            {
+                strlcpy(image->name, name, sizeof(image->name));
+                return true;
+            }
         }
     }
 
@@ -180,7 +194,7 @@ bool image_resize (image_t *image, int outwidth, int outheight)
     if (image->format || (outwidth == image->width && image->height == outheight))
         return true;
 
-    if (NULL == (outdata = mem_alloc_static((outwidth * outheight) << 2)))
+    if (NULL == (outdata = mem_alloc(image_mempool, (outwidth * outheight) << 2)))
     {
         sys_printf("not enough memory to resize image\n");
         return false;
@@ -230,7 +244,7 @@ bool image_scale (image_t *image, int outwidth, int outheight)
     inwidth  = image->width;
     inheight = image->height;
 
-    if (NULL == (outdata = mem_alloc_static((outwidth * outheight) << 2)))
+    if (NULL == (outdata = mem_alloc(image_mempool, (outwidth * outheight) << 2)))
     {
         sys_printf("not enough memory to scale image\n");
         return false;
@@ -240,8 +254,8 @@ bool image_scale (image_t *image, int outwidth, int outheight)
     out   = outdata;
     fstep = (int)(inheight * 65536.0f / outheight);
 
-    row1 = mem_alloc_static(outwidth << 2);
-    row2 = mem_alloc_static(outwidth << 2);
+    row1 = mem_alloc(image_mempool, outwidth << 2);
+    row2 = mem_alloc(image_mempool, outwidth << 2);
 
     inrow = indata;
     oldy  = 0;
@@ -362,11 +376,23 @@ image_init
 */
 bool image_init (void)
 {
-    mem_alloc_static_pool("image", 0);
+    int i;
+    char tmp[16];
 
-    image_png_init();
-    image_jpeg_init();
-    image_cg_init();
+    image_mempool = mem_alloc_pool("image", 0);
+
+    for (i = 0; i < image_plugins_num ;i++)
+    {
+        snprintf(tmp, sizeof(tmp), "-no%s", image_plugins[i]->name);
+
+        image_plugins_usable[i] = !sys_arg_find(tmp) && (NULL == image_plugins[i]->init ||
+                                                         image_plugins[i]->init());
+
+        if (image_plugins_usable[i])
+        {
+            sys_printf("+%s\n", image_plugins[i]->name);
+        }
+    }
 
     image_i = true;
     sys_printf("+image\n");
@@ -381,14 +407,23 @@ image_shutdown
 */
 void image_shutdown (void)
 {
+    int i;
+
     if (!image_i)
         return;
 
-    mem_free_static_pool();
+    for (i = 0; i < image_plugins_num ;i++)
+    {
+        if (image_plugins_usable[i])
+        {
+            if (NULL != image_plugins[i]->shutdown)
+                image_plugins[i]->shutdown();
 
-    image_png_shutdown();
-    image_jpeg_shutdown();
-    image_cg_shutdown();
+            sys_printf("-%s\n", image_plugins[i]->name);
+        }
+    }
+
+    mem_free_pool(&image_mempool);
 
     image_i = false;
     sys_printf("-image\n");

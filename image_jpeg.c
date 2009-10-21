@@ -23,10 +23,7 @@
 #include <stdio.h>
 #include <jpeglib.h>
 
-#include "common.h"
-#include "image_jpeg.h"
-
-static bool image_jpeg_i = false;
+#include "image_private.h"
 
 static jmp_buf   jpeg_jmpbuf;
 static fs_file_t jpeg_file;
@@ -206,16 +203,13 @@ static void ejpeg_dest (j_compress_ptr cinfo, void *outfile)
 image_jpeg_load
 =================
 */
-bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
+GNUC_NONNULL static bool image_jpeg_load (const char *name, image_t *im)
 {
     fs_file_t                     f;
     unsigned char                *p, *image = NULL;
     int                           size, r, inc, width, height, x;
     struct jpeg_decompress_struct ds;
     struct jpeg_error_mgr         em;
-
-    if (!image_jpeg_i)
-        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
         return false;
@@ -246,7 +240,7 @@ bool image_jpeg_load (const char *name, image_t *im, mem_pool_t pool)
     height = ds.output_height;
 
     inc = width * 4;
-    p = image = mem_alloc(pool, height * inc);
+    p = image = mem_alloc(image_mempool, height * inc);
 
     for (r = 0; r < height ;r++, p += inc)
     {
@@ -297,15 +291,12 @@ error:
 image_jpeg_save
 =================
 */
-bool image_jpeg_save (const char *name, image_t *im)
+GNUC_NONNULL static bool image_jpeg_save (const char *name, const image_t *im)
 {
     fs_file_t                   f;
     struct jpeg_compress_struct cs;
     struct jpeg_error_mgr       em;
     int                         r, inc;
-
-    if (!image_jpeg_i)
-        return false;
 
     if (NULL == (f = fs_open(name, FS_WRONLY, NULL, 0)))
         return false;
@@ -361,56 +352,14 @@ error:
     return false;
 }
 
-/*
-=================
-image_jpeg_init
-=================
-*/
-bool image_jpeg_init (void)
+static const char * const image_jpeg_extensions[] = { "jpg", "jpeg", NULL };
+
+const image_plugin_t image_plugin_jpeg =
 {
-    if (sys_arg_find("-nolibjpeg"))
-        return true;
-
-    image_jpeg_i = true;
-    sys_printf("+image_jpeg\n");
-
-    return true;
-}
-
-/*
-=================
-image_jpeg_shutdown
-=================
-*/
-void image_jpeg_shutdown (void)
-{
-    if (!image_jpeg_i)
-        return;
-
-    image_jpeg_i = false;
-    sys_printf("-image_jpeg\n");
-}
-
-#else /* !ENGINE_IMAGE_JPEG */
-
-#include "common.h"
-#include "image_jpeg.h"
-
-bool image_jpeg_load (GNUC_UNUSED const char *name,
-                      GNUC_UNUSED image_t *im,
-                      GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool image_jpeg_save (GNUC_UNUSED const char *name,
-                      GNUC_UNUSED image_t *im)
-{
-    sys_printf("jpeg support was not compiled in\n");
-    return false;
-}
-
-bool image_jpeg_init (void) { return false; }
-void image_jpeg_shutdown (void) { }
+    .name = "image_jpeg",
+    .extensions = image_jpeg_extensions,
+    .load = image_jpeg_load,
+    .save = image_jpeg_save
+};
 
 #endif /* ENGINE_IMAGE_JPEG */

@@ -22,10 +22,7 @@
 #include <png.h>
 #include <setjmp.h>
 
-#include "common.h"
-#include "image_png.h"
-
-static bool image_png_i = false;
+#include "image_private.h"
 
 static void epng_error (png_structp png_ptr, png_const_charp msg);
 
@@ -93,7 +90,7 @@ static void epng_flush (GNUC_UNUSED png_structp png_ptr)
 image_png_load
 =================
 */
-bool image_png_load (const char *name, image_t *im, mem_pool_t pool)
+GNUC_NONNULL static bool image_png_load (const char *name, image_t *im)
 {
     fs_file_t   f;
     int         size, r, width, height, inc;
@@ -101,9 +98,6 @@ bool image_png_load (const char *name, image_t *im, mem_pool_t pool)
     png_structp pngst;
     png_infop   info = NULL;
     png_byte    depth, color_type;
-
-    if (!image_png_i)
-        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
         return false;
@@ -173,7 +167,7 @@ bool image_png_load (const char *name, image_t *im, mem_pool_t pool)
     /* read */
     inc = width * 4;
 
-    p = image = mem_alloc(pool, height * inc);
+    p = image = mem_alloc(image_mempool, height * inc);
 
     for (r = 0; r < height ;r++, p += inc)
         png_read_row(pngst, p, NULL);
@@ -206,15 +200,12 @@ error:
 image_png_save
 =================
 */
-bool image_png_save (const char *name, image_t *im)
+GNUC_NONNULL static bool image_png_save (const char *name, const image_t *im)
 {
     fs_file_t   f;
     png_structp pngst;
     png_infop   info = NULL;
     int         r, inc;
-
-    if (!image_png_i)
-        return false;
 
     if (NULL == (f = fs_open(name, FS_WRONLY, NULL, 0)))
         return false;
@@ -276,56 +267,14 @@ error:
     return false;
 }
 
-/*
-=================
-image_png_init
-=================
-*/
-bool image_png_init (void)
+static const char * const image_png_extensions[] = { "png", NULL };
+
+const image_plugin_t image_plugin_png =
 {
-    if (sys_arg_find("-nolibpng"))
-        return true;
-
-    image_png_i = true;
-    sys_printf("+image_png\n");
-
-    return true;
-}
-
-/*
-=================
-image_png_shutdown
-=================
-*/
-void image_png_shutdown (void)
-{
-    if (!image_png_i)
-        return;
-
-    image_png_i = false;
-    sys_printf("-image_png\n");
-}
-
-#else /* !ENGINE_IMAGE_PNG */
-
-#include "common.h"
-#include "image_png.h"
-
-bool image_png_load (GNUC_UNUSED const char *name,
-                     GNUC_UNUSED image_t *im,
-                     GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool image_png_save (GNUC_UNUSED const char *name,
-                     GNUC_UNUSED image_t *im)
-{
-    sys_printf("png support was not compiled in\n");
-    return false;
-}
-
-bool image_png_init (void) { return false; }
-void image_png_shutdown (void) { }
+    .name = "image_png",
+    .extensions = image_png_extensions,
+    .load = image_png_load,
+    .save = image_png_save
+};
 
 #endif /* ENGINE_IMAGE_PNG */

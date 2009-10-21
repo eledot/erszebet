@@ -17,10 +17,9 @@
    Boston, MA 02110-1301 USA
 */
 
-#if defined(ENGINE_IMAGE_PVRTC) && defined(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG)
+#ifdef ENGINE_IMAGE_PVRTC
 
-#include "common.h"
-#include "image_pvrtc.h"
+#include "image_private.h"
 #include "gl_private.h"
 
 typedef enum
@@ -106,7 +105,7 @@ GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
 image_pvrtc_load
 =================
 */
-bool image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
+GNUC_NONNULL static bool image_pvrtc_load (const char *name, image_t *im)
 {
     fs_file_t      f;
     int            size, format, mipmaps_num = 1, pf;
@@ -176,7 +175,7 @@ bool image_pvrtc_load (const char *name, image_t *im, mem_pool_t pool)
         goto error;
     }
 
-    data = mem_alloc(pool, header.data_size);
+    data = mem_alloc(image_mempool, header.data_size);
 
     if ((int)header.data_size != fs_read(f, data, header.data_size))
     {
@@ -206,49 +205,13 @@ error:
     return false;
 }
 
-/*
-=================
-image_pvrtc_init
-=================
-*/
-bool image_pvrtc_init (void)
+static const char * const image_pvrtc_extensions[] = { "pvr", "pvrtc", NULL };
+
+const image_plugin_t image_plugin_pvrtc =
 {
-    if (sys_arg_find("-nopvrtc"))
-        return true;
+    .name = "image_pvrtc",
+    .extensions = image_pvrtc_extensions,
+    .load = image_pvrtc_load
+};
 
-    image_pvrtc_i = true;
-    sys_printf("+image_pvrtc\n");
-
-    return true;
-}
-
-/*
-=================
-image_pvrtc_shutdown
-=================
-*/
-void image_pvrtc_shutdown (void)
-{
-    if (!image_pvrtc_i)
-        return;
-
-    image_pvrtc_i = false;
-    sys_printf("-image_pvrtc\n");
-}
-
-#else /* !ENGINE_IMAGE_PVRTC || !GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG */
-
-#include "common.h"
-#include "image_pvrtc.h"
-
-bool image_pvrtc_load (GNUC_UNUSED const char *name,
-                       GNUC_UNUSED image_t *im,
-                       GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool image_pvrtc_init (void) { return false; }
-void image_pvrtc_shutdown (void) { }
-
-#endif /* ENGINE_IMAGE_PVRTC && GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG */
+#endif /* ENGINE_IMAGE_PVRTC */

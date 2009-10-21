@@ -17,12 +17,21 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _IMAGE_CG_H
-#define _IMAGE_CG_H
+#ifndef _IMAGE_PRIVATE_H
+#define _IMAGE_PRIVATE_H
 
-bool image_cg_load (const char *name, image_t *im, mem_pool_t pool) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+#include "common.h"
 
-bool image_cg_init (void);
-void image_cg_shutdown (void);
+extern mem_pool_t image_mempool;
 
-#endif /* !_IMAGE_CG_H */
+typedef struct image_plugin_s
+{
+    const char *name;
+    const char * const *extensions;
+    bool (*init) (void);
+    void (*shutdown) (void);
+    bool (*load) (const char *name, image_t *im);
+    bool (*save) (const char *name, const image_t *im);
+}image_plugin_t;
+
+#endif /* !_IMAGE_PRIVATE_H */

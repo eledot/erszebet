@@ -21,18 +21,15 @@
 
 #include <CoreGraphics.h>
 
-#include "common.h"
-#include "image_cg.h"
+#include "image_private.h"
 #include "fs_helpers_apple.h"
-
-static bool image_cg_i = false;
 
 typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
                                  const CGFloat          decode[],
                                  bool                   shouldInterpolate,
                                  CGColorRenderingIntent intent);
 
-static im_prov_t providers[] =
+static const im_prov_t providers[] =
 {
     &CGImageCreateWithJPEGDataProvider,
     &CGImageCreateWithPNGDataProvider
@@ -43,7 +40,7 @@ static im_prov_t providers[] =
 image_cg_load
 =================
 */
-bool image_cg_load (const char *name, image_t *im, mem_pool_t pool)
+GNUC_NONNULL static bool image_cg_load (const char *name, image_t *im)
 {
     CGDataProviderRef provider = NULL;
     CGImageRef        image = NULL;
@@ -82,7 +79,7 @@ bool image_cg_load (const char *name, image_t *im, mem_pool_t pool)
         goto error;
     }
 
-    data = mem_alloc(pool, height * width * 4);
+    data = mem_alloc(image_mempool, height * width * 4);
     color_space = CGImageGetColorSpace(image);
 
     if (NULL == color_space)
@@ -130,49 +127,14 @@ error:
     return error;
 }
 
-/*
-=================
-image_cg_init
-=================
-*/
-bool image_cg_init (void)
+/* FIXME -- png with premultipled alpha (fix by hand?) */
+static const char * const image_cg_extensions[] = { "jpg", "jpeg", NULL };
+
+const image_plugin_t image_plugin_cg =
 {
-    if (sys_arg_find("-nocg"))
-        return true;
-
-    image_cg_i = true;
-    sys_printf("+image_cg\n");
-
-    return true;
-}
-
-/*
-=================
-image_cg_shutdown
-=================
-*/
-void image_cg_shutdown (void)
-{
-    if (!image_cg_i)
-        return;
-
-    image_cg_i = false;
-    sys_printf("-image_cg\n");
-}
-
-#else /* !ENGINE_IMAGE_CG */
-
-#include "common.h"
-#include "image_cg.h"
-
-bool image_cg_load (GNUC_UNUSED const char *name,
-                    GNUC_UNUSED image_t *im,
-                    GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool image_cg_init (void) { return false; }
-void image_cg_shutdown (void) { }
+    .name = "image_cg",
+    .extensions = image_cg_extensions,
+    .load = image_cg_load
+};
 
 #endif /* ENGINE_IMAGE_CG */
