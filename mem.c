@@ -197,16 +197,16 @@ void mem_free_pool_real (mem_pool_t *pool
 
 /*
 =================
-mem_strcpy_static
+mem_strdup_real
 =================
 */
-char *mem_strdup_static_real (const char *src,
-                              mem_pool_t  mempool
+char *mem_strdup_real (const char *src,
+                       mem_pool_t  mempool
 #ifdef ENGINE_MEM_DEBUG
-                              ,
-                              const char *file,
-                              const char *func,
-                              int         line
+                       ,
+                       const char *file,
+                       const char *func,
+                       int         line
 #endif /* ENGINE_MEM_DEBUG */
     )
 {
