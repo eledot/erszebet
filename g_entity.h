@@ -25,8 +25,7 @@ typedef enum
     ENT_INTFL_THINK       = (1 << 0),
     ENT_INTFL_TOUCH       = (1 << 1),
     ENT_INTFL_BLOCK       = (1 << 2),
-    ENT_INTFL_PHYS_STATIC = (1 << 3),
-    ENT_INTFL_DRAW        = (1 << 4)
+    ENT_INTFL_PHYS_STATIC = (1 << 3)
 }g_entity_internal_flags_e;
 
 typedef enum
