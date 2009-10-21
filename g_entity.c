@@ -214,7 +214,7 @@ GNUC_NONNULL static int ent_set_field (g_entity_t *ent, const char *field, int i
             if (NULL != *(char **)data)
                 mem_free(*(char **)data);
 
-            *(char **)data = mem_strdup_static(luaL_checkstring(lua_state, index));
+            *(char **)data = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
             break;
 
         case ENT_F_INTEGER:
@@ -458,7 +458,7 @@ GNUC_WARN_UNUSED_RES static g_entity_t *g_entity_create (void)
 {
     g_entity_t *ent;
 
-    if (NULL == (ent = mem_alloc_static(sizeof(*ent))))
+    if (NULL == (ent = mem_alloc(g_mempool, sizeof(*ent))))
     {
         sys_printf("failed to allocate memory for entity\n");
         return NULL;

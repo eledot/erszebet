@@ -23,12 +23,12 @@
 #define GAME_MAIN_FILE "game/main.lua"
 #else
 #include "fs_helpers_apple.h"
-#define GAME_MAIN_FILE fs_get_resource_path("main.lua", mempool)
+#define GAME_MAIN_FILE fs_get_resource_path("main.lua", g_mempool)
 #endif
 
 static bool g_i = false;
 
-mem_pool_t mempool;
+mem_pool_t g_mempool;
 lua_State *lua_state;
 double g_time;
 
@@ -600,7 +600,7 @@ bool g_init (void)
 {
     const char *file;
 
-    mem_alloc_static_pool("game", 0);
+    g_mempool = mem_alloc_pool("game", 0);
 
     if (NULL == (lua_state = lua_open()))
     {
@@ -658,7 +658,7 @@ void g_shutdown (void)
     lua_close(lua_state);
     lua_state = NULL;
 
-    mem_free_static_pool();
+    mem_free_pool(&g_mempool);
 
     g_i = false;
 

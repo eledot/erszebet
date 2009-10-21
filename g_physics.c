@@ -208,7 +208,7 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
         ent->internal_flags -= (ent->internal_flags & ENT_INTFL_PHYS_STATIC);
     }
 
-    ent->shapes = mem_alloc_static(sizeof(void *) * shapes_num);
+    ent->shapes = mem_alloc(g_mempool, sizeof(void *) * shapes_num);
 
     ent->body = body;
     g_physics_update_body(ent);
@@ -258,7 +258,7 @@ GNUC_NONNULL static void g_physics_set_poly (g_entity_t   *ent,
             max_num = vertices_num[shape];
 
     /* extra vector to calculate centroid */
-    v = mem_alloc_static(sizeof(*v) * (max_num + 1));
+    v = mem_alloc(g_mempool, sizeof(*v) * (max_num + 1));
 
     g_physics_new_obj(ent, shapes_num);
 
@@ -671,7 +671,7 @@ GNUC_NONNULL static int ent_lua_set_body (lua_State *lst)
     case PHYS_BODY_POLYGON_CENTERED:
         shapes_num = lua_gettop(lst) - arg;
 
-        vertices_num = mem_alloc_static(sizeof(*vertices_num) * shapes_num);
+        vertices_num = mem_alloc(g_mempool, sizeof(*vertices_num) * shapes_num);
 
         for (num = i = 0; i < shapes_num ;i++)
         {
@@ -686,7 +686,7 @@ GNUC_NONNULL static int ent_lua_set_body (lua_State *lst)
             }
         }
 
-        coords = mem_alloc_static(sizeof(double) * num);
+        coords = mem_alloc(g_mempool, sizeof(double) * num);
 
         for (num = i = 0; i < shapes_num ;i++)
         {

@@ -40,7 +40,7 @@ bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV
 
 #define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
 
-extern mem_pool_t mempool;
+extern mem_pool_t g_mempool;
 extern double g_time;
 extern lua_State *lua_state;
 
