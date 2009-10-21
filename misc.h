@@ -59,6 +59,8 @@ typedef enum { false = 0, true } bool;
  */
 #define STSIZE(a) ((int)(sizeof((a)) / sizeof((a)[0])))
 
+#define FIELD_OFFSET(s, f) ((const void *)&((const s *)NULL)->f - (const void *)NULL)
+
 #define BIGSHORT(b) (*((b)+1) | (*(b) << 8))
 #define BIGLONG(b)  ((*(b) << 24) | (*((b)+1) << 16) | (*((b)+2) << 8) | *((b)+3))
 
