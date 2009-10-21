@@ -22,12 +22,9 @@
 #define OV_EXCLUDE_STATIC_CALLBACKS
 #include <vorbisfile.h>
 
-#include "common.h"
-#include "snd_ogg.h"
+#include "snd_private.h"
 
 #define STREAM_BUFFER_SIZE 65536
-
-static bool snd_ogg_i = false;
 
 /*
 =================
@@ -117,36 +114,18 @@ static int snd_ogg_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_ogg_load
 =================
 */
-bool snd_ogg_load (const char   *name,
-                   snd_stream_t *stream,
-                   int          *streaming,
-                   mem_pool_t    pool)
+GNUC_NONNULL static bool snd_ogg_load (const char   *name,
+                                       snd_stream_t *stream)
 {
     fs_file_t       f;
     int             file_size, length, buffer_size, add, cursec;
     OggVorbis_File *vorbisfile = NULL;
     vorbis_info    *vorbisinfo = NULL;
 
-    if (!snd_ogg_i)
-        return false;
-
-    if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
-    {
-        sys_printf("bad args (name=%p, stream=%p, streaming=%p, pool=%p)\n",
-                   name,
-                   stream,
-                   streaming,
-                   pool);
-
-        return false;
-    }
-
-    memset(stream, 0, sizeof(*stream));
-
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
         return false;
 
-    if (NULL == (vorbisfile = mem_alloc(pool, sizeof(*vorbisfile))))
+    if (NULL == (vorbisfile = mem_alloc(snd_mempool, sizeof(*vorbisfile))))
     {
         sys_printf("failed to allocate %i bytes\n", sizeof(*vorbisfile));
         goto error;
@@ -194,9 +173,9 @@ bool snd_ogg_load (const char   *name,
 
     length = ov_pcm_total(vorbisfile, -1) * vorbisinfo->channels * 2;
 
-    *streaming = length > PCM_MAX_NONSTREAMING;
+    stream->streaming = length > PCM_MAX_NONSTREAMING;
 
-    if (*streaming)
+    if (stream->streaming)
     {
         sys_printf("\"%s\" should be streamed\n", name);
 
@@ -212,7 +191,7 @@ bool snd_ogg_load (const char   *name,
     {
         stream->data_size = length;
 
-        if (NULL == (stream->data = mem_alloc(pool, stream->data_size)))
+        if (NULL == (stream->data = mem_alloc(snd_mempool, stream->data_size)))
         {
             sys_printf("failed to allocate %i bytes\n", stream->data_size);
             goto error;
@@ -254,50 +233,13 @@ error:
     return false;
 }
 
-/*
-=================
-snd_ogg_init
-=================
-*/
-bool snd_ogg_init (void)
+static const char * const snd_ogg_extensions[] = { "ogg", NULL };
+
+const snd_plugin_t snd_plugin_ogg =
 {
-    if (sys_arg_find("-nolibvorbis"))
-        return true;
-
-    snd_ogg_i = true;
-    sys_printf("+snd_ogg\n");
-
-    return true;
-}
-
-/*
-=================
-snd_ogg_shutdown
-=================
-*/
-void snd_ogg_shutdown (void)
-{
-    if (!snd_ogg_i)
-        return;
-
-    snd_ogg_i = false;
-    sys_printf("-snd_ogg\n");
-}
-
-#else /* !ENGINE_SND_OGG */
-
-#include "common.h"
-#include "snd_ogg.h"
-
-bool snd_ogg_load (GNUC_UNUSED const char *name,
-                   GNUC_UNUSED snd_stream_t *stream,
-                   GNUC_UNUSED int *streaming,
-                   GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool snd_ogg_init (void) { return false; }
-void snd_ogg_shutdown (void) { }
+    .name = "snd_ogg",
+    .extensions = snd_ogg_extensions,
+    .load = snd_ogg_load,
+};
 
 #endif /* ENGINE_SND_OGG */

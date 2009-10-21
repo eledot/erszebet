@@ -25,35 +25,11 @@
 struct snd_stream_s;
 
 typedef void * snd_sound_t;
-typedef void (*snd_feed_callback_t) (struct snd_stream_s *stream, const char *data, int size);
-
-typedef struct snd_stream_s
-{
-    fs_file_t file;
-    int       stream_data_start;
-    int       stream_data_size;
-    int       stream_data_format;
-    int       stream_data_rate;
-
-    int       data_size;
-    uint8_t  *data;
-
-    void     *private;
-
-    void    (*unload) (struct snd_stream_s *stream);
-    int     (*stream) (struct snd_stream_s *stream, int flags, snd_feed_callback_t feed);
-}snd_stream_t;
 
 typedef enum
 {
     SND_FL_LOOPING = (1 << 0)
 }snd_flags_e;
-
-typedef enum
-{
-    SND_STREAM_RET_OK = 0,
-    SND_STREAM_RET_STOPPED,
-}snd_stream_func_ret_e;
 
 int snd_get_stream_format (int bps, int channels) GNUC_CONST GNUC_WARN_UNUSED_RES;
 

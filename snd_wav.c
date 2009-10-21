@@ -19,8 +19,7 @@
 
 #ifdef ENGINE_SND_WAV
 
-#include "common.h"
-#include "snd_wav.h"
+#include "snd_private.h"
 
 #define STREAM_BUFFER_SIZE 16384
 
@@ -33,8 +32,6 @@ typedef struct
     int data_start;
     int data_size;
 }wav_info_t;
-
-static bool snd_wav_i = false;
 
 /*
 =================
@@ -151,28 +148,13 @@ GNUC_NONNULL static bool snd_wav_get_wav_info (const uint8_t *buffer, int size, 
 snd_wav_load
 =================
 */
-bool snd_wav_load (const char   *name,
-                   snd_stream_t *stream,
-                   int          *streaming,
-                   mem_pool_t    pool)
+GNUC_NONNULL static bool snd_wav_load (const char   *name,
+                                       snd_stream_t *stream)
 {
     fs_file_t  f;
     int        file_size, s, format;
     wav_info_t wav;
     uint8_t    tmp[4096];
-
-    if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
-    {
-        sys_printf("bad args (name=%p, stream=%p, streaming=%p, pool=%p)\n",
-                   name,
-                   stream,
-                   streaming,
-                   pool);
-
-        return false;
-    }
-
-    memset(stream, 0, sizeof(*stream));
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
         return false;
@@ -194,12 +176,12 @@ bool snd_wav_load (const char   *name,
         wav.data_size = file_size - wav.data_start;
     }
 
-    *streaming = wav.data_size > PCM_MAX_NONSTREAMING;
+    stream->streaming = wav.data_size > PCM_MAX_NONSTREAMING;
 
     stream->stream_data_format = format;
     stream->stream_data_rate   = wav.rate;
 
-    if (*streaming)
+    if (stream->streaming)
     {
         sys_printf("\"%s\" should be streamed\n", name);
 
@@ -213,7 +195,7 @@ bool snd_wav_load (const char   *name,
     {
         stream->data_size = wav.data_size;
 
-        if (NULL == (stream->data = mem_alloc(pool, stream->data_size)))
+        if (NULL == (stream->data = mem_alloc(snd_mempool, stream->data_size)))
         {
             sys_printf("failed to allocate %i bytes\n", stream->data_size);
             goto error;
@@ -243,49 +225,13 @@ error:
     return false;
 }
 
-/*
-=================
-snd_wav_init
-=================
-*/
-bool snd_wav_init (void)
+static const char * const snd_wav_extensions[] = { "wav", NULL };
+
+const snd_plugin_t snd_plugin_wav =
 {
-    snd_wav_i = true;
-
-    sys_printf("+snd_wav\n");
-
-    return true;
-}
-
-/*
-=================
-snd_wav_shutdown
-=================
-*/
-void snd_wav_shutdown (void)
-{
-    if (!snd_wav_i)
-        return;
-
-    snd_wav_i = false;
-
-    sys_printf("-snd_wav\n");
-}
-
-#else /* !ENGINE_SND_WAV */
-
-#include "common.h"
-#include "snd_wav.h"
-
-bool snd_wav_load (GNUC_UNUSED const char *name,
-                   GNUC_UNUSED snd_stream_t *stream,
-                   GNUC_UNUSED int *streaming,
-                   GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool snd_wav_init (void) { return false; }
-void snd_wav_shutdown (void) { }
+    .name = "snd_wav",
+    .extensions = snd_wav_extensions,
+    .load = snd_wav_load,
+};
 
 #endif /* ENGINE_SND_WAV */

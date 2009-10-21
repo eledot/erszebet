@@ -27,51 +27,58 @@
 #include <alc.h>
 #endif
 
-#include "common.h"
-#include "snd_wav.h"
-#include "snd_ogg.h"
-#include "snd_flac.h"
+#include "snd_private.h"
 
 typedef struct sound_s
 {
-    char   name[MISC_MAX_FILENAME];
+    char name[MISC_MAX_FILENAME];
+
     ALuint al_buffer;
     ALuint al_buffer2;
 
-    int          streaming : 1;
+    bool streaming;
     snd_stream_t stream;
 
     struct sound_s *next;
     struct sound_s *prev;
 }sound_t;
 
+mem_pool_t snd_mempool;
+
 static bool snd_i = false;
 static bool alc_done = false;
 
-static ALCdevice  *snd_device;
+static ALCdevice *snd_device;
 static ALCcontext *snd_context;
 
 static cvar_t *s_volume;
 
 static sound_t *sounds;
 static sound_t *sounds_streaming;
-static mem_pool_t mempool;
 
 static const char *extensions;
 
-static const struct
+/* sound plugins */
+extern const snd_plugin_t snd_plugin_wav;
+extern const snd_plugin_t snd_plugin_ogg;
+extern const snd_plugin_t snd_plugin_flac;
+
+static const snd_plugin_t * const snd_plugins[] =
 {
-    char  ext[8];
-    bool (*func) (const char   *name,
-                  snd_stream_t *stream,
-                  int          *streaming,
-                  mem_pool_t    pool);
-}loaders[] =
-{
-    { "wav",  (void *)&snd_wav_load  },
-    { "ogg",  (void *)&snd_ogg_load  },
-    { "flac", (void *)&snd_flac_load }
+#ifdef ENGINE_SND_WAV
+    &snd_plugin_wav,
+#endif
+#ifdef ENGINE_SND_OGG
+    &snd_plugin_ogg,
+#endif
+#ifdef ENGINE_SND_FLAC
+    &snd_plugin_flac
+#endif
 };
+
+enum { snd_plugins_num = STSIZE(snd_plugins) };
+
+static bool snd_plugins_usable[snd_plugins_num];
 
 #ifdef ENGINE_SND_DEBUG
 
@@ -245,82 +252,110 @@ int snd_get_stream_format (int bps, int channels)
 
 /*
 =================
+snd_load_internal
+=================
+*/
+static GNUC_NONNULL bool snd_load_internal (const char *name, sound_t *sound)
+{
+    int i;
+    const char * const *exts;
+    char tmp[MISC_MAX_FILENAME];
+
+    memset(&sound->stream, 0, sizeof(sound->stream));
+
+    for (i = 0; i < snd_plugins_num ;i++)
+    {
+        if (!snd_plugins_usable[i] || NULL == snd_plugins[i]->load)
+            continue;
+
+        for (exts = snd_plugins[i]->extensions; NULL != exts && NULL != *exts ;exts++)
+        {
+            snprintf(tmp, sizeof(tmp), "%s.%s", name, *exts);
+
+            memset(&sound->stream, 0, sizeof(sound->stream));
+
+            if (snd_plugins[i]->load(tmp, &sound->stream))
+            {
+                strlcpy(sound->name, name, sizeof(sound->name));
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/*
+=================
 snd_load
 =================
 */
 snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
 {
-    int      i, streaming;
-    sound_t *sound;
-    char     tmp[MISC_MAX_FILENAME];
+    sound_t sound, *sound_allocated = NULL;
 
     if (!snd_i)
         return NULL;
 
-    if (NULL == (sound = mem_alloc_static(sizeof(*sound))))
+    if (!snd_load_internal(name, &sound))
+        goto error;
+
+    alGenBuffers(1, &sound.al_buffer);
+    ALERROR();
+
+    if (al_error)
     {
-        sys_printf("failed to allocate %i bytes for sound\n", sizeof(*sound));
-        return NULL;
+        sys_printf("alGenBuffers failed\n");
+        goto error;
     }
 
-    for (i = 0; i < STSIZE(loaders) ;i++)
+    if (!sound.streaming)
     {
-        snprintf(tmp, sizeof(tmp), "%s.%s", name, loaders[i].ext);
+        alBufferData(sound.al_buffer,
+                     sound.stream.stream_data_format,
+                     sound.stream.data,
+                     sound.stream.data_size,
+                     sound.stream.stream_data_rate);
+        ALERROR();
 
-        if (loaders[i].func(tmp, &sound->stream, &streaming, mempool))
+        if (al_error)
         {
-            sys_printf("found \"%s\"\n", name);
-
-            sound->streaming = streaming;
-
-            alGenBuffers(1, &sound->al_buffer);
-            ALERROR();
-
-            if (al_error)
-            {
-                sys_printf("alGenBuffers failed\n");
-                goto error;
-            }
-
-            if (!streaming)
-            {
-                alBufferData(sound->al_buffer,
-                             sound->stream.stream_data_format,
-                             sound->stream.data,
-                             sound->stream.data_size,
-                             sound->stream.stream_data_rate);
-                ALERROR();
-
-                if (al_error)
-                {
-                    sys_printf("alBufferData failed\n");
-                    goto error;
-                }
-
-                mem_free(sound->stream.data);
-                sound->stream.data = NULL;
-            }
-            else
-            {
-            }
-
-            return sound;
+            sys_printf("alBufferData failed\n");
+            goto error;
         }
+
+        mem_free(sound.stream.data);
+        sound.stream.data = NULL;
     }
+    else
+    {
+        /* FIXME -- streaming sounds */
+    }
+
+    if (NULL == (sound_allocated = mem_alloc(snd_mempool, sizeof(sound))))
+    {
+        sys_printf("failed to allocate sound\n");
+        goto error;
+    }
+
+    memcpy(sound_allocated, &sound, sizeof(sound));
+
+    return sound_allocated;
 
 error:
     sys_printf("failed to load \"%s\"\n", name);
 
-    if (NULL != sound)
+    if (NULL != sound.stream.data)
     {
-        if (NULL != sound->stream.data)
-            mem_free(sound->stream.data);
+        mem_free(sound.stream.data);
+        sound.stream.data = NULL;
 
-        if (sound->streaming)
-            sound->stream.unload(&sound->stream);
-
-        mem_free(sound);
+        if (sound.streaming)
+            sound.stream.unload(&sound.stream);
     }
+
+    if (NULL != sound_allocated)
+        mem_free(sound_allocated);
 
     return NULL;
 }
@@ -365,6 +400,8 @@ snd_init
 bool snd_init (void)
 {
     const char *s;
+    char tmp[16];
+    int i;
 
     sounds = sounds_streaming = NULL;
 
@@ -417,12 +454,20 @@ bool snd_init (void)
     sys_printf("openal extensions: %s\n", NULL != s ? s : "undefined");
     ALERROR();
 
-    /* initialize sound formats support */
-    snd_wav_init();
-    snd_ogg_init();
-    snd_flac_init();
+    snd_mempool = mem_alloc_pool("snd", 0);
 
-    mem_alloc_static_pool("snd", 0);
+    for (i = 0; i < snd_plugins_num ;i++)
+    {
+        snprintf(tmp, sizeof(tmp), "-no%s", snd_plugins[i]->name);
+
+        snd_plugins_usable[i] = !sys_arg_find(tmp) && (NULL == snd_plugins[i]->init ||
+                                                       snd_plugins[i]->init());
+
+        if (snd_plugins_usable[i])
+        {
+            sys_printf("+%s\n", snd_plugins[i]->name);
+        }
+    }
 
     snd_i = true;
 
@@ -441,6 +486,8 @@ snd_shutdown
 */
 void snd_shutdown (void)
 {
+    int i;
+
     if (!snd_i)
         return;
 
@@ -452,11 +499,18 @@ void snd_shutdown (void)
     alcCloseDevice(snd_device);
     ALERROR();
 
-    mem_free_static_pool();
+    mem_free_pool(&snd_mempool);
 
-    snd_wav_shutdown();
-    snd_ogg_shutdown();
-    snd_flac_shutdown();
+    for (i = 0; i < snd_plugins_num ;i++)
+    {
+        if (snd_plugins_usable[i])
+        {
+            if (NULL != snd_plugins[i]->shutdown)
+                snd_plugins[i]->shutdown();
+
+            sys_printf("-%s\n", snd_plugins[i]->name);
+        }
+    }
 
     snd_i = false;
 
@@ -465,7 +519,7 @@ void snd_shutdown (void)
 
 #else /* !ENGINE_SND */
 
-#include "common.h"
+#include "snd_private.h"
 
 void snd_set_listener_pos (GNUC_UNUSED const float *pos) { }
 void snd_set_listener_velocity (GNUC_UNUSED const float *vel) { }

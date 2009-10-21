@@ -21,12 +21,9 @@
 
 #include <stream_decoder.h>
 
-#include "common.h"
-#include "snd_flac.h"
+#include "snd_private.h"
 
 #define STREAM_BUFFER_SIZE 65536
-
-static bool snd_flac_i = false;
 
 /*
 =================
@@ -348,31 +345,13 @@ static int snd_flac_stream_func (GNUC_UNUSED snd_stream_t *stream, GNUC_UNUSED i
 snd_flac_load
 =================
 */
-bool snd_flac_load (const char   *name,
-                    snd_stream_t *stream,
-                    int          *streaming,
-                    mem_pool_t    pool)
+GNUC_NONNULL static bool snd_flac_load (const char   *name,
+                                        snd_stream_t *stream)
 {
     fs_file_t                     f;
     int                           file_size;
     FLAC__StreamDecoder          *dec = NULL;
     FLAC__StreamDecoderInitStatus status;
-
-    if (!snd_flac_i)
-        return false;
-
-    if (NULL == name || NULL == stream || NULL == pool || NULL == streaming)
-    {
-        sys_printf("bad args (name=%p, stream=%p, streaming=%p, pool=%p)\n",
-                   name,
-                   stream,
-                   streaming,
-                   pool);
-
-        return false;
-    }
-
-    memset(stream, 0, sizeof(*stream));
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
         return false;
@@ -415,13 +394,11 @@ bool snd_flac_load (const char   *name,
         goto error;
     }
 
-    *streaming = stream->stream_data_size > PCM_MAX_NONSTREAMING;
+    stream->streaming = stream->stream_data_size > PCM_MAX_NONSTREAMING;
 
-    if (*streaming)
+    if (stream->streaming)
     {
         sys_printf("\"%s\" should be streamed\n", name);
-
-        *streaming = 1;
 
         stream->unload = &snd_flac_stream_unload;
         stream->stream = &snd_flac_stream_func;
@@ -433,7 +410,7 @@ bool snd_flac_load (const char   *name,
     {
         stream->data_size = 0;
 
-        if (NULL == (stream->data = mem_alloc(pool, stream->stream_data_size)))
+        if (NULL == (stream->data = mem_alloc(snd_mempool, stream->stream_data_size)))
         {
             sys_printf("failed to allocate %i bytes\n", stream->data_size);
             goto error;
@@ -471,51 +448,13 @@ error:
     return false;
 }
 
-/*
-=================
-snd_flac_init
-=================
-*/
-bool snd_flac_init (void)
+static const char * const snd_flac_extensions[] = { "flac", NULL };
+
+const snd_plugin_t snd_plugin_flac =
 {
-    if (sys_arg_find("-nolibflac"))
-        return true;
-
-    snd_flac_i = true;
-    sys_printf("+snd_flac\n");
-
-    return true;
-}
-
-/*
-=================
-snd_flac_shutdown
-=================
-*/
-void snd_flac_shutdown (void)
-{
-    if (!snd_flac_i)
-        return;
-
-    snd_flac_i = false;
-
-    sys_printf("-snd_flac\n");
-}
-
-#else /* !ENGINE_SND_FLAC */
-
-#include "common.h"
-#include "snd_flac.h"
-
-bool snd_flac_load (GNUC_UNUSED const char *name,
-                    GNUC_UNUSED snd_stream_t *stream,
-                    GNUC_UNUSED int *streaming,
-                    GNUC_UNUSED mem_pool_t pool)
-{
-    return false;
-}
-
-bool snd_flac_init (void) { return false; }
-void snd_flac_shutdown (void) { }
+    .name = "snd_flac",
+    .extensions = snd_flac_extensions,
+    .load = snd_flac_load,
+};
 
 #endif /* ENGINE_SND_FLAC */
