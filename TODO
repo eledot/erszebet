@@ -1,3 +1,4 @@
+- use plugins style for different entity renderers
 - merge sprites and fonts?
 - resource database
 + traceback on lua error
