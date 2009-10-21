@@ -106,6 +106,8 @@ bool image_load (const char *name, image_t *image)
         return false;
     }
 
+    image->data = NULL;
+
     if (!filename_is_valid(name))
         return false;
 
