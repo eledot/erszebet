@@ -27,6 +27,8 @@
 #include "g_entity.h"
 #include "g_physics.h"
 
+#define RENDER_INDEX_COMMON -1
+
 void g_set_double (const char *name, double value) GNUC_NONNULL;
 void g_set_integer (const char *name, int value) GNUC_NONNULL;
 void g_set_string (const char *name, const char *value) GNUC_NONNULL;
@@ -34,32 +36,13 @@ void g_set_string (const char *name, const char *value) GNUC_NONNULL;
 void g_push_vector (const double *vector, int num) GNUC_NONNULL;
 bool g_pop_vector (int index, double *vector, int num) GNUC_NONNULL;
 void g_push_strings (const char **strings, int num) GNUC_NONNULL;
+void g_push_field (const void *data, int offset, int type) GNUC_NONNULL;
+void g_pop_field (void *data, int offset, int type, int index) GNUC_NONNULL;
 
 bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func);
 #define g_lua_call(args, ret) g_lua_call_real(args, ret, __FILE__, __LINE__, __FUNCTION__)
 
 #define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
-
-typedef struct ent_field_s
-{
-    const char *name;
-    int         render;
-    int         offset;
-    int         type;
-    void      (*callback) (g_entity_t *ent);
-    struct ent_field_s *next;
-}ent_field_t;
-
-typedef struct ent_render_plugin_s
-{
-    const char *name;
-    const ent_field_t *entity_fields;
-    bool (*set) (g_entity_t *ent);
-    void (*unset) (g_entity_t *ent);
-    void (*draw) (g_entity_t *ent);
-    bool (*init) (void);
-    void (*shutdown) (void);
-}ent_render_plugin_t;
 
 extern mem_pool_t g_mempool;
 extern double g_time;

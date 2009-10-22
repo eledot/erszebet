@@ -69,20 +69,33 @@ typedef struct g_entity_s
     int    shapes_num;
 
     /* graphics stuff */
-    double color[3];
-    double alpha;
-    double scale;
-    int    frame;
-    int    frames_num;
-    double width;
-    double height;
-    int    render_type;
-    void  *render_data;
+    bool  render_valid;
+    int   render_index;
+    void *render_data;
 }g_entity_t;
 
-extern g_entity_t *entities;
+typedef enum
+{
+    ENT_FIELD_TYPE_STRING = 0,
+    ENT_FIELD_TYPE_DOUBLE,
+    ENT_FIELD_TYPE_INTEGER,
+    ENT_FIELD_TYPE_VECTOR,
+    ENT_FIELD_TYPE_BOOL,
+}ent_fields_types_e;
 
-void g_entity_draw_entities (int draw2d);
+typedef struct ent_field_s
+{
+    const char * const name;
+    int         render_index;
+    const int   offset;
+    const int   type;
+
+    void (* const callback) (g_entity_t *ent);
+
+    struct ent_field_s *next;
+}ent_field_t;
+
+void g_entity_draw_entities (void);
 void g_entity_frame (void);
 
 void g_entity_init (void);

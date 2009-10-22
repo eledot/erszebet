@@ -21,7 +21,7 @@
 #define _G_MAIN_H
 
 void g_frame (void);
-void g_draw (int draw2d);
+void g_draw (void);
 void g_call_func (const char *func, const char *types, ...) GNUC_NONNULL;
 
 bool g_init (void);

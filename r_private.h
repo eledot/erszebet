@@ -23,9 +23,6 @@
 #include "common.h"
 #include "r_texture.h"
 #include "r_sprite.h"
-#include "r_font.h"
-#include "r_text.h"
-#include "r_figure.h"
 
 extern mem_pool_t mempool;
 

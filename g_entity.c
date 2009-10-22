@@ -20,21 +20,12 @@
 #include <limits.h>
 
 #include "g_private.h"
-#include "g_entity_render.h"
+#include "g_render.h"
+//#include "g_entity_render.h"
 #include "sglib.h"
 
-typedef enum
-{
-    ENT_F_STRING = 0,
-    ENT_F_INTEGER,
-    ENT_F_DOUBLE,
-    ENT_F_VECTOR
-}ent_fields_types_e;
-
-GNUC_NONNULL static void ent_set_frame_callback (g_entity_t *ent);
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
 GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent);
-
 
 #define DOFF(str, type, callback)               \
     { #str, 0, FIELD_OFFSET(g_entity_t, str),   type, callback, NULL }
@@ -43,35 +34,26 @@ GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent);
 
 static ent_field_t ent_fields_base[] =
 {
-    DOFF(classname,   ENT_F_STRING,  NULL),
-    DOFF(frame,       ENT_F_INTEGER, &ent_set_frame_callback),
-    DOFF(flags,       ENT_F_INTEGER, NULL),
-    DOFF(nextthink,   ENT_F_DOUBLE,  NULL),
-    DOFF(origin,      ENT_F_VECTOR,  &ent_set_origin_callback),
-    DOFF(velocity,    ENT_F_VECTOR,  NULL),
-    DOFF(color,       ENT_F_VECTOR,  NULL),
-    DOFF(alpha,       ENT_F_DOUBLE,  NULL),
-    DOFF(angle,       ENT_F_DOUBLE,  NULL),
-    DOFF(rotation,    ENT_F_DOUBLE,  NULL),
-    DOFF(gravity,     ENT_F_DOUBLE,  NULL),
-    DOFF(elasticity,  ENT_F_DOUBLE,  NULL),
-    DOFF(friction,    ENT_F_DOUBLE,  NULL),
-    DOFF(mass,        ENT_F_DOUBLE,  NULL),
-    DOFF(inertia,     ENT_F_DOUBLE,  NULL),
-    DOFF(scale,       ENT_F_DOUBLE,  NULL),
-    DOFF(width,       ENT_F_DOUBLE,  NULL),
-    DOFF(height,      ENT_F_DOUBLE,  NULL),
-    DOFF(phys_group,  ENT_F_INTEGER, &ent_set_group_layers_callback),
-    DOFF(phys_layers, ENT_F_INTEGER, &ent_set_group_layers_callback),
-    DOFF2(origin_x,   origin[0],   ENT_F_DOUBLE, NULL),
-    DOFF2(origin_y,   origin[1],   ENT_F_DOUBLE, NULL),
-    DOFF2(origin_z,   origin[2],   ENT_F_DOUBLE, &ent_set_origin_callback),
-    DOFF2(velocity_x, velocity[0], ENT_F_DOUBLE, NULL),
-    DOFF2(velocity_y, velocity[1], ENT_F_DOUBLE, NULL),
-    DOFF2(velocity_z, velocity[2], ENT_F_DOUBLE, NULL),
-    DOFF2(color_r,    color[0],    ENT_F_DOUBLE, NULL),
-    DOFF2(color_g,    color[1],    ENT_F_DOUBLE, NULL),
-    DOFF2(color_b,    color[2],    ENT_F_DOUBLE, NULL)
+    DOFF(classname,   ENT_FIELD_TYPE_STRING,  NULL),
+    DOFF(flags,       ENT_FIELD_TYPE_INTEGER, NULL),
+    DOFF(nextthink,   ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(origin,      ENT_FIELD_TYPE_VECTOR,  &ent_set_origin_callback),
+    DOFF(velocity,    ENT_FIELD_TYPE_VECTOR,  NULL),
+    DOFF(angle,       ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(rotation,    ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(gravity,     ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(elasticity,  ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(friction,    ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(mass,        ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(inertia,     ENT_FIELD_TYPE_DOUBLE,  NULL),
+    DOFF(phys_group,  ENT_FIELD_TYPE_INTEGER, &ent_set_group_layers_callback),
+    DOFF(phys_layers, ENT_FIELD_TYPE_INTEGER, &ent_set_group_layers_callback),
+    DOFF2(origin_x,   origin[0],   ENT_FIELD_TYPE_DOUBLE, NULL),
+    DOFF2(origin_y,   origin[1],   ENT_FIELD_TYPE_DOUBLE, NULL),
+    DOFF2(origin_z,   origin[2],   ENT_FIELD_TYPE_DOUBLE, &ent_set_origin_callback),
+    DOFF2(velocity_x, velocity[0], ENT_FIELD_TYPE_DOUBLE, NULL),
+    DOFF2(velocity_y, velocity[1], ENT_FIELD_TYPE_DOUBLE, NULL),
+    DOFF2(velocity_z, velocity[2], ENT_FIELD_TYPE_DOUBLE, NULL)
 };
 
 #undef DOFF
@@ -97,7 +79,7 @@ static const int ent_fields_free[] =
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
-g_entity_t        *entities;
+static g_entity_t *entities;
 static g_entity_t *remove_entities;
 
 /*
@@ -107,56 +89,18 @@ ent_get_field
 */
 GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 {
-    const void  *data;
-    ent_field_t *f, s;
+    const ent_field_t *f;
+    ent_field_t s = { .name = field };
 
-    s.name = field;
     f = sglib_ent_field_t_find_member(ent_fields, &s);
 
     if (NULL != f)
     {
-        data = (const void *)ent + f->offset;
-
-        switch (f->type)
-        {
-        case ENT_F_STRING:
-            if (NULL == *(char **)data)
-                lua_pushstring(lua_state, "");
-            else
-                lua_pushstring(lua_state, *(const char **)data);
-            break;
-
-        case ENT_F_INTEGER:
-            lua_pushinteger(lua_state, *(const int *)data);
-            break;
-
-        case ENT_F_DOUBLE:
-            lua_pushnumber(lua_state, *(const double *)data);
-            break;
-
-        case ENT_F_VECTOR:
-            g_push_vector((const double *)data, 3);
-            break;
-
-        default:
-            return 0;
-        }
-
+        g_push_field(ent, f->offset, f->type);
         return 1;
     }
 
     return 0;
-}
-
-/*
-=================
-ent_set_frame_callback
-=================
-*/
-GNUC_NONNULL static void ent_set_frame_callback (g_entity_t *ent)
-{
-    if (ent->frames_num)
-        ent->frame %= ent->frames_num;
 }
 
 /*
@@ -184,45 +128,29 @@ GNUC_NONNULL static void ent_set_group_layers_callback (g_entity_t *ent)
 ent_set_field
 =================
 */
-GNUC_NONNULL static int ent_set_field (g_entity_t *ent, const char *field, int index)
+GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int index)
 {
-    void        *data;
-    ent_field_t *f, s;
+    const ent_field_t *f;
+    void *data = ent;
+    ent_field_t s = { .name = field };
 
-    s.name = field;
     f = sglib_ent_field_t_find_member(ent_fields, &s);
 
     if (NULL != f)
     {
-        data = (void *)ent + f->offset;
-
-        switch (f->type)
+        if (f->render_index && (f->render_index == ent->render_index ||
+                                f->render_index == RENDER_INDEX_COMMON))
         {
-        case ENT_F_STRING:
-            if (NULL != *(char **)data)
-                mem_free(*(char **)data);
-
-            *(char **)data = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
-            break;
-
-        case ENT_F_INTEGER:
-            *(int *)data = lua_tointeger(lua_state, index);
-            break;
-
-        case ENT_F_DOUBLE:
-            *(double *)data = lua_tonumber(lua_state, index);
-            break;
-
-        case ENT_F_VECTOR:
-            g_pop_vector(index, (double *)data, 3);
-            break;
-
-        default:
-            return 0;
+            data = ent->render_data;
         }
 
-        if (NULL != f->callback)
-            f->callback(ent);
+        if (NULL != data)
+        {
+            g_pop_field(data, f->offset, f->type, index);
+
+            if (NULL != f->callback)
+                f->callback(ent);
+        }
 
         return 1;
     }
@@ -295,10 +223,7 @@ GNUC_NONNULL static void ent_entity_string (const g_entity_t *ent, char *buffer,
              "mass=%-2.2lf "
              "inertia=%-2.2lf "
              "phys_group=%i "
-             "phys_layers=%i "
-             "scale=%-2.2lf "
-             "frame=%i "
-             "frames_num=%i",
+             "phys_layers=%i ",
              ent,
              ent->classname ? ent->classname : "-noname-",
              ent_flags_string(ent),
@@ -318,10 +243,7 @@ GNUC_NONNULL static void ent_entity_string (const g_entity_t *ent, char *buffer,
              ent->mass,
              ent->inertia,
              ent->phys_group,
-             ent->phys_layers,
-             ent->scale,
-             ent->frame,
-             ent->frames_num);
+             ent->phys_layers);
 }
 
 /*
@@ -474,16 +396,8 @@ GNUC_WARN_UNUSED_RES static g_entity_t *g_entity_create (void)
     ent->phys_group  = 0;
     ent->phys_layers = INT_MAX;
 
-    ent->color[0]    = 1.0;
-    ent->color[1]    = 1.0;
-    ent->color[2]    = 1.0;
-    ent->alpha       = 1.0;
-    ent->scale       = 1.0;
-    ent->frame       = 0;
-    ent->frames_num  = 0;
-    ent->width       = 0.0;
-    ent->height      = 0.0;
-    ent->render_type = -1;
+    ent->render_valid = false;
+    ent->render_index = 0;
     ent->render_data = NULL;
 
     /* put to entities, taking into account zorder */
@@ -536,9 +450,6 @@ GNUC_NONNULL static void g_entity_mem_free (g_entity_t *ent)
         if (NULL != data)
             mem_free(data);
     }
-
-    if (NULL != ent->render_data)
-        ent_render_funcs[ent->render_type].unload(ent);
 
     mem_free(ent);
 }
@@ -594,197 +505,20 @@ GNUC_NONNULL static int ent_lua_remove (lua_State *lst)
 
 /*
 =================
-ent_lua_set_sprite
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_sprite (lua_State *lst)
-{
-    g_entity_t *ent;
-    const char *name;
-    double parms[3] = { 0.0, 0.0, 0.0 };
-
-    lua_getfield(lst, 1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_sprite\" without entity\n");
-        return 0;
-    }
-
-    if (NULL != ent->render_data && RENDER_TYPE_SPRITE != ent->render_type)
-    {
-        ent_render_funcs[ent->render_type].unload(ent);
-        ent->render_data = NULL;
-        ent->render_type = -1;
-    }
-
-    name = luaL_checkstring(lst, 2);
-    g_pop_vector(3, parms, 3);
-    ent_render_funcs[RENDER_TYPE_SPRITE].load(name, parms, ent);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_set_text
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_text (lua_State *lst)
-{
-    g_entity_t *ent;
-    const char *text;
-    double parms[3] = { 0.0, 0.0, 0.0 };
-
-    lua_getfield(lst, -1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_text\" without entity\n");
-        return 0;
-    }
-
-    if (NULL != ent->render_data && RENDER_TYPE_TEXT != ent->render_type)
-    {
-        ent_render_funcs[ent->render_type].unload(ent);
-        ent->render_data = NULL;
-        ent->render_type = -1;
-    }
-
-    text = luaL_checkstring(lst, 2);
-    g_pop_vector(3, parms, 3);
-    ent_render_funcs[RENDER_TYPE_TEXT].load(text, parms, ent);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_set_model
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_model (lua_State *lst)
-{
-    g_entity_t *ent;
-
-    lua_getfield(lst, -1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_model\" without entity\n");
-        return 0;
-    }
-
-    if (NULL != ent->render_data && RENDER_TYPE_MODEL != ent->render_type)
-    {
-        ent_render_funcs[ent->render_type].unload(ent);
-        ent->render_data = NULL;
-        ent->render_type = -1;
-    }
-
-    /* FIXME */
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_set_circle
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_circle (lua_State *lst)
-{
-    g_entity_t *ent;
-    const char *name;
-    double parms[3] = { 0.0, 0.0, 0.0 };
-
-    lua_getfield(lst, 1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_circle\" without entity\n");
-        return 0;
-    }
-
-    if (NULL != ent->render_data && RENDER_TYPE_CIRCLE != ent->render_type)
-    {
-        ent_render_funcs[ent->render_type].unload(ent);
-        ent->render_data = NULL;
-        ent->render_type = -1;
-    }
-
-    name = luaL_checkstring(lst, 2);
-    g_pop_vector(3, parms, 3);
-    ent_render_funcs[RENDER_TYPE_CIRCLE].load(name, parms, ent);
-
-    return 0;
-}
-
-/*
-=================
-ent_lua_set_line
-=================
-*/
-GNUC_NONNULL static int ent_lua_set_line (lua_State *lst)
-{
-    g_entity_t *ent;
-    const char *name;
-    double parms[4] = { 0.0, 0.0, 0.0, 0.0 };
-
-    lua_getfield(lst, 1, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_circle\" without entity\n");
-        return 0;
-    }
-
-    if (NULL != ent->render_data && RENDER_TYPE_LINE != ent->render_type)
-    {
-        ent_render_funcs[ent->render_type].unload(ent);
-        ent->render_data = NULL;
-        ent->render_type = -1;
-    }
-
-    name = luaL_checkstring(lst, 2);
-    g_pop_vector(3, parms, 4);
-    ent_render_funcs[RENDER_TYPE_LINE].load(name, parms, ent);
-
-    return 0;
-}
-
-/*
-=================
 g_entity_draw_entities
 =================
 */
-void g_entity_draw_entities (int draw2d)
+void g_entity_draw_entities (void)
 {
     g_entity_t *ent;
     struct sglib_g_entity_t_iterator it;
 
-    if (draw2d)
+    for (ent = sglib_g_entity_t_it_init(&it, entities);
+         NULL != ent;
+         ent = sglib_g_entity_t_it_next(&it))
     {
-        for (ent = sglib_g_entity_t_it_init(&it, entities);
-             NULL != ent;
-             ent = sglib_g_entity_t_it_next(&it))
-        {
-            if (NULL != ent->render_data &&
-                ent->render_type >= 0 &&
-                ent->render_type < STSIZE(ent_render_funcs))
-            {
-                ent_render_funcs[ent->render_type].draw(ent);
-            }
-        }
-    }
-    else
-    {
-        /* FIXME */
+        if (ent->render_valid)
+            g_render_entity(ent);
     }
 }
 
@@ -894,11 +628,6 @@ void g_entity_init (void)
     /* register funcs to work with entity */
     lua_register(lua_state, "ent_spawn", &ent_lua_spawn);
     lua_register(lua_state, "ent_remove", &ent_lua_remove);
-    lua_register(lua_state, "ent_set_sprite", &ent_lua_set_sprite);
-    lua_register(lua_state, "ent_set_text", &ent_lua_set_text);
-    lua_register(lua_state, "ent_set_model", &ent_lua_set_model);
-    lua_register(lua_state, "ent_set_circle", &ent_lua_set_circle);
-    lua_register(lua_state, "ent_set_line", &ent_lua_set_line);
 
     /* register global constants */
     g_set_integer("FL_STATIC", ENT_FL_STATIC);

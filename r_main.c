@@ -140,10 +140,12 @@ void r_frame (void)
 {
     gl_enable_textures();
     gl_clear();
+
+    /* FIXME -- 3d here */
     //gl_switch_3d();
-    //g_draw(0);
+
     gl_switch_2d();
-    g_draw(1);
+    g_draw();
 
     if (r_show_fps->i)
     {
@@ -171,13 +173,8 @@ bool r_init (void)
 
     mem_alloc_static_pool("renderer", 0);
 
-    if (!r_texture_init() ||
-        !r_sprite_init() ||
-        !r_font_init() ||
-        !r_text_init())
-    {
+    if (!r_texture_init() || !r_sprite_init())
         return false;
-    }
 
     r_i = true;
 
@@ -198,8 +195,6 @@ void r_shutdown (void)
 
     r_i = false;
 
-    r_text_shutdown();
-    r_font_shutdown();
     r_sprite_shutdown();
     r_texture_shutdown();
 
