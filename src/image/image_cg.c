@@ -21,8 +21,7 @@
 
 #include <CoreGraphics.h>
 
-#include "image_private.h"
-#include "fs_helpers_apple.h"
+#include "image/image_private.h"
 
 typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
                                  const CGFloat          decode[],

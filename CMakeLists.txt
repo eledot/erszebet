@@ -24,7 +24,26 @@ set(${P}_MAJOR_VERSION 0)
 set(${P}_MINOR_VERSION 1)
 set(${P}_PATCH_LEVEL   0)
 
-option(DEBUG "debug build" ON)
+option(WITH_LUAJIT "Use LuaJIT" OFF)
+
+option(WITH_IMAGE_PNG   "PNG image format support" ON)
+option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
+option(WITH_IMAGE_CG    "PNG/JPEG image format support (CoreGraphics)" ON)
+option(WITH_IMAGE_PVRTC "PVRTC image format support" OFF)
+
+option(WITH_SND      "enable sound" ON)
+option(WITH_SND_WAV  "WAV audio format support" ON)
+option(WITH_SND_OGG  "OGG VORBIS audio format support" ON)
+option(WITH_SND_FLAC "FLAC audio format support" ON)
+
+option(DEBUG                 "debug build" ON)
+option(DEBUG_SYS_PRINTF      "print debug messages" ON)
+option(DEBUG_SYS_PRINTF_LOC  "print location in debug messages" ON)
+option(DEBUG_SYS_PRINTF_TIME "print timestamp in debug messages" OFF)
+
+option(DEBUG_SND "debug sound" ON)
+option(DEBUG_GL  "debug opengl" ON)
+option(DEBUG_MEM "debug memory manager" ON)
 
 set(CMAKE_C_FLAGS "-W -Wall -Wextra -Wmissing-declarations -std=c99 -O2 -DGAME_NAME=\\\"${P}\\\"")
 
@@ -45,16 +64,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${DIR_3RD}/sglib")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wswitch-default -Wswitch-enum")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-security -Wundef")
 
-option(WITH_IMAGE_PNG   "PNG image format support" ON)
-option(WITH_IMAGE_JPEG  "JPEG image format support" ON)
-option(WITH_IMAGE_CG    "PNG/JPEG image format support (CoreGraphics)" ON)
-option(WITH_IMAGE_PVRTC "PVRTC image format support" OFF)
-option(WITH_SND         "enable sound" ON)
-option(WITH_SND_WAV     "WAV audio format support" ON)
-option(WITH_SND_OGG     "OGG VORBIS audio format support" ON)
-option(WITH_SND_FLAC    "FLAC audio format support" ON)
-option(WITH_LUAJIT      "Use LuaJIT" OFF)
-
 if(WITH_LUAJIT)
   add_definitions(-I${DIR_3RD}/luajit -DENGINE_LUA_JIT)
   message(">>> LuaJIT enabled")
@@ -63,14 +72,7 @@ else(WITH_LUAJIT)
 endif(WITH_LUAJIT)
 
 add_definitions(-I${DIR_3RD}/chipmunk)
-
-option(DEBUG_SYS_PRINTF      "print debug messages" ON)
-option(DEBUG_SYS_PRINTF_LOC  "print location in debug messages" ON)
-option(DEBUG_SYS_PRINTF_TIME "print timestamp in debug messages" OFF)
-
-option(DEBUG_SND "debug sound" ON)
-option(DEBUG_GL  "debug opengl" ON)
-option(DEBUG_MEM "debug memory manager" ON)
+add_definitions(-I${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(DEBUG)
   if(DEBUG_SYS_PRINTF)
@@ -93,7 +95,7 @@ if(DEBUG)
   endif(DEBUG_MEM)
 endif(DEBUG)
 
-file(GLOB SRC_FILES *.c)
+file(GLOB SRC_FILES src/*.c src/*/*.c)
 add_executable(${P} ${SRC_FILES})
 add_dependencies(${P} chipmunk)
 add_dependencies(${P} lua)

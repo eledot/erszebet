@@ -18,7 +18,7 @@
 */
 
 #define GLEXTPRIVATE
-#include "gl_private.h"
+#include "gl/gl_private.h"
 
 #define GL_ADD_EXT(name, cvar, init)                                    \
     ext_##cvar = gl_add_extension(name, &cvar, #cvar, cvar##_funcs, init)

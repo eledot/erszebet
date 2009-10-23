@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <jpeglib.h>
 
-#include "image_private.h"
+#include "image/image_private.h"
 
 static jmp_buf   jpeg_jmpbuf;
 static fs_file_t jpeg_file;

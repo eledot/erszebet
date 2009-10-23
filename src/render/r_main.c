@@ -18,8 +18,8 @@
 */
 
 #include "common.h"
-#include "r_private.h"
-#include "gl.h"
+#include "render/r_private.h"
+#include "gl/gl.h"
 
 static bool r_i = false;
 mem_pool_t mempool;

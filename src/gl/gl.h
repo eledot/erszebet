@@ -20,7 +20,7 @@
 #ifndef _GL_H
 #define _GL_H
 
-#include "image.h"
+#include "image/image.h"
 
 #define GL_INTERNAL_FONT_CW 8.0f
 #define GL_INTERNAL_FONT_CH 12.0f

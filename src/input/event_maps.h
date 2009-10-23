@@ -20,7 +20,7 @@
 #ifndef _EVENT_MAPS
 #define _EVENT_MAPS
 
-#include "keyboard.h"
+#include "input/keyboard.h"
 
 static const unsigned char map_print[] =
 {

@@ -24,8 +24,8 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "g_entity.h"
-#include "g_physics.h"
+#include "game/g_entity.h"
+#include "game/g_physics.h"
 
 #define RENDER_INDEX_COMMON -1
 

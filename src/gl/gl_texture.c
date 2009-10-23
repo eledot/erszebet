@@ -17,7 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "gl_private.h"
+#include "gl/gl_private.h"
 
 static cvar_t *gl_trilinear;
 static cvar_t *gl_anisotropy_level;

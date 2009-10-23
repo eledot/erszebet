@@ -17,9 +17,9 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "g_private.h"
-#include "g_render.h"
-#include "r_sprite.h"
+#include "game/g_private.h"
+#include "game/g_render.h"
+#include "render/r_sprite.h"
 
 typedef struct ent_render_sprite_s
 {

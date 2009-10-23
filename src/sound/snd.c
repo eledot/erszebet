@@ -27,7 +27,7 @@
 #include <alc.h>
 #endif
 
-#include "snd_private.h"
+#include "sound/snd_private.h"
 
 typedef struct sound_s
 {

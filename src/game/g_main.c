@@ -17,8 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "g_private.h"
-#include "g_render.h"
+#include "game/g_private.h"
+#include "game/g_render.h"
 
 #ifndef ENGINE_OS_IPHONE
 #define GAME_MAIN_FILE "game/main.lua"

@@ -17,9 +17,9 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "g_private.h"
-#include "g_render.h"
-#include "r_texture.h"
+#include "game/g_private.h"
+#include "game/g_render.h"
+#include "render/r_texture.h"
 
 #define CIRCLE_SEGMENTS 24
 

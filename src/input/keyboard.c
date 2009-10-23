@@ -18,7 +18,7 @@
 */
 
 #include "common.h"
-#include "video_private.h"
+#include "video/video_private.h"
 
 static bool keyboard_i = false;
 

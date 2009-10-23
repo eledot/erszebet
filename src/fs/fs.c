@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 
 #include "common.h"
-#include "fs_private.h"
+#include "fs/fs_private.h"
 #include "sglib.h"
 
 #define MAX_FILES 64

@@ -20,8 +20,8 @@
 #if defined(ENGINE_OS_APPLE) || defined(ENGINE_OS_IPHONE)
 
 #include "common.h"
-#include "fs_private.h"
-#include "fs_helpers_apple.h"
+#include "fs/fs_private.h"
+#include "fs/fs_helpers_apple.h"
 
 static CFBundleRef cg_main_bundle;
 

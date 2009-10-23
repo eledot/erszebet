@@ -19,9 +19,8 @@
 
 #include <limits.h>
 
-#include "g_private.h"
-#include "g_render.h"
-//#include "g_entity_render.h"
+#include "game/g_private.h"
+#include "game/g_render.h"
 #include "sglib.h"
 
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);

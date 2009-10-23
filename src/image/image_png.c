@@ -22,7 +22,7 @@
 #include <png.h>
 #include <setjmp.h>
 
-#include "image_private.h"
+#include "image/image_private.h"
 
 static void epng_error (png_structp png_ptr, png_const_charp msg);
 

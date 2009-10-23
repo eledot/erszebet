@@ -17,7 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "image_private.h"
+#include "image/image_private.h"
 
 static bool image_i = false;
 

@@ -17,8 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "g_private.h"
-#include "g_render.h"
+#include "game/g_private.h"
+#include "game/g_render.h"
 
 extern const ent_render_plugin_t ent_render_plugin_sprite;
 extern const ent_render_plugin_t ent_render_plugin_text;

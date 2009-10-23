@@ -9,7 +9,7 @@
 #error "Version mismatch between DynASM and included encoding engine"
 #endif
 
-#include "../../gnuc.h"
+#include "../../src/gnuc.h"
 
 /*
 ** Bytecode to machine code translation for x86 CPUs.

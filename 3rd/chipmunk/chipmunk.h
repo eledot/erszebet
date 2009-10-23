@@ -28,7 +28,7 @@ extern "C" {
 
 #include <math.h>
 #include "chipmunk_types.h"
-#include "../../gnuc.h"
+#include "../../src/gnuc.h"
 	
 static inline cpFloat
 cpfmax(cpFloat a, cpFloat b)

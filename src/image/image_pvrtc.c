@@ -19,8 +19,8 @@
 
 #ifdef ENGINE_IMAGE_PVRTC
 
-#include "image_private.h"
-#include "gl_private.h"
+#include "image/image_private.h"
+#include "gl/gl_private.h"
 
 typedef enum
 {

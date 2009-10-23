@@ -17,7 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "r_private.h"
+#include "render/r_private.h"
 #include "sglib.h"
 
 #define MAX_FRAMES 64
@@ -34,7 +34,7 @@ static r_sprite_t *sprites;
 r_sprite_get_align
 =================
 */
-GNUC_NONNULL static void r_sprite_get_align (const char *name, const char *word, int *align)
+GNUC_NONNULL static void r_sprite_get_align (PUV const char *name, const char *word, int *align)
 {
     int a = *align;
 

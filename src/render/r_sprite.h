@@ -20,7 +20,7 @@
 #ifndef _R_SPRITE_H
 #define _R_SPRITE_H
 
-#include "r_texture.h"
+#include "render/r_texture.h"
 
 typedef enum
 {

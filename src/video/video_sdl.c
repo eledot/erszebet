@@ -20,8 +20,8 @@
 #ifdef ENGINE_VIDEO_SDL
 
 #include "common.h"
-#include "video_private.h"
-#include "event_maps.h"
+#include "video/video_private.h"
+#include "input/event_maps.h"
 
 #define DEFAULT_FLAGS (SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_OPENGL)
 

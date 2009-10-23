@@ -7,7 +7,7 @@ diff -r 060b8f72d47f 3rd/chipmunk/chipmunk.h
  
 +#include <math.h>
  #include "chipmunk_types.h"
-+#include "../../gnuc.h"
++#include "../../src/gnuc.h"
  	
  static inline cpFloat
  cpfmax(cpFloat a, cpFloat b)

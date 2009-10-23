@@ -18,8 +18,8 @@
 */
 
 #define GLPRIVATE
-#include "gl_private.h"
-#include "r_texture.h"
+#include "gl/gl_private.h"
+#include "render/r_texture.h"
 
 static bool gl_i = false;
 

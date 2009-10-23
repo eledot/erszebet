@@ -19,7 +19,7 @@
 
 #ifdef ENGINE_SND_WAV
 
-#include "snd_private.h"
+#include "sound/snd_private.h"
 
 #define STREAM_BUFFER_SIZE 16384
 

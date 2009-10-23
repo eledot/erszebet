@@ -21,8 +21,8 @@
 #define _R_PRIVATE_H
 
 #include "common.h"
-#include "r_texture.h"
-#include "r_sprite.h"
+#include "render/r_texture.h"
+#include "render/r_sprite.h"
 
 extern mem_pool_t mempool;
 

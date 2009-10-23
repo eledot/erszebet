@@ -86,7 +86,7 @@ skipwhite:
     }
     else
     {
-        for (;*data > ' ';data++)
+        for (; *data > ' ' ;data++)
         {
             if (len >= (int)sizeof(tok_token) - 1)
             {

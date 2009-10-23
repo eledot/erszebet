@@ -17,7 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "gl_private.h"
+#include "gl/gl_private.h"
 
 static GLboolean depth_mask_flag;
 static GLdouble color_r, color_g, color_b, color_a;

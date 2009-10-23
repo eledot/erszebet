@@ -34,10 +34,10 @@
 #endif
 
 #include "common.h"
-#include "gl_ext.h"
-#include "gl_ext_funcs.h"
-#include "gl_helpers.h"
-#include "gl_texture.h"
+#include "gl/gl_ext.h"
+#include "gl/gl_ext_funcs.h"
+#include "gl/gl_helpers.h"
+#include "gl/gl_texture.h"
 
 extern mem_pool_t mempool;
 

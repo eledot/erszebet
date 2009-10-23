@@ -20,7 +20,7 @@
 #ifndef _R_TEXTURE_H
 #define _R_TEXTURE_H
 
-#include "image.h"
+#include "image/image.h"
 
 typedef enum
 {

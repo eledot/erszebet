@@ -17,8 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "r_private.h"
-#include "gl_texture.h"
+#include "render/r_private.h"
+#include "gl/gl_texture.h"
 #include "sglib.h"
 
 #define TEXTURE_NAME_COMPARATOR(f1, f2) strcmp(f1->name, f2->name)
