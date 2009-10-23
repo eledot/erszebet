@@ -19,7 +19,7 @@
 
 #ifdef ENGINE_OS_IPHONE
 
-#import "sys_iphone.h"
+#import "sys/sys_iphone.h"
 #import "eagl_view.h"
 
 #import "engine.h"
