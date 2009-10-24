@@ -335,3 +335,17 @@ diff -r 5be1e1937fe7 3rd/chipmunk/cpSpaceHash.c
  {
  	a = cpvmult(a, 1.0f/hash->celldim);
  	b = cpvmult(b, 1.0f/hash->celldim);
+diff -r 10ceaff93c45 3rd/chipmunk/cpSpace.c
+--- a/3rd/chipmunk/cpSpace.c	Thu Oct 22 01:52:53 2009 +0300
++++ b/3rd/chipmunk/cpSpace.c	Sat Oct 24 13:44:23 2009 +0300
+@@ -440,8 +440,8 @@
+ 	int num = space->arbiters->num;
+ 	
+ 	// copy to the stack
+-//	cpArbiter *ary[num];
+-	cpArbiter **ary = alloca(num*sizeof(cpArbiter *));
++	cpArbiter *ary[num];
++	//cpArbiter **ary = alloca(num*sizeof(cpArbiter *));
+ 	
+ 	memcpy(ary, space->arbiters->arr, num*sizeof(void *));
+ 	

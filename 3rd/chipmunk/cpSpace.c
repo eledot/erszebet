@@ -440,8 +440,8 @@ filterArbiterByCallback(cpSpace *space)
 	int num = space->arbiters->num;
 	
 	// copy to the stack
-//	cpArbiter *ary[num];
-	cpArbiter **ary = alloca(num*sizeof(cpArbiter *));
+	cpArbiter *ary[num];
+	//cpArbiter **ary = alloca(num*sizeof(cpArbiter *));
 	
 	memcpy(ary, space->arbiters->arr, num*sizeof(void *));
 	
