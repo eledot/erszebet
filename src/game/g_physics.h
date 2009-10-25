@@ -21,11 +21,8 @@
 #define _G_PHYSICS_H
 
 void g_physics_free_obj (g_entity_t *ent) GNUC_NONNULL;
+void g_physics_update_ent_origin (g_entity_t *ent) GNUC_NONNULL;
 
-void g_physics_update_ent (g_entity_t *ent) GNUC_NONNULL;
-void g_physics_update_body (g_entity_t *ent) GNUC_NONNULL;
-
-void g_physics_draw_collisions (void) GNUC_CONST;
 void g_physics_frame (void);
 
 void g_physics_init (void);

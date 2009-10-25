@@ -17,8 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "game/g_private.h"
-#include "game/g_render.h"
+#include "game/g_render_private.h"
 #include "render/r_texture.h"
 
 typedef struct ent_render_line_s
@@ -121,16 +120,17 @@ GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
     gl_draw_quad(r->texture->gltex, r->verts, r->texcoords);
 }
 
-static ent_field_t ent_fields_render_line[] =
+static g_entity_field_t ent_fields_render_line[] =
 {
-    RENDER_FIELD(line, "texture", name, ENT_FIELD_TYPE_STRING, &line_set_texture_callback),
-    RENDER_FIELD(line, "width", width, ENT_FIELD_TYPE_DOUBLE, &line_recalculate),
-    RENDER_FIELD(line, "origin2", origin2, ENT_FIELD_TYPE_VECTOR, &line_recalculate),
-    RENDER_FIELD(line, "scale", scale, ENT_FIELD_TYPE_DOUBLE, &line_recalculate),
-    RENDER_FIELD_NULL
+#define STRUCTURE_FOR_OFFSETS ent_render_line_t
+    ENTITY_FIELD("texture", name,    STRING, &line_set_texture_callback),
+    ENTITY_FIELD("width",   width,   DOUBLE, &line_recalculate),
+    ENTITY_FIELD("origin2", origin2, VECTOR, &line_recalculate),
+    ENTITY_FIELD("scale",   scale,   DOUBLE, &line_recalculate),
+    ENTITY_FIELD_NULL
 };
 
-const ent_render_plugin_t ent_render_plugin_line =
+const g_render_plugin_t g_render_plugin_line =
 {
     .name = "line",
     .render_data_size = sizeof(ent_render_line_t),

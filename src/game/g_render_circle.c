@@ -17,8 +17,7 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "game/g_private.h"
-#include "game/g_render.h"
+#include "game/g_render_private.h"
 #include "render/r_texture.h"
 
 #define CIRCLE_SEGMENTS 24
@@ -120,16 +119,17 @@ GNUC_NONNULL static void ent_render_circle_draw (const g_entity_t *ent)
     }
 }
 
-static ent_field_t ent_fields_render_circle[] =
+static g_entity_field_t ent_fields_render_circle[] =
 {
-    RENDER_FIELD(circle, "texture", name, ENT_FIELD_TYPE_STRING, &circle_set_texture_callback),
-    RENDER_FIELD(circle, "width", width, ENT_FIELD_TYPE_DOUBLE, &circle_recalculate),
-    RENDER_FIELD(circle, "radius", radius, ENT_FIELD_TYPE_DOUBLE, &circle_recalculate),
-    RENDER_FIELD(circle, "scale", scale, ENT_FIELD_TYPE_DOUBLE, &circle_recalculate),
-    RENDER_FIELD_NULL
+#define STRUCTURE_FOR_OFFSETS ent_render_circle_t
+    ENTITY_FIELD("texture", name,   STRING, &circle_set_texture_callback),
+    ENTITY_FIELD("width",   width,  DOUBLE, &circle_recalculate),
+    ENTITY_FIELD("radius",  radius, DOUBLE, &circle_recalculate),
+    ENTITY_FIELD("scale",   scale,  DOUBLE, &circle_recalculate),
+    ENTITY_FIELD_NULL
 };
 
-const ent_render_plugin_t ent_render_plugin_circle =
+const g_render_plugin_t g_render_plugin_circle =
 {
     .name = "circle",
     .render_data_size = sizeof(ent_render_circle_t),

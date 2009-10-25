@@ -18,7 +18,6 @@
 */
 
 #include "game/g_private.h"
-#include "game/g_render.h"
 
 #ifndef ENGINE_OS_IPHONE
 #define GAME_MAIN_FILE "game/main.lua"
@@ -377,31 +376,35 @@ void g_pop_field (void *data, int offset, int type, int index)
 
     switch (type)
     {
-    case ENT_FIELD_TYPE_DOUBLE:
+    case G_FIELD_TYPE_DOUBLE:
         *(double *)field = lua_tonumber(lua_state, index);
         break;
 
-    case ENT_FIELD_TYPE_INTEGER:
+    case G_FIELD_TYPE_INTEGER:
         *(int *)field = lua_tointeger(lua_state, index);
         break;
 
-    case ENT_FIELD_TYPE_VECTOR:
+    case G_FIELD_TYPE_VECTOR:
         g_pop_vector(index, (double *)field, 3);
         break;
 
-    case ENT_FIELD_TYPE_STRING:
+    case G_FIELD_TYPE_STRING:
+        *(const char **)field = luaL_checkstring(lua_state, index);
+        break;
+
+    case G_FIELD_TYPE_STRING_COPY:
         if (NULL != *(char **)field)
             mem_free(*(char **)field);
 
         *(char **)field = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
         break;
 
-    case ENT_FIELD_TYPE_BOOL:
+    case G_FIELD_TYPE_BOOL:
         *(bool *)field = lua_toboolean(lua_state, index);
         break;
 
     default:
-        /* this won't happen */
+        sys_printf("unknown field type %i (%p->%i)\n", type, data, offset);
         break;
     }
 }
@@ -417,31 +420,33 @@ void g_push_field (const void *data, int offset, int type)
 
     switch (type)
     {
-    case ENT_FIELD_TYPE_DOUBLE:
+    case G_FIELD_TYPE_DOUBLE:
         lua_pushnumber(lua_state, *(const double *)field);
         break;
 
-    case ENT_FIELD_TYPE_INTEGER:
+    case G_FIELD_TYPE_INTEGER:
         lua_pushinteger(lua_state, *(const int *)field);
         break;
 
-    case ENT_FIELD_TYPE_VECTOR:
+    case G_FIELD_TYPE_VECTOR:
         g_push_vector((const double *)field, 3);
         break;
 
-    case ENT_FIELD_TYPE_STRING:
+    case G_FIELD_TYPE_STRING:
+    case G_FIELD_TYPE_STRING_COPY:
         if (NULL == *(char **)field)
-            lua_pushstring(lua_state, "");
+            lua_pushnil(lua_state);
         else
             lua_pushstring(lua_state, *(const char **)field);
         break;
 
-    case ENT_FIELD_TYPE_BOOL:
+    case G_FIELD_TYPE_BOOL:
         lua_pushboolean(lua_state, *(const bool *)field);
         break;
 
     default:
-        /* this won't happen */
+        sys_printf("unknown field type %i (%p->%i)\n", type, data, offset);
+        lua_pushnil(lua_state);
         break;
     }
 }
@@ -699,8 +704,8 @@ bool g_init (void)
     g_init_cvar();
     g_init_video();
     g_set_double("time", 0.0);
-    g_physics_init();
     g_entity_init();
+    g_physics_init();
     g_render_init();
 
     file = GAME_MAIN_FILE;
@@ -736,8 +741,8 @@ void g_shutdown (void)
 
     g_call_func("g_shutdown", "");
     g_render_shutdown();
-    g_entity_shutdown();
     g_physics_shutdown();
+    g_entity_shutdown();
     lua_close(lua_state);
     lua_state = NULL;
 

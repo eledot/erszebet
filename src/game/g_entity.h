@@ -22,10 +22,9 @@
 
 typedef enum
 {
-    ENT_INTFL_THINK       = (1 << 0),
-    ENT_INTFL_TOUCH       = (1 << 1),
-    ENT_INTFL_BLOCK       = (1 << 2),
-    ENT_INTFL_PHYS_STATIC = (1 << 3)
+    ENT_INTFL_THINK          = (1 << 0),
+    ENT_INTFL_TOUCH          = (1 << 1),
+    ENT_INTFL_PHYSICS_STATIC = (1 << 2)
 }g_entity_internal_flags_e;
 
 typedef enum
@@ -36,64 +35,79 @@ typedef enum
 
 typedef struct g_entity_s
 {
-    char *classname;
-
+    /* internal fields */
+    int lua_ref;
+    int lua_dataref;
     int internal_flags;
-    int flags;
-
-    double nextthink;
-    double lastthink;
-
-    double origin[3];
-    double velocity[3];
-    double angle;
-    double rotation;
-    double gravity;
-    double elasticity;
-    double friction;
-    double mass;
-    double inertia;
-
-    int phys_group;
-    int phys_layers;
-
-    struct g_entity_s *next;
-
-    /* lua stuff */
-    int ref;
-    int dataref;
-
-    /* physics stuff */
-    void  *body;
-    void **shapes;
-    int    shapes_num;
-
-    /* graphics stuff */
+    void *physics_data;
     bool  render_valid;
     int   render_index;
     void *render_data;
+
+    struct g_entity_s *next;
+
+    /* fields accessible by lua code */
+    char *classname;
+
+    int flags;
+
+    double origin[3];
+    double angle;
+
+    double nextthink;
+    double lastthink;
 }g_entity_t;
 
 typedef enum
 {
-    ENT_FIELD_TYPE_STRING = 0,
-    ENT_FIELD_TYPE_DOUBLE,
-    ENT_FIELD_TYPE_INTEGER,
-    ENT_FIELD_TYPE_VECTOR,
-    ENT_FIELD_TYPE_BOOL,
+    ENT_FIELD_INDEX_INVALID = -3,
+    ENT_FIELD_INDEX_PHYSICS = -2,
+    ENT_FIELD_INDEX_RENDER_COMMON = -1,
+    ENT_FIELD_INDEX_BASE = 0
+}ent_field_indices_e;
+
+typedef enum
+{
+    G_FIELD_TYPE_DOUBLE = 0,
+    G_FIELD_TYPE_INTEGER,
+    G_FIELD_TYPE_VECTOR,
+    G_FIELD_TYPE_STRING,
+    G_FIELD_TYPE_STRING_COPY,
+    G_FIELD_TYPE_BOOL,
+    G_FIELD_TYPE_CUSTOM_CALLBACK,
+    G_FIELD_TYPES_NUM
 }ent_fields_types_e;
 
 typedef struct ent_field_s
 {
     const char * const name;
-    int         render_index;
-    const int   offset;
-    const int   type;
+
+    int       index;
+    const int offset;
+    const int type;
 
     void (* const callback) (g_entity_t *ent);
 
     struct ent_field_s *next;
-}ent_field_t;
+}g_entity_field_t;
+
+#define ENTITY_FIELD(_f_name, _f_real, _f_type, _callback)       \
+    {                                                            \
+        .name = _f_name,                                         \
+        .index = ENT_FIELD_INDEX_INVALID,                        \
+        .offset = FIELD_OFFSET(STRUCTURE_FOR_OFFSETS, _f_real),  \
+        .type = G_FIELD_TYPE_##_f_type,                          \
+        .callback = _callback                                    \
+    }
+
+#define ENTITY_FIELD_NULL { .name = NULL }
+
+const char *g_entity_field_type_string (int type) GNUC_CONST;
+void g_entity_add_field (g_entity_field_t *field) GNUC_NONNULL;
+void g_entity_add_field_list (g_entity_field_t *fields, int index) GNUC_NONNULL;
+
+void g_entity_delete_field (g_entity_field_t *field) GNUC_NONNULL;
+void g_entity_delete_field_list (g_entity_field_t *fields) GNUC_NONNULL;
 
 void g_entity_draw_entities (void);
 void g_entity_frame (void);

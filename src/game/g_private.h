@@ -26,8 +26,7 @@
 #include "lauxlib.h"
 #include "game/g_entity.h"
 #include "game/g_physics.h"
-
-#define RENDER_INDEX_COMMON -1
+#include "game/g_render.h"
 
 void g_set_double (const char *name, double value) GNUC_NONNULL;
 void g_set_integer (const char *name, int value) GNUC_NONNULL;
