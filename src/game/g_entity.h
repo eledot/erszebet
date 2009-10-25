@@ -100,7 +100,14 @@ typedef struct ent_field_s
         .callback = _callback                                    \
     }
 
-#define ENTITY_FIELD_NULL { .name = NULL }
+#define ENTITY_FIELD_NULL                                               \
+    {                                                                   \
+        .name = NULL,                                                   \
+        .index = ENT_FIELD_INDEX_INVALID,                               \
+        .offset = 0,                                                    \
+        .type =  -1,                                                    \
+        .callback = NULL                                                \
+    }
 
 const char *g_entity_field_type_string (int type) GNUC_CONST;
 void g_entity_add_field (g_entity_field_t *field) GNUC_NONNULL;
