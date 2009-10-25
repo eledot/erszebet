@@ -95,7 +95,7 @@ typedef struct ent_field_s
     {                                                            \
         .name = _f_name,                                         \
         .index = ENT_FIELD_INDEX_INVALID,                        \
-        .offset = FIELD_OFFSET(STRUCTURE_FOR_OFFSETS, _f_real),  \
+        .offset = offsetof(STRUCTURE_FOR_OFFSETS, _f_real),      \
         .type = G_FIELD_TYPE_##_f_type,                          \
         .callback = _callback                                    \
     }

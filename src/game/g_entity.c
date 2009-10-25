@@ -49,7 +49,7 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_field_t, ENT_FIELD_COMPARATOR, next)
 /* entity field offsets for strings that must be freed */
 static const int ent_fields_free[] =
 {
-    FIELD_OFFSET(g_entity_t, classname)
+    offsetof(g_entity_t, classname)
 };
 
 #define ENT_ZORDER_COMPARATOR(e1, e2) ((int)e1->origin[2] == (int)e2->origin[2] ? \

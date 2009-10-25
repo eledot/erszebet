@@ -19,14 +19,17 @@
 
 /**
  * @file misc.h
- *
  * @brief Misc funcs/macros/etc header
- *
- * @author ftrvxmtrx
  */
 
 #ifndef _MISC_H
 #define _MISC_H
+
+/**
+ * @def PUV
+ * @brief Macro-attribute to use for arguments which have sense
+ *        only if debug messages printing (using sys_printf) is ON.
+ */
 
 #ifdef ENGINE_SYS_PRINTF
 #define PUV
@@ -58,8 +61,6 @@ typedef enum { false = 0, true } bool;
  * @brief Number of elements in static array of any type
  */
 #define STSIZE(a) ((int)(sizeof((a)) / sizeof((a)[0])))
-
-#define FIELD_OFFSET(s, f) ((const void *)&((const s *)NULL)->f - (const void *)NULL)
 
 #define BIGSHORT(b) (*((b)+1) | (*(b) << 8))
 #define BIGLONG(b)  ((*(b) << 24) | (*((b)+1) << 16) | (*((b)+2) << 8) | *((b)+3))
