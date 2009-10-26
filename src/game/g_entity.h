@@ -22,16 +22,24 @@
 
 typedef enum
 {
-    ENT_INTFL_THINK          = (1 << 0),
-    ENT_INTFL_TOUCH          = (1 << 1),
-    ENT_INTFL_PHYSICS_STATIC = (1 << 2)
+    G_ENT_INTFL_THINK          = (1 << 0),
+    G_ENT_INTFL_TOUCH          = (1 << 1),
+    G_ENT_INTFL_PHYSICS_STATIC = (1 << 2)
 }g_entity_internal_flags_e;
 
 typedef enum
 {
-    ENT_FL_STATIC    = (1 << 0),
-    ENT_FL_NON_SOLID = (1 << 1)
+    G_ENT_FL_STATIC    = (1 << 0),
+    G_ENT_FL_NON_SOLID = (1 << 1)
 }g_entity_flags_e;
+
+typedef enum
+{
+    G_ENT_FIELD_INDEX_INVALID = -3,
+    G_ENT_FIELD_INDEX_PHYSICS = -2,
+    G_ENT_FIELD_INDEX_RENDER_COMMON = -1,
+    G_ENT_FIELD_INDEX_BASE = 0
+}ent_field_indices_e;
 
 typedef struct g_entity_s
 {
@@ -58,63 +66,13 @@ typedef struct g_entity_s
     double lastthink;
 }g_entity_t;
 
-typedef enum
-{
-    ENT_FIELD_INDEX_INVALID = -3,
-    ENT_FIELD_INDEX_PHYSICS = -2,
-    ENT_FIELD_INDEX_RENDER_COMMON = -1,
-    ENT_FIELD_INDEX_BASE = 0
-}ent_field_indices_e;
+extern int lua_entity_value_index;
 
-typedef enum
-{
-    G_FIELD_TYPE_DOUBLE = 0,
-    G_FIELD_TYPE_INTEGER,
-    G_FIELD_TYPE_VECTOR,
-    G_FIELD_TYPE_STRING,
-    G_FIELD_TYPE_STRING_COPY,
-    G_FIELD_TYPE_BOOL,
-    G_FIELD_TYPE_CUSTOM_CALLBACK,
-    G_FIELD_TYPES_NUM
-}ent_fields_types_e;
+void g_entity_add_field (g_field_t *field) GNUC_NONNULL;
+void g_entity_add_field_list (g_field_t *fields, int index) GNUC_NONNULL;
 
-typedef struct ent_field_s
-{
-    const char * const name;
-
-    int       index;
-    const int offset;
-    const int type;
-
-    void (* const callback) (g_entity_t *ent);
-
-    struct ent_field_s *next;
-}g_entity_field_t;
-
-#define ENTITY_FIELD(_f_name, _f_real, _f_type, _callback)       \
-    {                                                            \
-        .name = _f_name,                                         \
-        .index = ENT_FIELD_INDEX_INVALID,                        \
-        .offset = offsetof(STRUCTURE_FOR_OFFSETS, _f_real),      \
-        .type = G_FIELD_TYPE_##_f_type,                          \
-        .callback = _callback                                    \
-    }
-
-#define ENTITY_FIELD_NULL                                               \
-    {                                                                   \
-        .name = NULL,                                                   \
-        .index = ENT_FIELD_INDEX_INVALID,                               \
-        .offset = 0,                                                    \
-        .type =  -1,                                                    \
-        .callback = NULL                                                \
-    }
-
-const char *g_entity_field_type_string (int type) GNUC_CONST;
-void g_entity_add_field (g_entity_field_t *field) GNUC_NONNULL;
-void g_entity_add_field_list (g_entity_field_t *fields, int index) GNUC_NONNULL;
-
-void g_entity_delete_field (g_entity_field_t *field) GNUC_NONNULL;
-void g_entity_delete_field_list (g_entity_field_t *fields) GNUC_NONNULL;
+void g_entity_delete_field (g_field_t *field) GNUC_NONNULL;
+void g_entity_delete_field_list (g_field_t *fields) GNUC_NONNULL;
 
 void g_entity_draw_entities (void);
 void g_entity_frame (void);

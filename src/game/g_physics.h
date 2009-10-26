@@ -20,7 +20,7 @@
 #ifndef _G_PHYSICS_H
 #define _G_PHYSICS_H
 
-void g_physics_free_obj (g_entity_t *ent) GNUC_NONNULL;
+void g_physics_mem_free (g_entity_t *ent) GNUC_NONNULL;
 void g_physics_update_ent_origin (g_entity_t *ent) GNUC_NONNULL;
 
 void g_physics_frame (void);

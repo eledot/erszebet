@@ -26,7 +26,7 @@ typedef struct ent_render_sprite_s
 
     r_sprite_t *sprite;
 
-    char *name;
+    const char *name;
     double width;
     double height;
     bool ui;
@@ -37,14 +37,15 @@ GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
 
-    if (NULL == r->name)
-        return;
-
     if (ent->render_valid)
     {
         r_sprite_unload(r->sprite);
         ent->render_valid = false;
+        r->name = NULL;
     }
+
+    if (NULL == r->name)
+        return;
 
     if (!r_sprite_load(r->name,
                        r->ui ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
@@ -54,6 +55,7 @@ GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
     }
 
     ent->render_valid = true;
+    r->name = r->sprite->name;
     r->frame = 0;
     r->width = r->sprite->frames[0]->w / r->sprite->frames_num;
     r->height = r->sprite->frames[0]->h;
@@ -86,32 +88,26 @@ GNUC_NONNULL static void ent_render_sprite_draw (const g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
 
-    r_sprite_draw(r->sprite,
-                  r->frame,
-                  ent->origin,
-                  r->color,
-                  r->alpha,
-                  r->width,
-                  r->height,
-                  r->scale,
-                  ent->angle);
+    //r->sprite->frames[0]->gltex = 1;
+    r_sprite_draw(r->sprite, r->frame, r->width, r->height);
 }
 
-static g_entity_field_t ent_fields_render_sprite[] =
+static g_field_t ent_fields_render_sprite[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_sprite_t
-    ENTITY_FIELD("sprite", name,   STRING,  &sprite_set_name_callback),
-    ENTITY_FIELD("width",  width,  DOUBLE,  NULL),
-    ENTITY_FIELD("height", height, DOUBLE,  NULL),
-    ENTITY_FIELD("frame",  frame,  INTEGER, &sprite_set_frame_callback),
-    ENTITY_FIELD_NULL
+    G_FIELD("sprite", name,   STRING,  NULL, &sprite_set_name_callback),
+    G_FIELD("width",  width,  DOUBLE,  0.0,  NULL),
+    G_FIELD("height", height, DOUBLE,  0.0,  NULL),
+    G_FIELD("frame",  frame,  INTEGER, 0,    &sprite_set_frame_callback),
+    G_FIELD("ui",     ui,     BOOL,    true, NULL),
+    G_FIELD_NULL
 };
 
 const g_render_plugin_t g_render_plugin_sprite =
 {
     .name = "sprite",
     .render_data_size = sizeof(ent_render_sprite_t),
-    .entity_fields = ent_fields_render_sprite,
+    .fields = ent_fields_render_sprite,
     .unset = &ent_render_sprite_unset,
     .draw = &ent_render_sprite_draw
 };

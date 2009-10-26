@@ -41,7 +41,6 @@ GNUC_NONNULL static void circle_recalculate (g_entity_t *ent)
 {
     const double coeff = 2.0 * M_PI / CIRCLE_SEGMENTS;
     ent_render_circle_t *r = ent->render_data;
-    double radius;
     int i;
 
     if (r->width < 0.1 || r->radius < 0.1)
@@ -49,8 +48,6 @@ GNUC_NONNULL static void circle_recalculate (g_entity_t *ent)
         r->draw = false;
         return;
     }
-
-    radius = r->scale * r->radius;
 
     r->draw = true;
 
@@ -60,10 +57,10 @@ GNUC_NONNULL static void circle_recalculate (g_entity_t *ent)
         double x = cos(rads);
         double y = sin(rads);
 
-        r->coords[(i << 2) + 0] = radius * x;
-        r->coords[(i << 2) + 1] = radius * y;
-        r->coords[(i << 2) + 2] = (radius + r->width) * x;
-        r->coords[(i << 2) + 3] = (radius + r->width) * y;
+        r->coords[(i << 2) + 0] = r->radius * x;
+        r->coords[(i << 2) + 1] = r->radius * y;
+        r->coords[(i << 2) + 2] = (r->radius + r->width) * x;
+        r->coords[(i << 2) + 3] = (r->radius + r->width) * y;
     }
 
     r->coords[(CIRCLE_SEGMENTS << 2) + 0] = r->coords[0];
@@ -119,21 +116,20 @@ GNUC_NONNULL static void ent_render_circle_draw (const g_entity_t *ent)
     }
 }
 
-static g_entity_field_t ent_fields_render_circle[] =
+static g_field_t ent_fields_render_circle[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_circle_t
-    ENTITY_FIELD("texture", name,   STRING, &circle_set_texture_callback),
-    ENTITY_FIELD("width",   width,  DOUBLE, &circle_recalculate),
-    ENTITY_FIELD("radius",  radius, DOUBLE, &circle_recalculate),
-    ENTITY_FIELD("scale",   scale,  DOUBLE, &circle_recalculate),
-    ENTITY_FIELD_NULL
+    G_FIELD("texture", name,   STRING, NULL, &circle_set_texture_callback),
+    G_FIELD("width",   width,  DOUBLE, 1.0,  &circle_recalculate),
+    G_FIELD("radius",  radius, DOUBLE, 1.0,  &circle_recalculate),
+    G_FIELD_NULL
 };
 
 const g_render_plugin_t g_render_plugin_circle =
 {
     .name = "circle",
     .render_data_size = sizeof(ent_render_circle_t),
-    .entity_fields = ent_fields_render_circle,
+    .fields = ent_fields_render_circle,
     .unset = &ent_render_circle_unset,
     .draw = &ent_render_circle_draw
 };

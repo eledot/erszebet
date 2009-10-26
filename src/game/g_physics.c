@@ -60,23 +60,26 @@ static void physics_common_callback (g_entity_t *ent) GNUC_NONNULL;
 static void physics_group_layers_callback (g_entity_t *ent) GNUC_NONNULL;
 static void physics_body_callback (g_entity_t *ent) GNUC_NONNULL;
 
-static g_entity_field_t ent_fields_physics[] =
+static g_field_t ent_fields_physics[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_physics_data_t
-    ENTITY_FIELD("velocity",       velocity,   VECTOR, &physics_common_callback),
-    ENTITY_FIELD("rotation",       rotation,   DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("gravity",        gravity,    DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("elasticity",     elasticity, DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("friction",       friction,   DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("mass",           mass,       DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("inertia",        inertia,    DOUBLE, &physics_common_callback),
-    ENTITY_FIELD("physics_group",  group,      DOUBLE, &physics_group_layers_callback),
-    ENTITY_FIELD("physics_layers", layers,     DOUBLE, &physics_group_layers_callback),
-    ENTITY_FIELD_NULL
+    G_FIELD("velocity",       velocity,    VECTOR,  NULL, &physics_common_callback),
+    G_FIELD("velocity_x",     velocity[0], DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("velocity_y",     velocity[1], DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("velocity_z",     velocity[2], DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("rotation",       rotation,    DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("gravity",        gravity,     DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("elasticity",     elasticity,  DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("friction",       friction,    DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("mass",           mass,        DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("inertia",        inertia,     DOUBLE,  0.0,  &physics_common_callback),
+    G_FIELD("physics_group",  group,       INTEGER, 0,    &physics_group_layers_callback),
+    G_FIELD("physics_layers", layers,      INTEGER, -1,   &physics_group_layers_callback),
+    G_FIELD_NULL
 };
 
-static g_entity_field_t ent_field_physics_body =
-    ENTITY_FIELD("body", body, CUSTOM_CALLBACK, &physics_body_callback);
+static g_field_t ent_field_physics_body =
+    G_FIELD("body", body, CUSTOM_CALLBACK, NULL, &physics_body_callback);
 
 /*
 =================
@@ -92,7 +95,7 @@ GNUC_NONNULL static void g_physics_add_shape (g_entity_t *ent, cpShape *shape)
     shape->group = data->group;
     shape->layers = data->layers;
 
-    if (ent->flags & ENT_FL_STATIC)
+    if (ent->flags & G_ENT_FL_STATIC)
         cpSpaceAddStaticShape(physics_space, shape);
     else
         cpSpaceAddShape(physics_space, shape);
@@ -113,7 +116,7 @@ GNUC_NONNULL static void g_physics_delete_shapes (g_entity_t *ent)
     if (NULL == data->shapes)
         return;
 
-    if (ent->internal_flags & ENT_INTFL_PHYSICS_STATIC)
+    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
     {
         for (i = 0; i < data->shapes_num ;i++)
         {
@@ -141,10 +144,10 @@ GNUC_NONNULL static void g_physics_delete_shapes (g_entity_t *ent)
 
 /*
 =================
-g_physics_free_obj
+g_physics_mem_free
 =================
 */
-GNUC_NONNULL void g_physics_free_obj (g_entity_t *ent)
+GNUC_NONNULL void g_physics_mem_free (g_entity_t *ent)
 {
     g_physics_data_t *data = ent->physics_data;
 
@@ -156,6 +159,8 @@ GNUC_NONNULL void g_physics_free_obj (g_entity_t *ent)
     /* remove body */
     cpSpaceRemoveBody(physics_space, data->body);
     cpBodyFree(data->body);
+
+    g_fields_free_values(data, ent_fields_physics);
 
     mem_free(data);
     ent->physics_data = NULL;
@@ -170,7 +175,7 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
 {
     g_physics_data_t *data;
 
-    g_physics_free_obj(ent);
+    g_physics_mem_free(ent);
     data = ent->physics_data = mem_alloc(g_mempool, sizeof(g_physics_data_t) + sizeof(void *) * shapes_num);
 
     if (NULL == data)
@@ -178,17 +183,17 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
 
     data->shapes = ent->physics_data + sizeof(g_physics_data_t);
 
-    if (ent->flags & ENT_FL_STATIC)
+    if (ent->flags & G_ENT_FL_STATIC)
     {
         data->body = cpBodyNew(INFINITY, INFINITY);
         cpSpaceAddBody(physics_space, data->body);
-        ent->internal_flags |= ENT_INTFL_PHYSICS_STATIC;
+        ent->internal_flags |= G_ENT_INTFL_PHYSICS_STATIC;
     }
     else
     {
         data->body = cpBodyNew(data->mass, data->inertia);
         cpSpaceAddBody(physics_space, data->body);
-        ent->internal_flags -= (ent->internal_flags & ENT_INTFL_PHYSICS_STATIC);
+        ent->internal_flags -= (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC);
     }
 }
 
@@ -421,13 +426,13 @@ static int g_physics_collision (cpShape   *a,
         normal[1] = normal_coef * contacts[i].n.y;
         normal[2] = 0.0;
 
-        if (*aintfl & ENT_INTFL_TOUCH && !(*bfl & ENT_FL_NON_SOLID))
+        if (*aintfl & G_ENT_INTFL_TOUCH && !(*bfl & G_ENT_FL_NON_SOLID))
             atouch_blocked = g_physics_touch(ae, be, origin, normal);
 
-        if (*bintfl & ENT_INTFL_TOUCH && !(*afl & ENT_FL_NON_SOLID))
+        if (*bintfl & G_ENT_INTFL_TOUCH && !(*afl & G_ENT_FL_NON_SOLID))
             btouch_blocked = g_physics_touch(be, ae, origin, normal);
 
-        if (!(!(atouch_blocked & btouch_blocked) || ((*afl | *bfl) & ENT_FL_NON_SOLID)))
+        if (!(!(atouch_blocked & btouch_blocked) || ((*afl | *bfl) & G_ENT_FL_NON_SOLID)))
             return 1;
     }
 
@@ -605,7 +610,7 @@ GNUC_NONNULL static int phys_lua_set_body (lua_State *lst)
     switch (type)
     {
     case PHYSICS_BODY_EMPTY:
-        g_physics_free_obj(ent);
+        g_physics_mem_free(ent);
         break;
 
     case PHYSICS_BODY_CIRCLE:
@@ -743,8 +748,8 @@ void g_physics_init (void)
 
     cpSpaceSetDefaultCollisionPairFunc(physics_space, g_physics_collision, NULL);
 
-    g_entity_add_field_list(ent_fields_physics, ENT_FIELD_INDEX_PHYSICS);
-    ent_field_physics_body.index = ENT_FIELD_INDEX_BASE;
+    g_entity_add_field_list(ent_fields_physics, G_ENT_FIELD_INDEX_PHYSICS);
+    ent_field_physics_body.index = G_ENT_FIELD_INDEX_BASE;
     g_entity_add_field(&ent_field_physics_body);
 
     sys_printf("+g_physics\n");

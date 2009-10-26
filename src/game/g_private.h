@@ -24,6 +24,7 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "game/g_field.h"
 #include "game/g_entity.h"
 #include "game/g_physics.h"
 #include "game/g_render.h"
@@ -36,12 +37,12 @@ void g_push_vector (const double *vector, int num) GNUC_NONNULL;
 bool g_pop_vector (int index, double *vector, int num) GNUC_NONNULL;
 void g_push_strings (const char **strings, int num) GNUC_NONNULL;
 void g_push_field (const void *data, int offset, int type) GNUC_NONNULL;
-void g_pop_field (void *data, int offset, int type, int index) GNUC_NONNULL;
+void g_pop_field (void *data, int offset, int type, int index, bool check) GNUC_NONNULL;
 
 bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func);
 #define g_lua_call(args, ret) g_lua_call_real(args, ret, __FILE__, __LINE__, __FUNCTION__)
 
-#define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lst), msg)
+#define TRACE_STACKTOP(msg) sys_printf("lua stack top = %i (%s)\n", lua_gettop(lua_state), msg)
 
 extern mem_pool_t g_mempool;
 extern double g_time;

@@ -61,7 +61,7 @@ static int g_error_real (int             status,
 
     errno = 0;
 
-    if (!status || !g_i)
+    if (!status)
         return status;
 
     err = lua_tostring(lua_state, -1);
@@ -333,15 +333,15 @@ bool g_pop_vector (int index, double *vector, int num)
     if (!lua_istable(lua_state, index))
         return false;
 
-    lua_pushnil(lua_state);
-
-    for (i = 0; i < num && lua_next(lua_state, index) != 0 ;i++)
+    for (i = 0; i < num ;i++)
     {
-        vector[i] = lua_tonumber(lua_state, -1);
+        lua_rawgeti(lua_state, index, i + 1);
+
+        if (lua_isnumber(lua_state, -1))
+            vector[i] = lua_tonumber(lua_state, -1);
+
         lua_pop(lua_state, 1);
     }
-
-    lua_pop(lua_state, 1);
 
     return true;
 }
@@ -370,37 +370,51 @@ void g_push_strings (const char **strings, int num)
 g_pop_field
 =================
 */
-void g_pop_field (void *data, int offset, int type, int index)
+void g_pop_field (void *data, int offset, int type, int index, bool check)
 {
     void *field = data + offset;
 
     switch (type)
     {
     case G_FIELD_TYPE_DOUBLE:
-        *(double *)field = lua_tonumber(lua_state, index);
+        if (!check || lua_isnumber(lua_state, index))
+            *(double *)field = lua_tonumber(lua_state, index);
         break;
 
     case G_FIELD_TYPE_INTEGER:
-        *(int *)field = lua_tointeger(lua_state, index);
+        if (!check || lua_isnumber(lua_state, index))
+            *(int *)field = lua_tointeger(lua_state, index);
         break;
 
     case G_FIELD_TYPE_VECTOR:
-        g_pop_vector(index, (double *)field, 3);
+        if (!check || lua_istable(lua_state, index))
+            g_pop_vector(index, (double *)field, 3);
         break;
 
     case G_FIELD_TYPE_STRING:
-        *(const char **)field = luaL_checkstring(lua_state, index);
+        if (lua_isstring(lua_state, index))
+            *(const char **)field = luaL_checkstring(lua_state, index);
+        else if (!check)
+            *(const char **)field = NULL;
         break;
 
     case G_FIELD_TYPE_STRING_COPY:
-        if (NULL != *(char **)field)
+        if (!check && NULL != *(char **)field)
+        {
             mem_free(*(char **)field);
+            *(char **)field = NULL;
+        }
 
-        *(char **)field = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
+        if (lua_isstring(lua_state, index))
+            *(char **)field = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
         break;
 
     case G_FIELD_TYPE_BOOL:
-        *(bool *)field = lua_toboolean(lua_state, index);
+        if (!check || lua_isboolean(lua_state, index))
+            *(bool *)field = lua_toboolean(lua_state, index);
+        break;
+
+    case G_FIELD_TYPE_CUSTOM_CALLBACK:
         break;
 
     default:
@@ -442,6 +456,10 @@ void g_push_field (const void *data, int offset, int type)
 
     case G_FIELD_TYPE_BOOL:
         lua_pushboolean(lua_state, *(const bool *)field);
+        break;
+
+    case G_FIELD_TYPE_CUSTOM_CALLBACK:
+        lua_pushnil(lua_state);
         break;
 
     default:

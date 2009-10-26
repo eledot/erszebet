@@ -24,27 +24,27 @@
 
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
 
-static g_entity_field_t ent_fields_base[] =
+static g_field_t ent_fields_base[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_entity_t
-    ENTITY_FIELD("classname", classname, STRING_COPY, NULL),
-    ENTITY_FIELD("flags",     flags,     INTEGER,     NULL),
-    ENTITY_FIELD("nextthink", nextthink, DOUBLE,      NULL),
-    ENTITY_FIELD("lastthink", lastthink, DOUBLE,      NULL),
-    ENTITY_FIELD("origin",    origin,    VECTOR,      &ent_set_origin_callback),
-    ENTITY_FIELD("origin_x",  origin[0], DOUBLE,      &ent_set_origin_callback),
-    ENTITY_FIELD("origin_y",  origin[1], DOUBLE,      &ent_set_origin_callback),
-    ENTITY_FIELD("origin_z",  origin[2], DOUBLE,      &ent_set_origin_callback),
-    ENTITY_FIELD("angle",     angle,     DOUBLE,      NULL),
-    ENTITY_FIELD_NULL
+    G_FIELD("classname", classname, STRING_COPY, NULL, NULL),
+    G_FIELD("flags",     flags,     INTEGER,     0,    NULL),
+    G_FIELD("nextthink", nextthink, DOUBLE,      0.0,  NULL),
+    G_FIELD("lastthink", lastthink, DOUBLE,      0.0,  NULL),
+    G_FIELD("origin",    origin,    VECTOR,      NULL, &ent_set_origin_callback),
+    G_FIELD("origin_x",  origin[0], DOUBLE,      0.0,  &ent_set_origin_callback),
+    G_FIELD("origin_y",  origin[1], DOUBLE,      0.0,  &ent_set_origin_callback),
+    G_FIELD("origin_z",  origin[2], DOUBLE,      0.0,  &ent_set_origin_callback),
+    G_FIELD("angle",     angle,     DOUBLE,      0.0,  NULL),
+    G_FIELD_NULL
 };
 
-static g_entity_field_t *ent_fields;
+static g_field_t *ent_fields;
 
-#define ENT_FIELD_COMPARATOR(f1, f2) (f2->index - f1->index) ? (f2->index - f1->index) : strcmp(f1->name, f2->name)
+#define G_FIELD_COMPARATOR(a, b) strcmp((a)->name, (b)->name)
 
-SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_entity_field_t, ENT_FIELD_COMPARATOR, next);
-SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_field_t, ENT_FIELD_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_field_t, G_FIELD_COMPARATOR, next);
+SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_field_t, G_FIELD_COMPARATOR, next);
 
 /* entity field offsets for strings that must be freed */
 static const int ent_fields_free[] =
@@ -61,6 +61,7 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 
 static g_entity_t *entities;
 static g_entity_t *remove_entities;
+int lua_entity_value_index;
 
 /*
 =================
@@ -69,15 +70,40 @@ ent_get_field
 */
 GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 {
-    const g_entity_field_t *f;
-    g_entity_field_t s = { .name = field };
+    const void *data = NULL;
+    const g_field_t *f;
+    g_field_t s = { .name = field };
 
-    f = sglib_g_entity_field_t_find_member(ent_fields, &s);
+    f = sglib_g_field_t_find_member(ent_fields, &s);
 
-    if (NULL != f)
+    while (NULL != f)
     {
-        g_push_field(ent, f->offset, f->type);
-        return 1;
+        if (f->index)
+        {
+            if (ent->render_index == f->index || f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
+            {
+                data = ent->render_data;
+            }
+            else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
+            {
+                data = ent->physics_data;
+            }
+        }
+        else
+        {
+            data = ent;
+        }
+
+        if (NULL != data)
+        {
+            g_push_field(data, f->offset, f->type);
+            return 1;
+        }
+
+        f = f->next;
+
+        if (NULL != f && G_FIELD_COMPARATOR(&s, f))
+            f = NULL;
     }
 
     return 0;
@@ -101,37 +127,48 @@ ent_set_field
 */
 GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int index)
 {
-    const g_entity_field_t *f;
-    void *data = ent;
-    g_entity_field_t s = { .name = field };
+    const g_field_t *f;
+    void *data = NULL;
+    g_field_t s = { .name = field };
 
-    f = sglib_g_entity_field_t_find_member(ent_fields, &s);
+    f = sglib_g_field_t_find_member(ent_fields, &s);
 
-    if (NULL != f)
+    while (NULL != f)
     {
         if (f->index)
         {
             if (f->index == ent->render_index ||
-                f->index == ENT_FIELD_INDEX_RENDER_COMMON)
+                f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
             {
                 data = ent->render_data;
             }
-            else if (f->index == ENT_FIELD_INDEX_PHYSICS)
+            else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
             {
                 data = ent->physics_data;
             }
+        }
+        else
+        {
+            data = ent;
         }
 
         if (NULL != data)
         {
             if (G_FIELD_TYPE_CUSTOM_CALLBACK != f->type)
-                g_pop_field(data, f->offset, f->type, index);
+                g_pop_field(data, f->offset, f->type, index, false);
+
+            lua_entity_value_index = index;
 
             if (NULL != f->callback)
                 f->callback(ent);
+
+            return 1;
         }
 
-        return 1;
+        f = f->next;
+
+        if (NULL != f && G_FIELD_COMPARATOR(&s, f))
+            f = NULL;
     }
 
     return 0;
@@ -146,24 +183,24 @@ GNUC_NONNULL static const char *g_entity_flags_string (const g_entity_t *ent)
 {
     static char flags[128];
     const int s = sizeof(flags);
-    int unknown = ent->flags - (ent->flags & (ENT_FL_STATIC | ENT_FL_NON_SOLID));
+    int unknown = ent->flags - (ent->flags & (G_ENT_FL_STATIC | G_ENT_FL_NON_SOLID));
     int len;
 
     flags[0] = 0;
 
-    if (ent->flags & ENT_FL_STATIC)
+    if (ent->flags & G_ENT_FL_STATIC)
         strlcat(flags, "static ", s);
 
-    if (ent->flags & ENT_FL_NON_SOLID)
+    if (ent->flags & G_ENT_FL_NON_SOLID)
         strlcat(flags, "non_solid ", s);
 
-    if (ent->internal_flags & ENT_INTFL_THINK)
+    if (ent->internal_flags & G_ENT_INTFL_THINK)
         strlcat(flags, "think ", s);
 
-    if (ent->internal_flags & ENT_INTFL_TOUCH)
+    if (ent->internal_flags & G_ENT_INTFL_TOUCH)
         strlcat(flags, "touch ", s);
 
-    if (ent->internal_flags & ENT_INTFL_PHYSICS_STATIC)
+    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
         strlcat(flags, "phys_static ", s);
 
     if (unknown)
@@ -274,8 +311,8 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
         int         flag;
     }ent_newindex_internal_flags[] =
          {
-             { "think", ENT_INTFL_THINK },
-             { "touch", ENT_INTFL_TOUCH }
+             { "think", G_ENT_INTFL_THINK },
+             { "touch", G_ENT_INTFL_TOUCH }
          };
 
     lua_getfield(lst, 1, "__ref");
@@ -362,8 +399,8 @@ GNUC_NONNULL static void g_entity_delete (g_entity_t *ent)
     lua_unref(lua_state, ent->lua_dataref);
 
     /* remove all handlers, mark invalid */
-    ent->internal_flags -= ent->internal_flags & (ENT_INTFL_THINK | ENT_INTFL_TOUCH);
-    ent->flags |= ENT_FL_NON_SOLID;
+    ent->internal_flags -= ent->internal_flags & (G_ENT_INTFL_THINK | G_ENT_INTFL_TOUCH);
+    ent->flags |= G_ENT_FL_NON_SOLID;
 
     ent->lua_ref = LUA_REFNIL;
     ent->lua_dataref = LUA_REFNIL;
@@ -376,16 +413,10 @@ g_entity_mem_free
 */
 GNUC_NONNULL static void g_entity_mem_free (g_entity_t *ent)
 {
-    int i;
+    g_render_mem_free(ent);
+    g_physics_mem_free(ent);
 
-    for (i = 0; i < STSIZE(ent_fields_free) ;i++)
-    {
-        char *data = *(char **)((void *)ent + ent_fields_free[i]);
-
-        if (NULL != data)
-            mem_free(data);
-    }
-
+    g_fields_free_values(ent, ent_fields_base);
     mem_free(ent);
 }
 
@@ -470,7 +501,6 @@ void g_entity_frame (void)
     while (NULL != remove_entities)
     {
         ent = remove_entities->next;
-        g_physics_free_obj(remove_entities);
         g_entity_mem_free(remove_entities);
         remove_entities = ent;
     }
@@ -481,7 +511,7 @@ void g_entity_frame (void)
          NULL != ent;
          ent = sglib_g_entity_t_it_next(&it))
     {
-        if ((ent->internal_flags & ENT_INTFL_THINK) &&
+        if ((ent->internal_flags & G_ENT_INTFL_THINK) &&
             ent->nextthink > ent->lastthink &&
             ent->nextthink < g_time &&
             LUA_REFNIL != ent->lua_ref)
@@ -526,26 +556,32 @@ GNUC_NONNULL static void g_list_entities_f (GNUC_UNUSED const struct cmd_s *cmd,
 
 /*
 =================
-g_entity_field_type_string
+g_list_entity_fields_f
 =================
 */
-const char *g_entity_field_type_string (int type)
+GNUC_NONNULL static void g_list_entity_fields_f (GNUC_UNUSED const struct cmd_s *cmd,
+                                                 int source,
+                                                 GNUC_UNUSED int argc,
+                                                 GNUC_UNUSED const char **argv)
 {
-    const char const *field_types[] =
+    struct sglib_g_field_t_iterator it;
+    const g_field_t *f;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- entity fields list -----------\n");
+
+    for (f = sglib_g_field_t_it_init(&it, ent_fields);
+         NULL != f;
+         f = sglib_g_field_t_it_next(&it))
     {
-        [G_FIELD_TYPE_DOUBLE] = "double",
-        [G_FIELD_TYPE_INTEGER] = "integer",
-        [G_FIELD_TYPE_VECTOR] = "vector",
-        [G_FIELD_TYPE_STRING] = "string_callback",
-        [G_FIELD_TYPE_STRING_COPY] = "string_copy",
-        [G_FIELD_TYPE_BOOL] = "bool",
-        [G_FIELD_TYPE_CUSTOM_CALLBACK] = "custom_callback"
-    };
-
-    if (type < 0 || type >= G_FIELD_TYPES_NUM)
-        return "INVALID";
-
-    return field_types[type];
+        sys_printf("field: %s index=%i type=%s callback=%p\n",
+                   f->name,
+                   f->index,
+                   g_field_type_to_string(f->type),
+                   f->callback);
+    }
 }
 
 /*
@@ -553,13 +589,9 @@ const char *g_entity_field_type_string (int type)
 g_entity_add_field
 =================
 */
-void g_entity_add_field (g_entity_field_t *field)
+void g_entity_add_field (g_field_t *field)
 {
-    if (NULL != sglib_g_entity_field_t_find_member(ent_fields, field))
-    {
-        sys_printf("duplicate field \"%s\" found\n", field->name);
-    }
-    else if (field->type < 0 || field->type >= G_FIELD_TYPES_NUM)
+    if (field->type < 0 || field->type >= G_FIELD_TYPES_NUM)
     {
         sys_printf("invalid field \"%s\" (type=%i)\n", field->name, field->type);
     }
@@ -568,7 +600,7 @@ void g_entity_add_field (g_entity_field_t *field)
         sys_printf("custom field \"%s\" without callback\n", field->name);
     }
 
-    sglib_g_entity_field_t_add(&ent_fields, field);
+    sglib_g_field_t_add(&ent_fields, field);
 }
 
 /*
@@ -576,9 +608,9 @@ void g_entity_add_field (g_entity_field_t *field)
 g_entity_add_field_list
 =================
 */
-void g_entity_add_field_list (g_entity_field_t *fields, int index)
+void g_entity_add_field_list (g_field_t *fields, int index)
 {
-    g_entity_field_t *f;
+    g_field_t *f;
 
     for (f = fields; NULL != f->name ;f++)
     {
@@ -592,9 +624,9 @@ void g_entity_add_field_list (g_entity_field_t *fields, int index)
 g_entity_delete_field
 =================
 */
-void g_entity_delete_field (g_entity_field_t *field)
+void g_entity_delete_field (g_field_t *field)
 {
-    sglib_g_entity_field_t_delete(&ent_fields, field);
+    sglib_g_field_t_delete(&ent_fields, field);
 }
 
 /*
@@ -602,15 +634,12 @@ void g_entity_delete_field (g_entity_field_t *field)
 g_entity_delete_field_list
 =================
 */
-void g_entity_delete_field_list (g_entity_field_t *fields)
+void g_entity_delete_field_list (g_field_t *fields)
 {
-    g_entity_field_t *f;
+    g_field_t *f;
 
     for (f = fields; NULL != f->name ;f++)
-    {
-        f->index = ENT_FIELD_INDEX_INVALID;
         g_entity_delete_field(f);
-    }
 }
 
 /*
@@ -632,7 +661,7 @@ void g_entity_init (void)
     remove_entities = NULL;
     ent_fields = NULL;
 
-    g_entity_add_field_list(ent_fields_base, ENT_FIELD_INDEX_BASE);
+    g_entity_add_field_list(ent_fields_base, G_ENT_FIELD_INDEX_BASE);
 
     luaL_newmetatable(lua_state, "entity");
     lua_pushvalue(lua_state, -1);
@@ -641,14 +670,15 @@ void g_entity_init (void)
     lua_pop(lua_state, 1);
 
     cmd_register("g_list_entities", NULL, &g_list_entities_f, 0);
+    cmd_register("g_list_entity_fields", NULL, &g_list_entity_fields_f, 0);
 
     /* register funcs to work with entity */
     lua_register(lua_state, "ent_spawn", &ent_lua_spawn);
     lua_register(lua_state, "ent_remove", &ent_lua_remove);
 
     /* register global constants */
-    g_set_integer("FL_STATIC", ENT_FL_STATIC);
-    g_set_integer("FL_NON_SOLID", ENT_FL_NON_SOLID);
+    g_set_integer("FL_STATIC", G_ENT_FL_STATIC);
+    g_set_integer("FL_NON_SOLID", G_ENT_FL_NON_SOLID);
 
     sys_printf("+g_entity\n");
 }
@@ -670,7 +700,6 @@ void g_entity_shutdown (void)
     while (NULL != remove_entities)
     {
         ent = remove_entities->next;
-        g_physics_free_obj(remove_entities);
         g_entity_mem_free(remove_entities);
         remove_entities = ent;
     }

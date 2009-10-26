@@ -17,13 +17,30 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _G_RENDER_H
-#define _G_RENDER_H
+#ifndef _G_RENDER_PRIVATE_H
+#define _G_RENDER_PRIVATE_H
 
-void g_render_entity (const g_entity_t *ent) GNUC_NONNULL;
-void g_render_mem_free (g_entity_t *ent) GNUC_NONNULL;
+#include "common.h"
+#include "game/g_field.h"
+#include "game/g_entity.h"
 
-void g_render_init (void);
-void g_render_shutdown (void);
+#define RENDER_PLUGIN_COMMON_DATA               \
+    double color[3];                            \
+    double alpha;                               \
+    double scale
 
-#endif /* !_G_RENDER_H */
+typedef struct g_render_plugin_s
+{
+    const char * const name;
+    g_field_t * const fields;
+    const int render_data_size;
+
+    void (* const set) (g_entity_t *ent);
+    void (* const unset) (g_entity_t *ent);
+    void (* const draw) (const g_entity_t *ent);
+
+    bool (* const init) (void);
+    void (* const shutdown) (void);
+}g_render_plugin_t;
+
+#endif /* !_G_RENDER_PRIVATE_H */

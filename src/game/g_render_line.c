@@ -40,6 +40,9 @@ GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
     ent_render_line_t *r = ent->render_data;
     double length, v[3], n[3];
 
+    if (!ent->render_valid)
+        return;
+
     if (r->width < 0.1)
     {
         r->draw = false;
@@ -59,7 +62,7 @@ GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
 
     vector_normal(v, zero, n);
     vector_normalize(n);
-    vector_mul(n, r->scale * r->width / 2.0, n);
+    vector_mul(n, r->width / 2.0, n);
 
     r->verts[0] = n[0];
     r->verts[1] = n[1];
@@ -120,21 +123,20 @@ GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
     gl_draw_quad(r->texture->gltex, r->verts, r->texcoords);
 }
 
-static g_entity_field_t ent_fields_render_line[] =
+static g_field_t ent_fields_render_line[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_line_t
-    ENTITY_FIELD("texture", name,    STRING, &line_set_texture_callback),
-    ENTITY_FIELD("width",   width,   DOUBLE, &line_recalculate),
-    ENTITY_FIELD("origin2", origin2, VECTOR, &line_recalculate),
-    ENTITY_FIELD("scale",   scale,   DOUBLE, &line_recalculate),
-    ENTITY_FIELD_NULL
+    G_FIELD("texture", name,    STRING, NULL, &line_set_texture_callback),
+    G_FIELD("width",   width,   DOUBLE, 1.0,  &line_recalculate),
+    G_FIELD("origin2", origin2, VECTOR, NULL, &line_recalculate),
+    G_FIELD_NULL
 };
 
 const g_render_plugin_t g_render_plugin_line =
 {
     .name = "line",
     .render_data_size = sizeof(ent_render_line_t),
-    .entity_fields = ent_fields_render_line,
+    .fields = ent_fields_render_line,
     .unset = &ent_render_line_unset,
     .draw = &ent_render_line_draw
 };
