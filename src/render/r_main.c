@@ -151,6 +151,7 @@ void r_frame (void)
     {
         char tmp[16];
         snprintf(tmp, sizeof(tmp), "fps: %i", r_get_fps());
+        gl_color(1, 1, 1, 1);
         gl_draw_text(tmp, 0, video_height);
     }
 
