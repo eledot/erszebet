@@ -129,37 +129,46 @@ void gl_color (double r, double g, double b, double a)
 
 /*
 =================
-gl_draw_texture
+gl_translate_rotate
 =================
 */
-void gl_draw_texture (int gltex,
-                      double centerx,
-                      double centery,
-                      double width,
-                      double height,
-                      double angle,
-                      const float *texcoords)
+void gl_translate_rotate (double x, double y, double angle)
 {
-    GLfloat square[] = { -width/2, height/2,
-                         width/2, height/2,
-                         -width/2, -height/2,
-                         width/2, -height/2 };
-
-    eglBindTexture(GL_TEXTURE_2D, gltex);
-    GLERROR();
-
-    glPushMatrix();
-    GLERROR();
-    glTranslatef(centerx, centery, 0);
+    glTranslatef(x, y, 0);
     GLERROR();
     glRotatef(angle * 180.0 / M_PI, 0, 0, 1);
     GLERROR();
+}
 
-    glVertexPointer(2, GL_FLOAT, 0, square);
-    glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+/*
+=================
+gl_scale
+=================
+*/
+void gl_scale (double scalex, double scaley)
+{
+    glScalef(scalex, scaley, 0);
     GLERROR();
+}
 
+/*
+=================
+gl_matrix_push
+=================
+*/
+void gl_matrix_push (void)
+{
+    glPushMatrix();
+    GLERROR();
+}
+
+/*
+=================
+gl_matrix_pop
+=================
+*/
+void gl_matrix_pop (void)
+{
     glPopMatrix();
     GLERROR();
 }
