@@ -243,31 +243,25 @@ r_sprite_draw
 */
 void r_sprite_draw (const r_sprite_t *sprite,
                     int frame,
-                    const double *origin,
-                    const double *color,
-                    double alpha,
                     double width,
-                    double height,
-                    double scale,
-                    double angle)
+                    double height)
 {
     const r_texture_t *tex;
-    float vt[8];
+    float vt[8], verts[8];
     double originx, originy;
 
-    if (NULL == sprite || NULL == origin || NULL == color)
+    if (NULL == sprite)
     {
-        sys_printf("bad args (sprite=%p, frame=%i, origin=%p, color=%p, alpha=%-2.2lf"
-                   ", width=%-2.2lf, height=%-2.2lf, scale=%-2.2lf angle=%-2.2lf)\n",
-                   sprite, frame, origin, color, alpha, width, height, scale, angle);
+        sys_printf("bad args (sprite=%p, frame=%i, width=%-2.2lf, height=%-2.2lf)\n",
+                   sprite, frame, width, height);
         return;
     }
 
     if (frame >= sprite->frames_num || frame < 0)
         return;
 
-    originx = origin[0];
-    originy = origin[1];
+    originx = 0.0;
+    originy = 0.0;
 
     tex = sprite->frames[0];
 
@@ -277,59 +271,43 @@ void r_sprite_draw (const r_sprite_t *sprite,
     if (!(int)height)
         height = tex->h;
 
-    if (sprite->align & SPRITE_ALIGN_LEFT)
-        originx += width * scale / 2.0;
-    else if (sprite->align & SPRITE_ALIGN_RIGHT)
-        originx -= width * scale / 2.0;
-
     if (sprite->align & SPRITE_ALIGN_TOP)
-        originy -= height * scale / 2.0;
-    else if (sprite->align & SPRITE_ALIGN_BOTTOM)
-        originy += height * scale / 2.0;
+        originy -= height;
+    else if (!(sprite->align & SPRITE_ALIGN_BOTTOM))
+        originy -= height / 2.0;
 
-    if (originx + width * scale < 0 ||
-        originx - width * scale > video_width ||
-        originy + height * scale < 0 ||
-        originy - height * scale > video_height)
-    {
-        return;
-    }
+    if (sprite->align & SPRITE_ALIGN_RIGHT)
+        originx -= width;
+    else if (!(sprite->align & SPRITE_ALIGN_LEFT))
+        originx -= width / 2.0;
 
-    gl_color(color[0], color[1], color[2], alpha);
+    verts[0] = verts[4] = originx;
+    verts[1] = verts[3] = originy;
+    verts[5] = verts[7] = originy + height;
+    verts[6] = verts[2] = originx + width;
+
 
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
         tex = sprite->frames[frame];
 
         vt[0] = vt[4] = 0.0;
-        vt[1] = vt[3] = 0.0f;
-        vt[5] = vt[7] = tex->texh;
+        vt[1] = vt[3] = tex->texh;
+        vt[5] = vt[7] = 0.0f;
         vt[6] = vt[2] = tex->texw;
 
-        gl_draw_texture(tex->gltex,
-                        originx,
-                        originy,
-                        width * scale,
-                        height * scale,
-                        angle,
-                        vt);
+        gl_draw_quad(tex->gltex, verts, vt);
     }
     else
     {
         tex = sprite->frames[0];
 
         vt[0] = vt[4] = frame * sprite->inc;
-        vt[1] = vt[3] = 0.0f;
-        vt[5] = vt[7] = tex->texh;
+        vt[1] = vt[3] = tex->texh;
+        vt[5] = vt[7] = 0.0f;
         vt[6] = vt[2] = vt[0] + sprite->inc;
 
-        gl_draw_texture(tex->gltex,
-                        originx,
-                        originy,
-                        width * scale,
-                        height * scale,
-                        angle,
-                        vt);
+        gl_draw_quad(tex->gltex, verts, vt);
     }
 }
 
