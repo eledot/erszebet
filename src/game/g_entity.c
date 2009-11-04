@@ -17,8 +17,6 @@
    Boston, MA 02110-1301 USA
 */
 
-#include <limits.h>
-
 #include "game/g_private.h"
 #include "sglib.h"
 

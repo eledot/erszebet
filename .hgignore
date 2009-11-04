@@ -1,10 +1,13 @@
 syntax: glob
 
 build
-game
 *.orig
 *~
 *.d
 *.o
 *.core
 .DS_Store
+
+syntax: regexp
+^game
+

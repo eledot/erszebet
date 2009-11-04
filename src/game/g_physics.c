@@ -17,19 +17,9 @@
    Boston, MA 02110-1301 USA
 */
 
-#include "game/g_private.h"
-#include "chipmunk.h"
+#include "game/g_physics_private.h"
 
 #define PHYSICS_STEPS 3
-
-typedef enum
-{
-    PHYSICS_BODY_EMPTY = -1,
-    PHYSICS_BODY_CIRCLE,
-    PHYSICS_BODY_SEGMENT,
-    PHYSICS_BODY_POLYGON,
-    PHYSICS_BODY_POLYGON_CENTERED
-}physics_body_types_e;
 
 typedef struct g_physics_data_s
 {
@@ -48,7 +38,7 @@ typedef struct g_physics_data_s
     double inertia;
 
     int group;
-    int layers;
+    cpLayers layers;
 }g_physics_data_t;
 
 static cpSpace *physics_space;
@@ -57,29 +47,42 @@ static double   physics_speed;
 static int      point_query_shapes_num;
 
 static void physics_common_callback (g_entity_t *ent) GNUC_NONNULL;
-static void physics_group_layers_callback (g_entity_t *ent) GNUC_NONNULL;
+static void physics_shape_parm_change_callback (g_entity_t *ent) GNUC_NONNULL;
 static void physics_body_callback (g_entity_t *ent) GNUC_NONNULL;
 
 static g_field_t ent_fields_physics[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_physics_data_t
-    G_FIELD("velocity",       velocity,    VECTOR,  NULL, &physics_common_callback),
-    G_FIELD("velocity_x",     velocity[0], DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("velocity_y",     velocity[1], DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("velocity_z",     velocity[2], DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("rotation",       rotation,    DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("gravity",        gravity,     DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("elasticity",     elasticity,  DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("friction",       friction,    DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("mass",           mass,        DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("inertia",        inertia,     DOUBLE,  0.0,  &physics_common_callback),
-    G_FIELD("physics_group",  group,       INTEGER, 0,    &physics_group_layers_callback),
-    G_FIELD("physics_layers", layers,      INTEGER, -1,   &physics_group_layers_callback),
+    G_FIELD("velocity",       velocity,    VECTOR,  NULL,         &physics_common_callback),
+    G_FIELD("velocity_x",     velocity[0], DOUBLE,  0.0,          &physics_common_callback),
+    G_FIELD("velocity_y",     velocity[1], DOUBLE,  0.0,          &physics_common_callback),
+    G_FIELD("velocity_z",     velocity[2], DOUBLE,  0.0,          &physics_common_callback),
+    G_FIELD("rotation",       rotation,    DOUBLE,  0.0,          &physics_common_callback),
+    G_FIELD("gravity",        gravity,     DOUBLE,  0.0,          &physics_common_callback),
+    G_FIELD("elasticity",     elasticity,  DOUBLE,  0.0,          &physics_shape_parm_change_callback),
+    G_FIELD("friction",       friction,    DOUBLE,  0.6,          &physics_shape_parm_change_callback),
+    G_FIELD("mass",           mass,        DOUBLE,  1.0,          &physics_common_callback),
+    G_FIELD("inertia",        inertia,     DOUBLE,  100.0,        &physics_common_callback),
+    G_FIELD("physics_group",  group,       INTEGER, 0,            &physics_shape_parm_change_callback),
+    G_FIELD("physics_layers", layers,      INTEGER, (cpLayers)-1, &physics_shape_parm_change_callback),
     G_FIELD_NULL
 };
 
 static g_field_t ent_field_physics_body =
     G_FIELD("body", body, CUSTOM_CALLBACK, NULL, &physics_body_callback);
+
+extern const g_physics_shape_type_t g_physics_shape_type_segment;
+extern const g_physics_shape_type_t g_physics_shape_type_circle;
+extern const g_physics_shape_type_t g_physics_shape_type_polygon;
+
+static const g_physics_shape_type_t * const g_physics_shape_types[] =
+{
+    &g_physics_shape_type_segment,
+    &g_physics_shape_type_circle,
+    &g_physics_shape_type_polygon
+};
+
+enum { g_physics_shape_types_num = STSIZE(g_physics_shape_types) };
 
 /*
 =================
@@ -89,6 +92,9 @@ g_physics_add_shape
 GNUC_NONNULL static void g_physics_add_shape (g_entity_t *ent, cpShape *shape)
 {
     g_physics_data_t *data = ent->physics_data;
+
+    if (NULL == shape)
+        return;
 
     data->shapes[data->shapes_num++] = shape;
     shape->data = ent;
@@ -195,98 +201,8 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
         cpSpaceAddBody(physics_space, data->body);
         ent->internal_flags -= (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC);
     }
-}
 
-/*
-=================
-g_physics_set_segment
-=================
-*/
-GNUC_NONNULL static void g_physics_set_segment (g_entity_t *ent, double radius, const double *coords)
-{
-    g_physics_data_t *data = ent->physics_data;
-
-    g_physics_new_obj(ent, 1);
-    g_physics_add_shape(ent, cpSegmentShapeNew(data->body,
-                                       cpv(coords[0], coords[1]),
-                                       cpv(coords[2], coords[3]),
-                                       radius));
-}
-
-/*
-=================
-g_physics_set_circle
-=================
-*/
-GNUC_NONNULL static void g_physics_set_circle (g_entity_t *ent, double radius)
-{
-    g_physics_data_t *data = ent->physics_data;
-
-    g_physics_new_obj(ent, 1);
-    g_physics_add_shape(ent, cpCircleShapeNew(data->body, radius, cpvzero));
-}
-
-/*
-=================
-g_physics_set_poly
-=================
-*/
-GNUC_NONNULL static void g_physics_set_poly (g_entity_t   *ent,
-                                             int           shapes_num,
-                                             const double *vertices,
-                                             const int    *vertices_num,
-                                             int           centered)
-{
-    g_physics_data_t *data = ent->physics_data;
-    int offset, shape, max_num;
-    cpVect *v;
-
-    for (max_num = shape = 0; shape < shapes_num ;shape++)
-        if (vertices_num[shape] > max_num)
-            max_num = vertices_num[shape];
-
-    /* extra vector to calculate centroid */
-    v = mem_alloc(g_mempool, sizeof(*v) * (max_num + 1));
-
-    g_physics_new_obj(ent, shapes_num);
-
-    for (offset = shape = 0; shape < shapes_num ;shape++)
-    {
-        const double *coords = vertices + offset;
-        int           i, num = vertices_num[shape];
-        double        da, p;
-        cpVect        cv = cpvzero;
-
-        offset += num * 2;
-
-        for (i = 0; i < num ;i++)
-        {
-            v[i].x = coords[(i << 1) + 0];
-            v[i].y = coords[(i << 1) + 1];
-        }
-
-        v[num].x = v[0].x;
-        v[num].y = v[0].y;
-
-        if (centered)
-        {
-            /* calculate centroid */
-            for (cv.x = 0.0, cv.y = 0.0, da = 0.0, i = 0; i < num ;i++)
-            {
-                p = (v[i].x * v[i+1].y) - (v[i].y * v[i+1].x);
-                cv.x += (v[i].x + v[i+1].x) * p;
-                cv.y += (v[i].y + v[i+1].y) * p;
-                da += p;
-            }
-
-            cv.x /= -3 * da;
-            cv.y /= -3 * da;
-        }
-
-        g_physics_add_shape(ent, cpPolyShapeNew(data->body, num, v, cv));
-    }
-
-    mem_free(v);
+    data->body->data = ent;
 }
 
 /*
@@ -312,9 +228,9 @@ GNUC_NONNULL static void g_physics_update_ent (cpBody *body, GNUC_UNUSED void *u
     if (data->shapes_num < 1)
         return;
 
-    ent->origin[0]   = body->p.x;
-    ent->origin[1]   = body->p.y;
-    ent->angle       = body->a;
+    ent->origin[0] = body->p.x;
+    ent->origin[1] = body->p.y;
+    ent->angle     = body->a;
 
     data->velocity[0] = body->v.x;
     data->velocity[1] = body->v.y;
@@ -452,6 +368,10 @@ void g_physics_update_ent_origin (g_entity_t *ent)
         return;
 
     data->body->p = cpv(ent->origin[0], ent->origin[1]);
+
+    /* rehash static objects */
+    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
+        cpSpaceRehashStatic(physics_space);
 }
 
 /*
@@ -463,23 +383,25 @@ static void physics_common_callback (g_entity_t *ent)
 {
     g_physics_data_t *data = ent->physics_data;
 
-    data->body->p = cpv(ent->origin[0], ent->origin[1]);
     data->body->v = cpv(data->velocity[0], data->velocity[1]);
     cpBodySetAngle(data->body, ent->angle);
     data->body->w = data->rotation; /* FIXME */
     data->body->t = 0.0; /* FIXME */
     data->body->gravity = -data->gravity;
 
-    cpBodySetMass(data->body, data->mass);
-    cpBodySetMoment(data->body, data->inertia);
+    if (!(ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC))
+    {
+        cpBodySetMass(data->body, data->mass);
+        cpBodySetMoment(data->body, data->inertia);
+    }
 }
 
 /*
 =================
-physics_group_layers_callback
+physics_shape_parm_change_callback
 =================
 */
-static void physics_group_layers_callback (g_entity_t *ent)
+static void physics_shape_parm_change_callback (g_entity_t *ent)
 {
     g_physics_data_t *data = ent->physics_data;
     cpShape *shape;
@@ -502,8 +424,58 @@ physics_body_callback
 */
 static void physics_body_callback (g_entity_t *ent)
 {
-    /* FIXME */
-    sys_printf("FIXME ent=%p\n", ent);
+    g_physics_data_t *data;
+    int i, type, shapes_num;
+
+    g_physics_mem_free(ent);
+
+    if (lua_isnil(lua_state, lua_entity_value_index))
+        return;
+
+    if (!lua_istable(lua_state, lua_entity_value_index))
+    {
+        sys_printf("physical body not a table\n");
+        return;
+    }
+
+    shapes_num = lua_objlen(lua_state, lua_entity_value_index);
+
+    if (shapes_num < 1)
+        return;
+
+    g_physics_new_obj(ent, shapes_num);
+    data = ent->physics_data;
+
+    g_fields_set_default_values(ent->physics_data, ent_fields_physics);
+    lua_getref(lua_state, ent->lua_dataref);
+    g_fields_pop(ent->physics_data, ent_fields_physics, true);
+    lua_pop(lua_state, 1);
+
+    for (i = 0; i < shapes_num ;i++)
+    {
+        /* push subtable (a shape) */
+        lua_rawgeti(lua_state, lua_entity_value_index, i + 1);
+
+        /* parse shape */
+        lua_getfield(lua_state, -1, "type");
+        type = lua_tonumber(lua_state, -1);
+        lua_pop(lua_state, 1);
+
+        if (type >= 1 && type <= g_physics_shape_types_num)
+        {
+            g_physics_add_shape(ent, g_physics_shape_types[type - 1]->create(data->body));
+        }
+        else
+        {
+            sys_printf("unknown shape type %i\n", type);
+        }
+
+        /* pop subtable */
+        lua_pop(lua_state, 1);
+    }
+
+    if (data->shapes_num < 1)
+        g_physics_mem_free(ent);
 }
 
 /*
@@ -586,87 +558,6 @@ GNUC_NONNULL static int phys_lua_apply_impulse (lua_State *lst)
 
 /*
 =================
-phys_lua_set_body
-=================
-*/
-GNUC_NONNULL static int phys_lua_set_body (lua_State *lst)
-{
-    g_entity_t *ent;
-    double      radius, points[4], *coords;
-    int         arg, i, type, num, shapes_num, *vertices_num;
-
-    arg = 1;
-    lua_getfield(lst, arg++, "__ref");
-    ent = (g_entity_t *)lua_touserdata(lst, -1);
-
-    if (NULL == ent)
-    {
-        sys_printf("called \"set_physics\" without entity\n");
-        return 0;
-    }
-
-    type = luaL_checknumber(lst, arg++);
-
-    switch (type)
-    {
-    case PHYSICS_BODY_EMPTY:
-        g_physics_mem_free(ent);
-        break;
-
-    case PHYSICS_BODY_CIRCLE:
-        radius = luaL_checknumber(lst, arg++);
-        g_physics_set_circle(ent, radius);
-        break;
-
-    case PHYSICS_BODY_SEGMENT:
-        radius = luaL_checknumber(lst, arg++);
-        g_pop_vector(arg, points, 4);
-        g_physics_set_segment(ent, radius, points);
-        break;
-
-    case PHYSICS_BODY_POLYGON:
-    case PHYSICS_BODY_POLYGON_CENTERED:
-        shapes_num = lua_gettop(lst) - arg;
-
-        vertices_num = mem_alloc(g_mempool, sizeof(*vertices_num) * shapes_num);
-
-        for (num = i = 0; i < shapes_num ;i++)
-        {
-            vertices_num[i] = lua_objlen(lst, arg + i);
-            num += vertices_num[i];
-
-            if (vertices_num[i]/2 < 3)
-            {
-                sys_printf("bad polygon (got %i vertices)\n", vertices_num[i]/2);
-                mem_free(vertices_num);
-                break;
-            }
-        }
-
-        coords = mem_alloc(g_mempool, sizeof(double) * num);
-
-        for (num = i = 0; i < shapes_num ;i++)
-        {
-            g_pop_vector(arg + i, &coords[num], vertices_num[i]);
-            num += vertices_num[i];
-            vertices_num[i] >>= 1;
-        }
-
-        g_physics_set_poly(ent, shapes_num, coords, vertices_num, type == PHYSICS_BODY_POLYGON_CENTERED);
-        mem_free(vertices_num);
-        mem_free(coords);
-        break;
-
-    default:
-        sys_printf("unknown body shape %i\n", type);
-        break;
-    }
-
-    return 0;
-}
-
-/*
-=================
 phys_lua_set_gravity
 =================
 */
@@ -723,22 +614,16 @@ g_physics_init
 */
 void g_physics_init (void)
 {
-    g_set_integer("BODY_EMPTY", PHYSICS_BODY_EMPTY);
-    g_set_integer("BODY_CIRCLE", PHYSICS_BODY_CIRCLE);
-    g_set_integer("BODY_SEGMENT", PHYSICS_BODY_SEGMENT);
-    g_set_integer("BODY_POLYGON", PHYSICS_BODY_POLYGON);
-    g_set_integer("BODY_POLYGON_CENTERED", PHYSICS_BODY_POLYGON_CENTERED);
-
-    lua_register(lua_state, "physics_set_body", &phys_lua_set_body);
-    lua_register(lua_state, "physics_point_query", &phys_lua_point_query);
-    lua_register(lua_state, "physics_apply_impulse", &phys_lua_apply_impulse);
-
-    lua_register(lua_state, "physics_set_gravity", &phys_lua_set_gravity);
-    lua_register(lua_state, "physics_get_gravity", &phys_lua_get_gravity);
-    lua_register(lua_state, "physics_set_speed", &phys_lua_set_speed);
-    lua_register(lua_state, "physics_get_speed", &phys_lua_get_speed);
+    int i;
 
     cpInitChipmunk();
+
+    for (i = 0; i < g_physics_shape_types_num ;i++)
+    {
+        char tmp[32];
+        snprintf(tmp, sizeof(tmp), "g_physics_%s", g_physics_shape_types[i]->name);
+        g_set_integer(tmp, i + 1);
+    }
 
     physics_last_update = g_time;
     physics_speed = 1.0;
@@ -747,6 +632,13 @@ void g_physics_init (void)
     physics_space->gravity = cpv(0.0f, -900.0f);
 
     cpSpaceSetDefaultCollisionPairFunc(physics_space, g_physics_collision, NULL);
+
+    lua_register(lua_state, "physics_point_query", &phys_lua_point_query);
+    lua_register(lua_state, "physics_apply_impulse", &phys_lua_apply_impulse);
+    lua_register(lua_state, "physics_set_gravity", &phys_lua_set_gravity);
+    lua_register(lua_state, "physics_get_gravity", &phys_lua_get_gravity);
+    lua_register(lua_state, "physics_set_speed", &phys_lua_set_speed);
+    lua_register(lua_state, "physics_get_speed", &phys_lua_get_speed);
 
     g_entity_add_field_list(ent_fields_physics, G_ENT_FIELD_INDEX_PHYSICS);
     ent_field_physics_body.index = G_ENT_FIELD_INDEX_BASE;
