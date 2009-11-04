@@ -88,7 +88,6 @@ GNUC_NONNULL static void ent_render_sprite_draw (const g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
 
-    //r->sprite->frames[0]->gltex = 1;
     r_sprite_draw(r->sprite, r->frame, r->width, r->height);
 }
 
