@@ -38,13 +38,14 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, shout)))
         return -1;
 
-    size = MIN(max_size, size);
-
-    if (size < 1)
+    if (size < 1 || !max_size)
     {
         fs_close(f);
         return 0;
     }
+
+    if (max_size > 0)
+        size = MIN(max_size, size);
 
     if (NULL == (*buffer = mem_alloc(pool, size)))
     {
