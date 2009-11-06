@@ -89,9 +89,11 @@ GNUC_NONNULL static void text_set_align_callback (g_entity_t *ent)
         return;
 
     if (r->align & G_TEXT_ALIGN_TOP)
-        originy -= r->h;
+        originy -= r->texh;
     else if (!(r->align & G_TEXT_ALIGN_BOTTOM))
-        originy -= r->h / 2.0;
+        originy -= r->texh - r->h / 2.0;
+    else
+        originy -= r->texh - r->h;
 
     if (r->align & G_TEXT_ALIGN_RIGHT)
         originx -= r->w;
@@ -102,8 +104,6 @@ GNUC_NONNULL static void text_set_align_callback (g_entity_t *ent)
     r->verts[1] = r->verts[3] = originy;
     r->verts[5] = r->verts[7] = originy + r->texh;
     r->verts[6] = r->verts[2] = originx + r->texw;
-
-    sys_printf("%-2.2f %-2.2f\n", originx, originy);
 }
 
 GNUC_NONNULL static void text_redraw_callback (g_entity_t *ent)
