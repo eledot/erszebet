@@ -211,7 +211,8 @@ void gl_texture_delete (int gltex)
 {
     GLuint tex = gltex;
 
-    glDeleteTextures(1, &tex);
+    if (gltex)
+        glDeleteTextures(1, &tex);
 }
 
 /*
