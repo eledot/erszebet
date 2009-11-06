@@ -102,7 +102,7 @@ bool r_sprite_load (const char  *name,
 
     snprintf(tmp, sizeof(tmp), "spr/%s.txt", name);
 
-    if (1 > (size = fs_open_read_close(tmp, &data, 4096, mempool, 1)))
+    if (1 > (size = fs_open_read_close(tmp, &data, 4096, r_mempool, 1)))
     {
         sys_printf("sprite \"%s\" not found\n", name);
         return false;
@@ -143,7 +143,7 @@ bool r_sprite_load (const char  *name,
             goto error;
         }
 
-        if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
+        if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
             goto error;
 
         if (!r_texture_load(frames_names[1], type, s->frames))
@@ -158,7 +158,7 @@ bool r_sprite_load (const char  *name,
     }
     else
     {
-        if (NULL == (s = mem_alloc_static(sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
+        if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
             goto error;
 
         for (i = 0; i < num ;i++)

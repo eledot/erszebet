@@ -35,10 +35,8 @@ static const g_render_plugin_t * const g_render_plugins[] =
 {
     &g_render_plugin_sprite,
     &g_render_plugin_circle,
-    &g_render_plugin_line
-/*
-    &g_render_plugin_text,
-*/
+    &g_render_plugin_line,
+    &g_render_plugin_text
 };
 
 enum { g_render_plugins_num = STSIZE(g_render_plugins) };

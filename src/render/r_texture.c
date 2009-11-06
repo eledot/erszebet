@@ -87,7 +87,7 @@ bool r_texture_load (const char *name, int type, r_texture_t **tex)
 
     nlen = strlen(name) + 1;
 
-    if (NULL == (t = mem_alloc_static(sizeof(r_texture_t) + nlen)))
+    if (NULL == (t = mem_alloc(r_mempool, sizeof(r_texture_t) + nlen)))
     {
         gl_texture_delete(gltex);
         goto error;

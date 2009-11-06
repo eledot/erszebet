@@ -17,14 +17,27 @@
    Boston, MA 02110-1301 USA
 */
 
-#ifndef _R_PRIVATE_H
-#define _R_PRIVATE_H
+#ifndef _R_FONT_H
+#define _R_FONT_H
 
-#include "common.h"
-#include "render/r_texture.h"
-#include "render/r_sprite.h"
-#include "render/r_font.h"
+typedef struct r_font_s
+{
+    const char *name;
+    int         ptsize;
+}r_font_t;
 
-extern mem_pool_t r_mempool;
+bool r_font_load (const char *name, int ptsize, r_font_t **font);
+void r_font_unload (r_font_t *font);
 
-#endif /* !_R_PRIVATE_H */
+void r_font_draw_to_texture (r_font_t *font,
+                             const char *text,
+                             int *gltex,
+                             int *w,
+                             int *h,
+                             int *texw,
+                             int *texh);
+
+bool r_font_init (void);
+void r_font_shutdown (void);
+
+#endif /* !_R_FONT_H */

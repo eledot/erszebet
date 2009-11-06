@@ -22,7 +22,7 @@
 #include "gl/gl.h"
 
 static bool r_i = false;
-mem_pool_t mempool;
+mem_pool_t r_mempool;
 
 static cvar_t *r_show_fps;
 cvar_t *r_fov;
@@ -172,10 +172,14 @@ bool r_init (void)
     cmd_register("screenshot_jpeg", NULL, &screenshot_f, 0);
     cmd_register("screenshot_png",  NULL, &screenshot_f, 0);
 
-    mem_alloc_static_pool("renderer", 0);
+    r_mempool = mem_alloc_pool("renderer", 0);
 
-    if (!r_texture_init() || !r_sprite_init())
+    if (!r_texture_init() ||
+        !r_sprite_init() ||
+        !r_font_init())
+    {
         return false;
+    }
 
     r_i = true;
 
@@ -196,8 +200,11 @@ void r_shutdown (void)
 
     r_i = false;
 
+    r_font_shutdown();
     r_sprite_shutdown();
     r_texture_shutdown();
+
+    mem_free_pool(&r_mempool);
 
     sys_printf("-r\n");
 }
