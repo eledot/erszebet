@@ -34,6 +34,7 @@ const char *g_field_type_to_string (int type)
         [G_FIELD_TYPE_STRING] = "string_callback",
         [G_FIELD_TYPE_STRING_COPY] = "string_copy",
         [G_FIELD_TYPE_BOOL] = "bool",
+        [G_FIELD_TYPE_FUNCTION] = "function",
         [G_FIELD_TYPE_CUSTOM_CALLBACK] = "custom_callback"
     };
 
@@ -86,6 +87,7 @@ void g_fields_set_default_values (void *data, const g_field_t *fields)
             break;
 
         case G_FIELD_TYPE_BOOL:
+        case G_FIELD_TYPE_FUNCTION:
             *(bool *)field = f->default_value.BOOL;
             break;
 
@@ -152,7 +154,8 @@ void g_fields_push (const void *data, const g_field_t *fields)
 
     for (f = fields; NULL != f->name ;f++)
     {
-        if (G_FIELD_TYPE_CUSTOM_CALLBACK != f->type)
+        if (G_FIELD_TYPE_CUSTOM_CALLBACK != f->type &&
+            G_FIELD_TYPE_FUNCTION != f->type)
         {
             g_push_field(data, f->offset, f->type);
             lua_setfield(lua_state, -2, f->name);

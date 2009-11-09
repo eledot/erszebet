@@ -28,6 +28,7 @@ typedef enum
     G_FIELD_TYPE_STRING,
     G_FIELD_TYPE_STRING_COPY,
     G_FIELD_TYPE_BOOL,
+    G_FIELD_TYPE_FUNCTION,
     G_FIELD_TYPE_CUSTOM_CALLBACK,
     G_FIELD_TYPES_NUM
 }ent_fields_types_e;
@@ -45,6 +46,7 @@ typedef struct g_field_s
         const double *VECTOR;
         const void   *CUSTOM_CALLBACK;
         const bool    BOOL;
+        const bool    FUNCTION;
     }default_value;
 
     int       index;

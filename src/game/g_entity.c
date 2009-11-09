@@ -26,15 +26,15 @@ GNUC_NONNULL static void ent_set_angle_callback (g_entity_t *ent);
 static g_field_t ent_fields_base[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_entity_t
-    G_FIELD("classname", classname, STRING_COPY, NULL, NULL),
-    G_FIELD("flags",     flags,     INTEGER,     0,    NULL),
-    G_FIELD("nextthink", nextthink, DOUBLE,      0.0,  NULL),
-    G_FIELD("lastthink", lastthink, DOUBLE,      0.0,  NULL),
-    G_FIELD("origin",    origin,    VECTOR,      NULL, &ent_set_origin_callback),
-    G_FIELD("origin_x",  origin[0], DOUBLE,      0.0,  &ent_set_origin_callback),
-    G_FIELD("origin_y",  origin[1], DOUBLE,      0.0,  &ent_set_origin_callback),
-    G_FIELD("origin_z",  origin[2], DOUBLE,      0.0,  &ent_set_origin_callback),
-    G_FIELD("angle",     angle,     DOUBLE,      0.0,  &ent_set_angle_callback),
+    G_FIELD("classname", classname, STRING_COPY, NULL,  NULL),
+    G_FIELD("think",     think,     FUNCTION,    false, NULL),
+    G_FIELD("nextthink", nextthink, DOUBLE,      0.0,   NULL),
+    G_FIELD("lastthink", lastthink, DOUBLE,      0.0,   NULL),
+    G_FIELD("origin",    origin,    VECTOR,      NULL,  &ent_set_origin_callback),
+    G_FIELD("origin_x",  origin[0], DOUBLE,      0.0,   &ent_set_origin_callback),
+    G_FIELD("origin_y",  origin[1], DOUBLE,      0.0,   &ent_set_origin_callback),
+    G_FIELD("origin_z",  origin[2], DOUBLE,      0.0,   &ent_set_origin_callback),
+    G_FIELD("angle",     angle,     DOUBLE,      0.0,   &ent_set_angle_callback),
     G_FIELD_NULL
 };
 
@@ -61,6 +61,16 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_entity_t, ENT_ZORDER_COMPARATOR, next);
 static g_entity_t *entities;
 static g_entity_t *remove_entities;
 int lua_entity_value_index;
+
+/*
+=================
+g_entity_is_valid
+=================
+*/
+bool g_entity_is_valid (const g_entity_t *ent)
+{
+    return NULL != ent && LUA_REFNIL != ent->lua_ref;
+}
 
 /*
 =================
@@ -95,6 +105,10 @@ GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 
         if (NULL != data)
         {
+            /* functions are in __data */
+            if (G_FIELD_TYPE_FUNCTION == f->type)
+                return 0;
+
             g_push_field(data, f->offset, f->type);
             return 1;
         }
@@ -171,6 +185,10 @@ GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int 
             if (NULL != f->callback)
                 f->callback(ent);
 
+            /* set function in __data */
+            if (G_FIELD_TYPE_FUNCTION == f->type)
+                return 0;
+
             return 1;
         }
 
@@ -185,67 +203,13 @@ GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int 
 
 /*
 =================
-g_entity_flags_string
-=================
-*/
-GNUC_NONNULL static const char *g_entity_flags_string (const g_entity_t *ent)
-{
-    static char flags[128];
-    const int s = sizeof(flags);
-    int unknown = ent->flags - (ent->flags & (G_ENT_FL_STATIC | G_ENT_FL_NON_SOLID));
-    int len;
-
-    flags[0] = 0;
-
-    if (ent->flags & G_ENT_FL_STATIC)
-        strlcat(flags, "static ", s);
-
-    if (ent->flags & G_ENT_FL_NON_SOLID)
-        strlcat(flags, "non_solid ", s);
-
-    if (ent->internal_flags & G_ENT_INTFL_THINK)
-        strlcat(flags, "think ", s);
-
-    if (ent->internal_flags & G_ENT_INTFL_TOUCH)
-        strlcat(flags, "touch ", s);
-
-    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
-        strlcat(flags, "phys_static ", s);
-
-    if (unknown)
-    {
-        len = strlen(flags);
-        snprintf(flags + len, s - len, "%i", unknown);
-    }
-
-    return flags;
-}
-
-/*
-=================
 g_entity_string
 =================
 */
 GNUC_NONNULL static void g_entity_string (const g_entity_t *ent, char *buffer, int size)
 {
-    snprintf(buffer,
-             size,
-             "entity: %p "
-             "classname=\"%s\" "
-             "flags=( %s) "
-             "nextthink=%-2.2lf "
-             "lastthink=%-2.2lf "
-             "origin={ %-2.2lf %-2.2lf %-2.2lf } "
-             "angle=%-2.2lf",
-             ent,
-             ent->classname ? ent->classname : "-noname-",
-             g_entity_flags_string(ent),
-             ent->nextthink,
-             ent->lastthink,
-             ent->origin[0],
-             ent->origin[1],
-             ent->origin[2],
-             ent->angle);
+    /* FIXME */
+    snprintf(buffer, size, "entity: %p ref=%i dataref=%i", ent, ent->lua_ref, ent->lua_dataref);
 }
 
 /*
@@ -311,18 +275,8 @@ ent_lua_newindex
 */
 GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 {
-    int         i;
     g_entity_t *ent;
     const char *key = luaL_checkstring(lst, 2);
-    const struct
-    {
-        const char *field;
-        int         flag;
-    }ent_newindex_internal_flags[] =
-         {
-             { "think", G_ENT_INTFL_THINK },
-             { "touch", G_ENT_INTFL_TOUCH }
-         };
 
     lua_getfield(lst, 1, "__ref");
     ent = (g_entity_t *)lua_touserdata(lst, -1);
@@ -333,20 +287,7 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
         return 0;
     }
 
-    for (i = 0; i < STSIZE(ent_newindex_internal_flags) ;i++)
-    {
-        if (!strcmp(key, ent_newindex_internal_flags[i].field))
-        {
-            if (!lua_toboolean(lst, 3))
-                ent->internal_flags -= (ent->internal_flags & ent_newindex_internal_flags[i].flag);
-            else
-                ent->internal_flags |= ent_newindex_internal_flags[i].flag;
-
-            break;
-        }
-    }
-
-    if (i < STSIZE(ent_newindex_internal_flags) || !ent_set_field(ent, key, 3))
+    if (!ent_set_field(ent, key, 3))
     {
         lua_getref(lst, ent->lua_dataref);
         lua_pushvalue(lst, 3);
@@ -371,15 +312,10 @@ GNUC_WARN_UNUSED_RES static g_entity_t *g_entity_create (void)
         return NULL;
     }
 
+    g_fields_set_default_values(ent, ent_fields_base);
+
     ent->lua_ref     = LUA_REFNIL;
     ent->lua_dataref = LUA_REFNIL;
-
-    ent->origin[0] = 0.0;
-    ent->origin[1] = 0.0;
-    ent->origin[2] = 0.0;
-    ent->angle     = 0.0;
-    ent->nextthink = 0.0;
-    ent->lastthink = 0.0;
 
     /* put to entities, taking into account zorder */
     sglib_g_entity_t_add(&entities, ent);
@@ -408,9 +344,6 @@ GNUC_NONNULL static void g_entity_delete (g_entity_t *ent)
     lua_unref(lua_state, ent->lua_dataref);
 
     /* remove all handlers, mark invalid */
-    ent->internal_flags -= ent->internal_flags & (G_ENT_INTFL_THINK | G_ENT_INTFL_TOUCH);
-    ent->flags |= G_ENT_FL_NON_SOLID;
-
     ent->lua_ref = LUA_REFNIL;
     ent->lua_dataref = LUA_REFNIL;
 }
@@ -520,10 +453,7 @@ void g_entity_frame (void)
          NULL != ent;
          ent = sglib_g_entity_t_it_next(&it))
     {
-        if ((ent->internal_flags & G_ENT_INTFL_THINK) &&
-            ent->nextthink > ent->lastthink &&
-            ent->nextthink < g_time &&
-            LUA_REFNIL != ent->lua_ref)
+        if (ent->think && IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
         {
             ent->lastthink = ent->nextthink;
             lua_getref(lua_state, ent->lua_dataref);
@@ -684,10 +614,6 @@ void g_entity_init (void)
     /* register funcs to work with entity */
     lua_register(lua_state, "ent_spawn", &ent_lua_spawn);
     lua_register(lua_state, "ent_remove", &ent_lua_remove);
-
-    /* register global constants */
-    g_set_integer("FL_STATIC", G_ENT_FL_STATIC);
-    g_set_integer("FL_NON_SOLID", G_ENT_FL_NON_SOLID);
 
     sys_printf("+g_entity\n");
 }

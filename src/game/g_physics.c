@@ -28,6 +28,9 @@ typedef struct g_physics_data_s
     cpShape **shapes;
     int       shapes_num;
 
+    bool is_static;
+    bool is_solid;
+
     /* fields accessible by lua code */
     double velocity[3];
     double rotation;
@@ -36,6 +39,7 @@ typedef struct g_physics_data_s
     double friction;
     double mass;
     double inertia;
+    bool touch;
 
     int group;
     cpLayers layers;
@@ -48,28 +52,30 @@ static int      point_query_shapes_num;
 
 static void physics_common_callback (g_entity_t *ent) GNUC_NONNULL;
 static void physics_shape_parm_change_callback (g_entity_t *ent) GNUC_NONNULL;
-static void physics_body_callback (g_entity_t *ent) GNUC_NONNULL;
+static void physics_set_body_callback (g_entity_t *ent) GNUC_NONNULL;
 
 static g_field_t ent_fields_physics[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_physics_data_t
-    G_FIELD("velocity",       velocity,    VECTOR,  NULL,         &physics_common_callback),
-    G_FIELD("velocity_x",     velocity[0], DOUBLE,  0.0,          &physics_common_callback),
-    G_FIELD("velocity_y",     velocity[1], DOUBLE,  0.0,          &physics_common_callback),
-    G_FIELD("velocity_z",     velocity[2], DOUBLE,  0.0,          &physics_common_callback),
-    G_FIELD("rotation",       rotation,    DOUBLE,  0.0,          &physics_common_callback),
-    G_FIELD("gravity",        gravity,     DOUBLE,  0.0,          &physics_common_callback),
-    G_FIELD("elasticity",     elasticity,  DOUBLE,  0.0,          &physics_shape_parm_change_callback),
-    G_FIELD("friction",       friction,    DOUBLE,  0.6,          &physics_shape_parm_change_callback),
-    G_FIELD("mass",           mass,        DOUBLE,  1.0,          &physics_common_callback),
-    G_FIELD("inertia",        inertia,     DOUBLE,  100.0,        &physics_common_callback),
-    G_FIELD("physics_group",  group,       INTEGER, 0,            &physics_shape_parm_change_callback),
-    G_FIELD("physics_layers", layers,      INTEGER, (cpLayers)-1, &physics_shape_parm_change_callback),
+    G_FIELD("solid",          is_solid,    BOOL,     true,         NULL),
+    G_FIELD("velocity",       velocity,    VECTOR,   NULL,         &physics_common_callback),
+    G_FIELD("velocity_x",     velocity[0], DOUBLE,   0.0,          &physics_common_callback),
+    G_FIELD("velocity_y",     velocity[1], DOUBLE,   0.0,          &physics_common_callback),
+    G_FIELD("velocity_z",     velocity[2], DOUBLE,   0.0,          &physics_common_callback),
+    G_FIELD("rotation",       rotation,    DOUBLE,   0.0,          &physics_common_callback),
+    G_FIELD("gravity",        gravity,     DOUBLE,   0.0,          &physics_common_callback),
+    G_FIELD("elasticity",     elasticity,  DOUBLE,   0.0,          &physics_shape_parm_change_callback),
+    G_FIELD("friction",       friction,    DOUBLE,   0.6,          &physics_shape_parm_change_callback),
+    G_FIELD("mass",           mass,        DOUBLE,   1.0,          &physics_common_callback),
+    G_FIELD("inertia",        inertia,     DOUBLE,   100.0,        &physics_common_callback),
+    G_FIELD("physics_group",  group,       INTEGER,  0,            &physics_shape_parm_change_callback),
+    G_FIELD("physics_layers", layers,      INTEGER,  (cpLayers)-1, &physics_shape_parm_change_callback),
+    G_FIELD("touch",          touch,       FUNCTION, false,        NULL),
     G_FIELD_NULL
 };
 
 static g_field_t ent_field_physics_body =
-    G_FIELD("body", body, CUSTOM_CALLBACK, NULL, &physics_body_callback);
+    G_FIELD("body", body, CUSTOM_CALLBACK, NULL, &physics_set_body_callback);
 
 extern const g_physics_shape_type_t g_physics_shape_type_segment;
 extern const g_physics_shape_type_t g_physics_shape_type_circle;
@@ -101,7 +107,7 @@ GNUC_NONNULL static void g_physics_add_shape (g_entity_t *ent, cpShape *shape)
     shape->group = data->group;
     shape->layers = data->layers;
 
-    if (ent->flags & G_ENT_FL_STATIC)
+    if (data->is_static)
         cpSpaceAddStaticShape(physics_space, shape);
     else
         cpSpaceAddShape(physics_space, shape);
@@ -122,7 +128,7 @@ GNUC_NONNULL static void g_physics_delete_shapes (g_entity_t *ent)
     if (NULL == data->shapes)
         return;
 
-    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
+    if (data->is_static)
     {
         for (i = 0; i < data->shapes_num ;i++)
         {
@@ -177,7 +183,7 @@ GNUC_NONNULL void g_physics_mem_free (g_entity_t *ent)
 g_physics_new_obj
 =================
 */
-GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
+GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num, bool is_static)
 {
     g_physics_data_t *data;
 
@@ -188,18 +194,17 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num)
         return;
 
     data->shapes = ent->physics_data + sizeof(g_physics_data_t);
+    data->is_static = is_static;
 
-    if (ent->flags & G_ENT_FL_STATIC)
+    if (data->is_static)
     {
         data->body = cpBodyNew(INFINITY, INFINITY);
         cpSpaceAddBody(physics_space, data->body);
-        ent->internal_flags |= G_ENT_INTFL_PHYSICS_STATIC;
     }
     else
     {
         data->body = cpBodyNew(data->mass, data->inertia);
         cpSpaceAddBody(physics_space, data->body);
-        ent->internal_flags -= (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC);
     }
 
     data->body->data = ent;
@@ -271,12 +276,12 @@ void g_physics_frame (void)
 g_physics_touch
 =================
 */
-GNUC_NONNULL_ARGS(1, 3, 4) static int g_physics_touch (g_entity_t *self,
-                                                       g_entity_t *other,
-                                                       const double *origin,
-                                                       const double *normal)
+GNUC_NONNULL_ARGS(1, 3, 4) static bool g_physics_touch (g_entity_t *self,
+                                                        g_entity_t *other,
+                                                        const double *origin,
+                                                        const double *normal)
 {
-    int ret;
+    bool ret;
 
     lua_getref(lua_state, self->lua_dataref);
     lua_getfield(lua_state, -1, "touch");
@@ -303,35 +308,28 @@ GNUC_NONNULL_ARGS(1, 3, 4) static int g_physics_touch (g_entity_t *self,
 g_physics_collision
 =================
 */
-static int g_physics_collision (cpShape   *a,
-                                cpShape   *b,
-                                cpContact *contacts,
-                                int        num_contacts,
-                                cpFloat    normal_coef,
-                                GNUC_UNUSED void *data)
+GNUC_NONNULL static int g_physics_collision (cpShape   *a,
+                                             cpShape   *b,
+                                             cpContact *contacts,
+                                             int        num_contacts,
+                                             cpFloat    normal_coef,
+                                             GNUC_UNUSED void *data)
 {
     int i;
-    int zero = 0;
-    const int *afl = &zero, *bfl = &zero;
-    const int *aintfl = &zero, *bintfl = &zero;
-    g_entity_t *ae = a->data, *be = b->data;
+    bool valid;
+    const g_physics_data_t *apd;
+    const g_physics_data_t *bpd;
 
-    if (NULL != ae)
-    {
-        afl = &ae->flags;
-        aintfl = &ae->internal_flags;
-    }
+    if (!g_entity_is_valid(a->data) || !g_entity_is_valid(b->data))
+        return 0;
 
-    if (NULL != be)
-    {
-        bfl = &be->flags;
-        bintfl = &be->internal_flags;
-    }
+    apd = ((const g_entity_t *)a->data)->physics_data;
+    bpd = ((const g_entity_t *)b->data)->physics_data;
 
-    for (i = 0; i < num_contacts ;i++)
+    for (i = 0, valid = true; i < num_contacts && valid ;i++)
     {
-        int atouch_blocked = 1;
-        int btouch_blocked = 1;
+        bool atouch_blocked = true;
+        bool btouch_blocked = true;
         double origin[3];
         double normal[3];
 
@@ -342,13 +340,17 @@ static int g_physics_collision (cpShape   *a,
         normal[1] = normal_coef * contacts[i].n.y;
         normal[2] = 0.0;
 
-        if (*aintfl & G_ENT_INTFL_TOUCH && !(*bfl & G_ENT_FL_NON_SOLID))
-            atouch_blocked = g_physics_touch(ae, be, origin, normal);
+        valid = g_entity_is_valid(a->data) && g_entity_is_valid(b->data);
 
-        if (*bintfl & G_ENT_INTFL_TOUCH && !(*afl & G_ENT_FL_NON_SOLID))
-            btouch_blocked = g_physics_touch(be, ae, origin, normal);
+        if (valid && apd->touch && bpd->is_solid)
+            atouch_blocked = g_physics_touch(a->data, b->data, origin, normal);
 
-        if (!(!(atouch_blocked & btouch_blocked) || ((*afl | *bfl) & G_ENT_FL_NON_SOLID)))
+        valid = g_entity_is_valid(a->data) && g_entity_is_valid(b->data);
+
+        if (valid && bpd->touch && apd->is_solid)
+            btouch_blocked = g_physics_touch(b->data, a->data, origin, normal);
+
+        if (!(!(atouch_blocked & btouch_blocked) || (!apd->is_solid || !bpd->is_solid)))
             return 1;
     }
 
@@ -371,7 +373,7 @@ void g_physics_update_ent_origin_angle (g_entity_t *ent)
     cpBodySetAngle(data->body, ent->angle);
 
     /* rehash static objects */
-    if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
+    if (data->is_static)
         cpSpaceRehashStatic(physics_space);
 }
 
@@ -389,7 +391,7 @@ static void physics_common_callback (g_entity_t *ent)
     data->body->t = 0.0; /* FIXME */
     data->body->gravity = -data->gravity;
 
-    if (!(ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC))
+    if (!data->is_static)
     {
         cpBodySetMass(data->body, data->mass);
         cpBodySetMoment(data->body, data->inertia);
@@ -419,13 +421,14 @@ static void physics_shape_parm_change_callback (g_entity_t *ent)
 
 /*
 =================
-physics_body_callback
+physics_set_body_callback
 =================
 */
-static void physics_body_callback (g_entity_t *ent)
+static void physics_set_body_callback (g_entity_t *ent)
 {
     g_physics_data_t *data;
     int i, type, shapes_num;
+    bool is_static = false;
 
     g_physics_mem_free(ent);
 
@@ -443,7 +446,11 @@ static void physics_body_callback (g_entity_t *ent)
     if (shapes_num < 1)
         return;
 
-    g_physics_new_obj(ent, shapes_num);
+    lua_getfield(lua_state, lua_entity_value_index, "static");
+    is_static = lua_toboolean(lua_state, -1);
+    lua_pop(lua_state, 1);
+
+    g_physics_new_obj(ent, shapes_num, is_static);
     data = ent->physics_data;
 
     g_fields_set_default_values(ent->physics_data, ent_fields_physics);
@@ -456,18 +463,21 @@ static void physics_body_callback (g_entity_t *ent)
         /* push subtable (a shape) */
         lua_rawgeti(lua_state, lua_entity_value_index, i + 1);
 
-        /* parse shape */
-        lua_getfield(lua_state, -1, "type");
-        type = lua_tonumber(lua_state, -1);
-        lua_pop(lua_state, 1);
+        if (lua_istable(lua_state, -1))
+        {
+            /* parse shape */
+            lua_getfield(lua_state, -1, "type");
+            type = lua_tonumber(lua_state, -1);
+            lua_pop(lua_state, 1);
 
-        if (type >= 1 && type <= g_physics_shape_types_num)
-        {
-            g_physics_add_shape(ent, g_physics_shape_types[type - 1]->create(data->body));
-        }
-        else
-        {
-            sys_printf("unknown shape type %i\n", type);
+            if (type >= 1 && type <= g_physics_shape_types_num)
+            {
+                g_physics_add_shape(ent, g_physics_shape_types[type - 1]->create(data->body));
+            }
+            else
+            {
+                sys_printf("unknown shape type %i\n", type);
+            }
         }
 
         /* pop subtable */

@@ -47,6 +47,8 @@
  */
 #define IS_PWROV2(n) (!((n) & ((n) - 1)))
 
+#define IS_BETWEEN(n, min, max) ((n) > (min) && (n) < (max))
+
 /**
  * @brief Multiplies a vector by a number.
  * @param[in] a Vector to multiply.

@@ -174,9 +174,9 @@ g_list_render_plugins_f
 =================
 */
 GNUC_NONNULL static void g_list_render_plugins_f (GNUC_UNUSED const struct cmd_s *cmd,
-                                           int source,
-                                           GNUC_UNUSED int argc,
-                                           GNUC_UNUSED const char **argv)
+                                                  int source,
+                                                  GNUC_UNUSED int argc,
+                                                  GNUC_UNUSED const char **argv)
 {
     int i;
     const g_render_plugin_t *plugin;

@@ -22,19 +22,6 @@
 
 typedef enum
 {
-    G_ENT_INTFL_THINK          = (1 << 0),
-    G_ENT_INTFL_TOUCH          = (1 << 1),
-    G_ENT_INTFL_PHYSICS_STATIC = (1 << 2)
-}g_entity_internal_flags_e;
-
-typedef enum
-{
-    G_ENT_FL_STATIC    = (1 << 0),
-    G_ENT_FL_NON_SOLID = (1 << 1)
-}g_entity_flags_e;
-
-typedef enum
-{
     G_ENT_FIELD_INDEX_INVALID = -3,
     G_ENT_FIELD_INDEX_PHYSICS = -2,
     G_ENT_FIELD_INDEX_RENDER_COMMON = -1,
@@ -57,7 +44,7 @@ typedef struct g_entity_s
     /* fields accessible by lua code */
     char *classname;
 
-    int flags;
+    bool think;
 
     double origin[3];
     double angle;
@@ -67,6 +54,8 @@ typedef struct g_entity_s
 }g_entity_t;
 
 extern int lua_entity_value_index;
+
+bool g_entity_is_valid (const g_entity_t *ent) GNUC_CONST;
 
 void g_entity_add_field (g_field_t *field) GNUC_NONNULL;
 void g_entity_add_field_list (g_field_t *fields, int index) GNUC_NONNULL;

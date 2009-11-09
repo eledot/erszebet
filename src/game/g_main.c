@@ -414,6 +414,10 @@ void g_pop_field (void *data, int offset, int type, int index, bool check)
             *(bool *)field = lua_toboolean(lua_state, index);
         break;
 
+    case G_FIELD_TYPE_FUNCTION:
+        *(bool *)field = (bool)lua_isfunction(lua_state, index);
+        break;
+
     case G_FIELD_TYPE_CUSTOM_CALLBACK:
         break;
 
@@ -460,6 +464,10 @@ void g_push_field (const void *data, int offset, int type)
 
     case G_FIELD_TYPE_CUSTOM_CALLBACK:
         lua_pushnil(lua_state);
+        break;
+
+    case G_FIELD_TYPE_FUNCTION:
+        sys_printf("error: called g_push_field with G_FIELD_TYPE_FUNCTION field\n");
         break;
 
     default:
