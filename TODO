@@ -1,8 +1,7 @@
 - rewrite g_entity_flags_string to show ALL fields
-- split source code into subdirs (gl, game, sound, video, sys...) and move all to "src" directory
-- use plugins style for different entity renderers and sound formats
-- merge sprites and fonts?
 - resource database
++ split source code into subdirs (gl, game, sound, video, sys...) and move all to "src" directory
++ use plugins style for different entity renderers and sound formats
 + traceback on lua error
 + port engine to iphone
 + get rid of dlopen, use linking instead
