@@ -31,7 +31,8 @@ typedef struct ent_render_line_s
 
     char *name;
     double width;
-    double origin2[3];
+    double start[3];
+    double finish[3];
 }ent_render_line_t;
 
 /*
@@ -39,7 +40,7 @@ typedef struct ent_render_line_s
 line_recalculate
 =================
 */
-GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
+GNUC_NONNULL static void line_recalculate (const g_entity_t *ent)
 {
     const double zero[3] = { 0.0, 0.0, 1.0 };
     ent_render_line_t *r = ent->render_data;
@@ -54,7 +55,7 @@ GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
         return;
     }
 
-    vector_sub(r->origin2, ent->origin, v);
+    vector_sub(r->finish, ent->origin, v);
     length = vector_length(v);
 
     if (length < 0.1)
@@ -74,9 +75,9 @@ GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
     r->verts[2] = -n[0];
     r->verts[3] = -n[1];
 
-    vector_add(r->origin2, n, &r->verts[4]);
+    vector_add(r->finish, n, &r->verts[4]);
     vector_sub(&r->verts[4], ent->origin, &r->verts[4]);
-    vector_sub(r->origin2, n, &r->verts[6]);
+    vector_sub(r->finish, n, &r->verts[6]);
     vector_sub(&r->verts[6], ent->origin, &r->verts[6]);
 
     r->texcoords[0] = 0.0; r->texcoords[1] = length / r->texture->w;
@@ -103,12 +104,8 @@ GNUC_NONNULL static void line_set_texture_callback (g_entity_t *ent)
         ent->render_valid = false;
     }
 
-    if (!r_texture_load(r->name,
-                        R_TEX_DEFAULT,
-                        &r->texture))
-    {
+    if (!r_texture_load(r->name, R_TEX_DEFAULT, &r->texture))
         return;
-    }
 
     ent->render_valid = true;
 }
@@ -137,6 +134,13 @@ GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
 {
     ent_render_line_t *r = ent->render_data;
 
+    if (r->start[0] != ent->origin[0] || r->start[1] != ent->origin[1])
+    {
+        r->start[0] = ent->origin[0];
+        r->start[1] = ent->origin[1];
+        line_recalculate(ent);
+    }
+
     if (!r->draw)
         return;
 
@@ -146,9 +150,9 @@ GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
 static g_field_t ent_fields_render_line[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_line_t
-    G_FIELD("texture", name,    STRING, NULL, &line_set_texture_callback),
-    G_FIELD("width",   width,   DOUBLE, 1.0,  &line_recalculate),
-    G_FIELD("origin2", origin2, VECTOR, NULL, &line_recalculate),
+    G_FIELD("texture", name,   STRING, NULL, &line_set_texture_callback),
+    G_FIELD("width",   width,  DOUBLE, 1.0,  &line_recalculate),
+    G_FIELD("finish",  finish, VECTOR, NULL, &line_recalculate),
     G_FIELD_NULL
 };
 
