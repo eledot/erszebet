@@ -35,10 +35,10 @@ typedef struct ent_render_sprite_s
 
 /*
 =================
-sprite_set_name_callback
+sprite_reload_callback
 =================
 */
-GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
+GNUC_NONNULL static void sprite_reload_callback (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
 
@@ -46,7 +46,6 @@ GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
     {
         r_sprite_unload(r->sprite);
         ent->render_valid = false;
-        r->name = NULL;
     }
 
     if (NULL == r->name)
@@ -114,11 +113,11 @@ GNUC_NONNULL static void ent_render_sprite_draw (const g_entity_t *ent)
 static g_field_t ent_fields_render_sprite[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_sprite_t
-    G_FIELD("sprite", name,   STRING,  NULL, &sprite_set_name_callback),
+    G_FIELD("sprite", name,   STRING,  NULL, &sprite_reload_callback),
     G_FIELD("width",  width,  DOUBLE,  0.0,  NULL),
     G_FIELD("height", height, DOUBLE,  0.0,  NULL),
     G_FIELD("frame",  frame,  INTEGER, 0,    &sprite_set_frame_callback),
-    G_FIELD("ui",     ui,     BOOL,    true, NULL),
+    G_FIELD("ui",     ui,     BOOL,    true, &sprite_reload_callback),
     G_FIELD_NULL
 };
 
