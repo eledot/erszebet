@@ -20,6 +20,7 @@
 #include "game/g_physics_private.h"
 
 #define PHYSICS_STEPS 3
+#define PHYSICS_MIN_DELTA 0.018
 
 typedef struct g_physics_data_s
 {
@@ -258,7 +259,7 @@ void g_physics_frame (void)
     int    i;
     double dt = (g_time - physics_last_update) / (double)PHYSICS_STEPS;
 
-    if (dt < 0.03)
+    if (dt < PHYSICS_MIN_DELTA)
         return;
 
     physics_last_update = g_time;
