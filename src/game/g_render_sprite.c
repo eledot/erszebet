@@ -33,6 +33,11 @@ typedef struct ent_render_sprite_s
     int frame;
 }ent_render_sprite_t;
 
+/*
+=================
+sprite_set_name_callback
+=================
+*/
 GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
@@ -61,6 +66,11 @@ GNUC_NONNULL static void sprite_set_name_callback (g_entity_t *ent)
     r->height = r->sprite->frames[0]->h;
 }
 
+/*
+=================
+sprite_set_frame_callback
+=================
+*/
 GNUC_NONNULL static void sprite_set_frame_callback (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
@@ -74,6 +84,11 @@ GNUC_NONNULL static void sprite_set_frame_callback (g_entity_t *ent)
         r->frame = 0;
 }
 
+/*
+=================
+ent_render_sprite_unset
+=================
+*/
 GNUC_NONNULL static void ent_render_sprite_unset (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
@@ -84,6 +99,11 @@ GNUC_NONNULL static void ent_render_sprite_unset (g_entity_t *ent)
     r_sprite_unload(r->sprite);
 }
 
+/*
+=================
+ent_render_sprite_draw
+=================
+*/
 GNUC_NONNULL static void ent_render_sprite_draw (const g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;

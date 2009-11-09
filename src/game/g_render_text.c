@@ -51,8 +51,71 @@ typedef struct ent_render_text_s
 
 static const int default_align = G_TEXT_ALIGN_LEFT | G_TEXT_ALIGN_TOP;
 
-GNUC_NONNULL static void text_redraw_callback (g_entity_t *ent);
+/*
+=================
+text_set_align_callback
+=================
+*/
+GNUC_NONNULL static void text_set_align_callback (g_entity_t *ent)
+{
+    ent_render_text_t *r = ent->render_data;
+    float originx = 0.0f, originy = 0.0f;
 
+    if (!ent->render_valid || !r->gltex)
+        return;
+
+    if (r->align & G_TEXT_ALIGN_TOP)
+        originy -= r->texh;
+    else if (!(r->align & G_TEXT_ALIGN_BOTTOM))
+        originy -= r->texh - r->h / 2.0;
+    else
+        originy -= r->texh - r->h;
+
+    if (r->align & G_TEXT_ALIGN_RIGHT)
+        originx -= r->w;
+    else if (!(r->align & G_TEXT_ALIGN_LEFT))
+        originx -= r->w / 2.0;
+
+    r->verts[0] = r->verts[4] = originx;
+    r->verts[1] = r->verts[3] = originy;
+    r->verts[5] = r->verts[7] = originy + r->texh;
+    r->verts[6] = r->verts[2] = originx + r->texw;
+}
+
+/*
+=================
+text_redraw_callback
+=================
+*/
+GNUC_NONNULL static void text_redraw_callback (g_entity_t *ent)
+{
+    ent_render_text_t *r = ent->render_data;
+
+    if (!ent->render_valid)
+        return;
+
+    gl_texture_delete(r->gltex);
+    r->gltex = 0;
+
+    if (NULL == r->text)
+        return;
+
+    r_font_draw_to_texture(r->font,
+                           r->text,
+                           &r->gltex,
+                           &r->w,
+                           &r->h,
+                           &r->texw,
+                           &r->texh);
+
+    text_set_align_callback(ent);
+}
+
+/*
+=================
+text_set_font_callback
+=================
+*/
 GNUC_NONNULL static void text_set_font_callback (g_entity_t *ent)
 {
     ent_render_text_t *r = ent->render_data;
@@ -80,56 +143,11 @@ GNUC_NONNULL static void text_set_font_callback (g_entity_t *ent)
     text_redraw_callback(ent);
 }
 
-GNUC_NONNULL static void text_set_align_callback (g_entity_t *ent)
-{
-    ent_render_text_t *r = ent->render_data;
-    float originx = 0.0f, originy = 0.0f;
-
-    if (!ent->render_valid || !r->gltex)
-        return;
-
-    if (r->align & G_TEXT_ALIGN_TOP)
-        originy -= r->texh;
-    else if (!(r->align & G_TEXT_ALIGN_BOTTOM))
-        originy -= r->texh - r->h / 2.0;
-    else
-        originy -= r->texh - r->h;
-
-    if (r->align & G_TEXT_ALIGN_RIGHT)
-        originx -= r->w;
-    else if (!(r->align & G_TEXT_ALIGN_LEFT))
-        originx -= r->w / 2.0;
-
-    r->verts[0] = r->verts[4] = originx;
-    r->verts[1] = r->verts[3] = originy;
-    r->verts[5] = r->verts[7] = originy + r->texh;
-    r->verts[6] = r->verts[2] = originx + r->texw;
-}
-
-GNUC_NONNULL static void text_redraw_callback (g_entity_t *ent)
-{
-    ent_render_text_t *r = ent->render_data;
-
-    if (!ent->render_valid)
-        return;
-
-    gl_texture_delete(r->gltex);
-    r->gltex = 0;
-
-    if (NULL == r->text)
-        return;
-
-    r_font_draw_to_texture(r->font,
-                           r->text,
-                           &r->gltex,
-                           &r->w,
-                           &r->h,
-                           &r->texw,
-                           &r->texh);
-
-    text_set_align_callback(ent);
-}
-
+/*
+=================
+ent_render_text_unset
+=================
+*/
 GNUC_NONNULL static void ent_render_text_unset (g_entity_t *ent)
 {
     ent_render_text_t *r = ent->render_data;
@@ -141,6 +159,11 @@ GNUC_NONNULL static void ent_render_text_unset (g_entity_t *ent)
     gl_texture_delete(r->gltex);
 }
 
+/*
+=================
+ent_render_text_draw
+=================
+*/
 GNUC_NONNULL static void ent_render_text_draw (const g_entity_t *ent)
 {
     ent_render_text_t *r = ent->render_data;

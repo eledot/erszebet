@@ -37,6 +37,11 @@ typedef struct ent_render_circle_s
 
 static const float circle_segment_texcoords[8] = { 0.0, 0.0, 0.0, 0.9, 1.0, 0.0, 1.0, 0.9 };
 
+/*
+=================
+circle_recalculate
+=================
+*/
 GNUC_NONNULL static void circle_recalculate (g_entity_t *ent)
 {
     const double coeff = 2.0 * M_PI / CIRCLE_SEGMENTS;
@@ -69,6 +74,11 @@ GNUC_NONNULL static void circle_recalculate (g_entity_t *ent)
     r->coords[(CIRCLE_SEGMENTS << 2) + 3] = r->coords[3];
 }
 
+/*
+=================
+circle_set_texture_callback
+=================
+*/
 GNUC_NONNULL static void circle_set_texture_callback (g_entity_t *ent)
 {
     ent_render_circle_t *r = ent->render_data;
@@ -92,6 +102,11 @@ GNUC_NONNULL static void circle_set_texture_callback (g_entity_t *ent)
     ent->render_valid = true;
 }
 
+/*
+=================
+ent_render_circle_unset
+=================
+*/
 GNUC_NONNULL static void ent_render_circle_unset (g_entity_t *ent)
 {
     ent_render_circle_t *r = ent->render_data;
@@ -102,6 +117,11 @@ GNUC_NONNULL static void ent_render_circle_unset (g_entity_t *ent)
     r_texture_unload(r->texture);
 }
 
+/*
+=================
+ent_render_circle_draw
+=================
+*/
 GNUC_NONNULL static void ent_render_circle_draw (const g_entity_t *ent)
 {
     ent_render_circle_t *r = ent->render_data;

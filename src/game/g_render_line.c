@@ -34,6 +34,11 @@ typedef struct ent_render_line_s
     double origin2[3];
 }ent_render_line_t;
 
+/*
+=================
+line_recalculate
+=================
+*/
 GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
 {
     const double zero[3] = { 0.0, 0.0, 1.0 };
@@ -80,6 +85,11 @@ GNUC_NONNULL static void line_recalculate (g_entity_t *ent)
     r->texcoords[6] = 1.0; r->texcoords[7] = 0.0;
 }
 
+/*
+=================
+line_set_texture_callback
+=================
+*/
 GNUC_NONNULL static void line_set_texture_callback (g_entity_t *ent)
 {
     ent_render_line_t *r = ent->render_data;
@@ -103,6 +113,11 @@ GNUC_NONNULL static void line_set_texture_callback (g_entity_t *ent)
     ent->render_valid = true;
 }
 
+/*
+=================
+ent_render_line_unset
+=================
+*/
 GNUC_NONNULL static void ent_render_line_unset (g_entity_t *ent)
 {
     ent_render_line_t *r = ent->render_data;
@@ -113,6 +128,11 @@ GNUC_NONNULL static void ent_render_line_unset (g_entity_t *ent)
     r_texture_unload(r->texture);
 }
 
+/*
+=================
+ent_render_line_draw
+=================
+*/
 GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
 {
     ent_render_line_t *r = ent->render_data;
