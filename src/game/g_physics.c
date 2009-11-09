@@ -357,10 +357,10 @@ static int g_physics_collision (cpShape   *a,
 
 /*
 =================
-g_physics_update_ent_origin
+g_physics_update_ent_origin_angle
 =================
 */
-void g_physics_update_ent_origin (g_entity_t *ent)
+void g_physics_update_ent_origin_angle (g_entity_t *ent)
 {
     g_physics_data_t *data = ent->physics_data;
 
@@ -368,6 +368,7 @@ void g_physics_update_ent_origin (g_entity_t *ent)
         return;
 
     data->body->p = cpv(ent->origin[0], ent->origin[1]);
+    cpBodySetAngle(data->body, ent->angle);
 
     /* rehash static objects */
     if (ent->internal_flags & G_ENT_INTFL_PHYSICS_STATIC)
@@ -384,7 +385,6 @@ static void physics_common_callback (g_entity_t *ent)
     g_physics_data_t *data = ent->physics_data;
 
     data->body->v = cpv(data->velocity[0], data->velocity[1]);
-    cpBodySetAngle(data->body, ent->angle);
     data->body->w = data->rotation; /* FIXME */
     data->body->t = 0.0; /* FIXME */
     data->body->gravity = -data->gravity;

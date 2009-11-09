@@ -21,6 +21,7 @@
 #include "sglib.h"
 
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
+GNUC_NONNULL static void ent_set_angle_callback (g_entity_t *ent);
 
 static g_field_t ent_fields_base[] =
 {
@@ -33,7 +34,7 @@ static g_field_t ent_fields_base[] =
     G_FIELD("origin_x",  origin[0], DOUBLE,      0.0,  &ent_set_origin_callback),
     G_FIELD("origin_y",  origin[1], DOUBLE,      0.0,  &ent_set_origin_callback),
     G_FIELD("origin_z",  origin[2], DOUBLE,      0.0,  &ent_set_origin_callback),
-    G_FIELD("angle",     angle,     DOUBLE,      0.0,  NULL),
+    G_FIELD("angle",     angle,     DOUBLE,      0.0,  &ent_set_angle_callback),
     G_FIELD_NULL
 };
 
@@ -115,7 +116,17 @@ ent_set_origin_callback
 GNUC_NONNULL static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
 {
     sglib_g_entity_t_sort(&entities);
-    g_physics_update_ent_origin(ent);
+    g_physics_update_ent_origin_angle(ent);
+}
+
+/*
+=================
+ent_set_angle_callback
+=================
+*/
+GNUC_NONNULL static void ent_set_angle_callback (GNUC_UNUSED g_entity_t *ent)
+{
+    g_physics_update_ent_origin_angle(ent);
 }
 
 /*
