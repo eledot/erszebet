@@ -49,7 +49,7 @@ typedef struct ent_render_text_s
     char *text;
 }ent_render_text_t;
 
-static const int default_align = G_TEXT_ALIGN_LEFT | G_TEXT_ALIGN_TOP;
+enum { default_align = G_TEXT_ALIGN_LEFT | G_TEXT_ALIGN_TOP };
 
 /*
 =================
