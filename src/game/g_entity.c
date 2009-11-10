@@ -27,7 +27,6 @@ static g_field_t ent_fields_base[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_entity_t
     G_FIELD("classname", classname, STRING_COPY, NULL,  NULL),
-    G_FIELD("think",     think,     FUNCTION,    false, NULL),
     G_FIELD("nextthink", nextthink, DOUBLE,      0.0,   NULL),
     G_FIELD("lastthink", lastthink, DOUBLE,      0.0,   NULL),
     G_FIELD("origin",    origin,    VECTOR,      NULL,  &ent_set_origin_callback),
@@ -79,36 +78,23 @@ ent_get_field
 */
 GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 {
-    const void *data = NULL;
     const g_field_t *f;
+    const void *data = NULL;
     g_field_t s = { .name = field };
 
     f = sglib_g_field_t_find_member(ent_fields, &s);
 
     while (NULL != f)
     {
-        if (f->index)
-        {
-            if (ent->render_index == f->index || f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
-            {
-                data = ent->render_data;
-            }
-            else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
-            {
-                data = ent->physics_data;
-            }
-        }
-        else
-        {
+        if (f->index == G_ENT_FIELD_INDEX_BASE)
             data = ent;
-        }
+        else if (f->index == ent->render_index || f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
+            data = ent->render_data;
+        else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
+            data = ent->physics_data;
 
         if (NULL != data)
         {
-            /* functions are in __data */
-            if (G_FIELD_TYPE_FUNCTION == f->type)
-                return 0;
-
             g_push_field(data, f->offset, f->type);
             return 1;
         }
@@ -158,22 +144,12 @@ GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int 
 
     while (NULL != f)
     {
-        if (f->index)
-        {
-            if (f->index == ent->render_index ||
-                f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
-            {
-                data = ent->render_data;
-            }
-            else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
-            {
-                data = ent->physics_data;
-            }
-        }
-        else
-        {
+        if (f->index == G_ENT_FIELD_INDEX_BASE)
             data = ent;
-        }
+        else if (f->index == ent->render_index || f->index == G_ENT_FIELD_INDEX_RENDER_COMMON)
+            data = ent->render_data;
+        else if (f->index == G_ENT_FIELD_INDEX_PHYSICS)
+            data = ent->physics_data;
 
         if (NULL != data)
         {
@@ -184,10 +160,6 @@ GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int 
 
             if (NULL != f->callback)
                 f->callback(ent);
-
-            /* set function in __data */
-            if (G_FIELD_TYPE_FUNCTION == f->type)
-                return 0;
 
             return 1;
         }
@@ -453,13 +425,18 @@ void g_entity_frame (void)
          NULL != ent;
          ent = sglib_g_entity_t_it_next(&it))
     {
-        if (ent->think && IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
+        if (IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
         {
             ent->lastthink = ent->nextthink;
             lua_getref(lua_state, ent->lua_dataref);
             lua_getfield(lua_state, -1, "think");
-            lua_getref(lua_state, ent->lua_ref);
-            g_lua_call(1, 0);
+
+            if (lua_isfunction(lua_state, -1))
+            {
+                lua_getref(lua_state, ent->lua_ref);
+                g_lua_call(1, 0);
+            }
+
             lua_pop(lua_state, 1);
         }
     }

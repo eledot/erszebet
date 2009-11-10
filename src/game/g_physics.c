@@ -40,7 +40,6 @@ typedef struct g_physics_data_s
     double friction;
     double mass;
     double inertia;
-    bool touch;
 
     int group;
     cpLayers layers;
@@ -71,7 +70,6 @@ static g_field_t ent_fields_physics[] =
     G_FIELD("inertia",        inertia,     DOUBLE,   100.0,        &physics_common_callback),
     G_FIELD("physics_group",  group,       INTEGER,  0,            &physics_shape_parm_change_callback),
     G_FIELD("physics_layers", layers,      INTEGER,  (cpLayers)-1, &physics_shape_parm_change_callback),
-    G_FIELD("touch",          touch,       FUNCTION, false,        NULL),
     G_FIELD_NULL
 };
 
@@ -282,23 +280,28 @@ GNUC_NONNULL_ARGS(1, 3, 4) static bool g_physics_touch (g_entity_t *self,
                                                         const double *origin,
                                                         const double *normal)
 {
-    bool ret;
+    bool ret = false;
 
     lua_getref(lua_state, self->lua_dataref);
     lua_getfield(lua_state, -1, "touch");
-    lua_getref(lua_state, self->lua_ref);
 
-    if (NULL == other)
-        lua_pushnil(lua_state);
-    else
-        lua_getref(lua_state, other->lua_ref);
+    if (lua_isfunction(lua_state, -1))
+    {
+        lua_getref(lua_state, self->lua_ref);
 
-    g_push_vector(origin, 3);
-    g_push_vector(normal, 3);
+        if (NULL == other)
+            lua_pushnil(lua_state);
+        else
+            lua_getref(lua_state, other->lua_ref);
 
-    g_lua_call(4, 1);
-    lua_pop(lua_state, 1);
-    ret = lua_toboolean(lua_state, 0);
+        g_push_vector(origin, 3);
+        g_push_vector(normal, 3);
+
+        g_lua_call(4, 1);
+        lua_pop(lua_state, 1);
+        ret = lua_toboolean(lua_state, 0);
+    }
+
     lua_pop(lua_state, 1);
 
     return ret;
@@ -343,12 +346,12 @@ GNUC_NONNULL static int g_physics_collision (cpShape   *a,
 
         valid = g_entity_is_valid(a->data) && g_entity_is_valid(b->data);
 
-        if (valid && apd->touch && bpd->is_solid)
+        if (valid && bpd->is_solid)
             atouch_blocked = g_physics_touch(a->data, b->data, origin, normal);
 
         valid = g_entity_is_valid(a->data) && g_entity_is_valid(b->data);
 
-        if (valid && bpd->touch && apd->is_solid)
+        if (valid && apd->is_solid)
             btouch_blocked = g_physics_touch(b->data, a->data, origin, normal);
 
         if (!(!(atouch_blocked & btouch_blocked) || (!apd->is_solid || !bpd->is_solid)))
