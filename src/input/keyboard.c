@@ -115,6 +115,7 @@ static const char *key_names[] =
 
 static bind_t key_binds['z' - '0'];
 static bind_t key_special_binds[STSIZE(key_names)];
+static bool key_repeat;
 
 /*
 =================
@@ -174,7 +175,7 @@ static void bind_f (GNUC_UNUSED const struct cmd_s *cmd, GNUC_UNUSED int source,
 key_set_repeat
 =================
 */
-void key_set_repeat (int repeat)
+void key_set_repeat (bool repeat)
 {
 #ifdef ENGINE_VIDEO_SDL
     if (repeat)
@@ -189,11 +190,9 @@ void key_set_repeat (int repeat)
 key_event
 =================
 */
-void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int mod, int down)
+void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int mod, bool is_down)
 {
-    static int repeat = 0;
-
-    if (down)
+    if (is_down)
     {
         if (KEY_ENTER == normal && (mod & KEYMOD_ALT))
         {
@@ -202,8 +201,8 @@ void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int 
         }
         else if (KEY_BACKQUOTE == normal)
         {
-            repeat = !repeat;
-            key_set_repeat(repeat);
+            key_repeat = !key_repeat;
+            key_set_repeat(key_repeat);
             video_grab_toggle();
             return;
         }
@@ -212,12 +211,12 @@ void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int 
     if (KEY_ALPHANUM == normal)
     {
         if (NULL != key_binds[printable - '0'].cmd)
-            cmdbuf_add(key_binds[printable - '0'].cmd, down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
+            cmdbuf_add(key_binds[printable - '0'].cmd, is_down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
     }
     else if (normal > 0 && normal < STSIZE(key_names))
     {
         if (NULL != key_special_binds[normal].cmd)
-            cmdbuf_add(key_special_binds[normal].cmd, down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
+            cmdbuf_add(key_special_binds[normal].cmd, is_down ? CMD_SRC_KEY_DOWN : CMD_SRC_KEY_UP);
     }
 }
 
@@ -234,6 +233,8 @@ bool keyboard_init (void)
     memset(key_special_binds, 0, sizeof(key_special_binds));
 
     cmd_register("bind", NULL, &bind_f, 0);
+
+    key_repeat = false;
 
     keyboard_i = true;
     sys_printf("+keyboard\n");

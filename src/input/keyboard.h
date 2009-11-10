@@ -131,9 +131,9 @@ typedef enum
 /**
  * @brief Toggles key repeat
  *
- * @param repeat Non-zero to turn on key repeats, 0 to switch it off
+ * @param repeat true to turn on key repeats, false to switch it off
  */
-void key_set_repeat (int repeat);
+void key_set_repeat (bool repeat);
 
 /**
  * @brief Receives keyvoard-related events
@@ -142,9 +142,9 @@ void key_set_repeat (int repeat);
  * @param printable_shift Just as one before, but uppercase ('A' or '5', for ex.)
  * @param normal One of the keys_e
  * @param mod Mod flags (key_mods_e)
- * @param down 1 - 'down' event, 0 - 'up' event
+ * @param down true - 'down' event, false - 'up' event
  */
-void key_event (int printable, int printable_shift, int normal, int mod, int down);
+void key_event (int printable, int printable_shift, int normal, int mod, bool is_down);
 
 bool keyboard_init (void);
 void keyboard_shutdown (void);
