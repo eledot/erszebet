@@ -44,12 +44,6 @@ static g_field_t *ent_fields;
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(g_field_t, G_FIELD_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(g_field_t, G_FIELD_COMPARATOR, next);
 
-/* entity field offsets for strings that must be freed */
-static const int ent_fields_free[] =
-{
-    offsetof(g_entity_t, classname)
-};
-
 #define ENT_ZORDER_COMPARATOR(e1, e2) ((int)e1->origin[2] == (int)e2->origin[2] ? \
                                        -1 : \
                                        (int)e1->origin[2] - (int)e2->origin[2])
