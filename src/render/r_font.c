@@ -84,7 +84,7 @@ bool r_font_load (const char *name, int ptsize, r_font_t **font)
     int namelen;
     char tmp[MISC_MAX_FILENAME], *namecopy;
     fs_file_t file = NULL;
-    font_t *realfont, s = { .parms.name = name };
+    font_t *realfont, s = { .parms.name = name, 0 };
 
     realfont = sglib_font_t_find_member(fonts, &s);
 
@@ -167,7 +167,7 @@ void r_font_draw_to_texture (r_font_t *font,
                              int *texh)
 {
     font_t *realfont = (font_t *)font;
-    SDL_Color white = { 255, 255, 255 };
+    SDL_Color white = { 255, 255, 255, 0 };
     SDL_Surface *surface = TTF_RenderUTF8_Blended(realfont->ttf, text, white);
     image_t image = { .name = "text", .miplevels = 0, .format = 0 };
 
