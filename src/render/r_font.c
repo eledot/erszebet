@@ -17,6 +17,8 @@
    Boston, MA 02110-1301 USA
 */
 
+#ifdef ENGINE_VIDEO_SDL
+
 #include <SDL_ttf.h>
 
 #include "render/r_private.h"
@@ -40,6 +42,11 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(font_t, FONT_NAME_COMPARATOR, next);
 
 static font_t *fonts;
 
+/*
+=================
+sdl_rwops_seek
+=================
+*/
 static int sdl_rwops_seek (struct SDL_RWops *context, int offset, int whence)
 {
     fs_file_t f = context->hidden.unknown.data1;
@@ -53,6 +60,11 @@ static int sdl_rwops_seek (struct SDL_RWops *context, int offset, int whence)
     return fs_seek(f, offset, origin);
 }
 
+/*
+=================
+sdl_rwops_read
+=================
+*/
 static int sdl_rwops_read (struct SDL_RWops *context, void *ptr, int size, int maxnum)
 {
     fs_file_t f = context->hidden.unknown.data1;
@@ -60,12 +72,22 @@ static int sdl_rwops_read (struct SDL_RWops *context, void *ptr, int size, int m
     return fs_read(f, ptr, size * maxnum) / size;
 }
 
+/*
+=================
+sdl_rwops_write
+=================
+*/
 static int sdl_rwops_write (GNUC_UNUSED struct SDL_RWops *context, GNUC_UNUSED const void *ptr, GNUC_UNUSED int size, GNUC_UNUSED int num)
 {
     sys_printf("write RWop not available\n");
     return 0;
 }
 
+/*
+=================
+sdl_rwops_close
+=================
+*/
 static int sdl_rwops_close (struct SDL_RWops *context)
 {
     fs_file_t f = context->hidden.unknown.data1;
@@ -252,3 +274,5 @@ void r_font_shutdown (void)
 
     TTF_Quit();
 }
+
+#endif /* ENGINE_VIDEO_SDL */
