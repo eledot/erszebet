@@ -42,12 +42,12 @@ float cursor_y;
 mouse_event
 =================
 */
-void mouse_event (int button, int down, int dx, int dy)
+void mouse_event (int button, bool is_down, int dx, int dy)
 {
     if (button > 0 && button < STSIZE(buttons_name))
     {
         /*
-          sys_printf("%s %s\n", buttons_name[button], down ? "down" : "up");
+          sys_printf("%s %s\n", buttons_name[button], is_down ? "down" : "up");
         */
     }
 
@@ -61,7 +61,7 @@ void mouse_event (int button, int down, int dx, int dy)
         cursor_y = CLAMP(cursor_y, 0, video_height);
     }
 
-    g_call_func("g_mouse_event", "iidd", button, down, (double)cursor_x, (double)cursor_y);
+    g_call_func("g_mouse_event", "ibdd", button, is_down, (double)cursor_x, (double)cursor_y);
 }
 
 /*

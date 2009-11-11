@@ -35,11 +35,11 @@ extern float cursor_y;
  * @brief Receives all mouse-related events
  *
  * @param button Button index (0 if nothing pressed, etc.)
- * @param down 0 if it's 'up' event, 1 if 'down'
+ * @param down false if it's 'up' event, true if 'down'
  * @param dx Relative cursor X offset in pixels
  * @param dy Relative cursor Y offset in pixels
  */
-void mouse_event (int button, int down, int dx, int dy);
+void mouse_event (int button, bool is_down, int dx, int dy);
 
 /**
  * @brief Mouse module initialization
