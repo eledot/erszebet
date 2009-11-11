@@ -146,17 +146,6 @@ void r_frame (void)
 
     gl_switch_2d();
     g_draw();
-
-    if (r_show_fps->i)
-    {
-        char tmp[16];
-        snprintf(tmp, sizeof(tmp), "fps: %i", r_get_fps());
-        gl_color(1, 1, 1, 1);
-        gl_draw_text(tmp, 0, video_height);
-    }
-
-    if (video_grabbed)
-        gl_draw_text("X", cursor_x - GL_INTERNAL_FONT_CW/2, cursor_y + GL_INTERNAL_FONT_CH/2);
 }
 
 /*

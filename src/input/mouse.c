@@ -34,8 +34,8 @@ static const char *buttons_name[] =
 static cvar_t *m_sens;
 static cvar_t *m_accel;
 
-float cursor_x;
-float cursor_y;
+static double cursor_x;
+static double cursor_y;
 
 /*
 =================
@@ -61,7 +61,7 @@ void mouse_event (int button, bool is_down, int dx, int dy)
         cursor_y = CLAMP(cursor_y, 0, video_height);
     }
 
-    g_call_func("g_mouse_event", "ibdd", button, is_down, (double)cursor_x, (double)cursor_y);
+    g_call_func("g_mouse_event", "ibdd", button, is_down, cursor_x, cursor_y);
 }
 
 /*

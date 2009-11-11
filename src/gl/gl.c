@@ -25,14 +25,8 @@ static bool gl_i = false;
 
 mem_pool_t mempool;
 
-static const uint8_t internal_font_data[] =
-{
-#include "gl_internal_font.h"
-};
-
 static const char *extensions;
 static GLdouble aspect;
-static int internal_font;
 
 #ifdef ENGINE_GL_DEBUG
 
@@ -245,62 +239,6 @@ void gl_draw_line2d (float x0, float y0, float x1, float y1)
 
 /*
 =================
-gl_draw_text
-=================
-*/
-void gl_draw_text (const char *text, float x, float y)
-{
-    float tx, ty, tx2, ty2;
-
-    if (NULL == text)
-    {
-        sys_printf("NULL text\n");
-        return;
-    }
-
-    if (!*text || internal_font < 0)
-        return;
-
-    eglBindTexture(GL_TEXTURE_2D, internal_font);
-    GLERROR();
-
-#ifndef ENGINE_OS_IPHONE
-    glBegin(GL_QUADS);
-
-    for (; *text && x < video_width ;text++, x += GL_INTERNAL_FONT_CW)
-    {
-        if (*text <= 32 || (*text & 128))
-            continue;
-
-        /* glyph size is 8x12 */
-        tx = (*text % 16) / 16.0f;
-        ty = (*text >> 4) / 8.0f;
-        tx2 = tx + 1.0f/16.0f;
-        ty2 = ty + 1.0f/8.0f - 1.0f/32.0f;
-
-        glTexCoord2f(tx, ty);
-        glVertex2f(x, y);
-
-        glTexCoord2f(tx2, ty);
-        glVertex2f(x + GL_INTERNAL_FONT_CW, y);
-
-        glTexCoord2f(tx2, ty2);
-        glVertex2f(x + GL_INTERNAL_FONT_CW, y - GL_INTERNAL_FONT_CH);
-
-        glTexCoord2f(tx, ty2);
-        glVertex2f(x, y - GL_INTERNAL_FONT_CH);
-    }
-
-    glEnd();
-#else
-    /* FIXME */
-#endif
-
-    GLERROR();
-}
-
-/*
-=================
 gl_set_viewport
 =================
 */
@@ -408,48 +346,6 @@ void gl_switch_3d (void)
 
 /*
 =================
-gl_create_internal_font
-=================
-*/
-static bool gl_create_internal_font (void)
-{
-    image_t im;
-    int     i, k, pix, unused;
-
-    memset(&im, 0, sizeof(im));
-
-    im.width  = 128;
-    im.height = 128;
-
-    pix = im.width * im.height;
-
-    if (NULL == (im.data = mem_alloc_static(pix << 2)))
-    {
-        sys_printf("no memory for internal font\n");
-        return false;
-    }
-
-    memset(im.data, 0xff, pix << 2);
-
-    for (i = 0; i < (pix >> 3) ;i++)
-    {
-        for (k = 0; k < 8 ;k++)
-        {
-            if (!(internal_font_data[i] & (1 << k)))
-                im.data[(i << 5) + (k << 2) + 3] = 0;
-        }
-    }
-
-    if (!gl_texture_create(&im, GL_TEX_FL_UI, &internal_font, &unused, &unused))
-        internal_font = -1;
-
-    mem_free(im.data);
-
-    return true;
-}
-
-/*
-=================
 gl_init
 =================
 */
@@ -530,9 +426,6 @@ bool gl_init (void)
     if (!gl_texture_init())
         return false;
 
-    if (!gl_create_internal_font())
-        return false;
-
     sys_printf("+gl\n");
 
     return true;
@@ -548,7 +441,6 @@ void gl_shutdown (void)
     if (!gl_i)
         return;
 
-    gl_texture_delete(internal_font);
     gl_texture_shutdown();
 
     gl_i = false;

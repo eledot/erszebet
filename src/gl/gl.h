@@ -22,9 +22,6 @@
 
 #include "image/image.h"
 
-#define GL_INTERNAL_FONT_CW 8.0f
-#define GL_INTERNAL_FONT_CH 12.0f
-
 void gl_clear (void);
 bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_color (double r, double g, double b, double a);
@@ -39,7 +36,6 @@ void gl_disable_textures (void);
 void gl_enable_textures (void);
 void gl_draw_line2d_loop (const float *coords, int num) GNUC_NONNULL;
 void gl_draw_line2d (float x0, float y0, float x1, float y1);
-void gl_draw_text (const char *text, float x, float y) GNUC_NONNULL;
 void gl_set_viewport (int x, int y, int w, int h);
 void gl_switch_2d (void);
 void gl_switch_3d (void);

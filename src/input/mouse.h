@@ -28,9 +28,6 @@
 #ifndef _MOUSE_H
 #define _MOUSE_H
 
-extern float cursor_x;
-extern float cursor_y;
-
 /**
  * @brief Receives all mouse-related events
  *
