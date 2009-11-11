@@ -48,9 +48,6 @@ GNUC_NONNULL static bool image_cg_load (const char *name, image_t *im)
     int               width, height, error = true, prov;
     unsigned char    *data = NULL;
 
-    if (!image_cg_i)
-        return false;
-
     if (NULL == (provider = fs_get_data_provider(name)))
     {
         sys_printf("failed to get data provider\n");
