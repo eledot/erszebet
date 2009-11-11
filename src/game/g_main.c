@@ -183,6 +183,10 @@ void g_call_func (const char *func, const char *types, ...)
             lua_pushstring(lua_state, va_arg(args, char *));
             break;
 
+        case 'b':
+            lua_pushboolean(lua_state, va_arg(args, bool));
+            break;
+
         case '.':
             goto done;
 
@@ -233,6 +237,15 @@ done:
                 return;
             }
             *va_arg(args, const char **) = lua_tostring(lua_state, res_num);
+            break;
+
+        case 'b':
+            if (!lua_isboolean(lua_state, res_num))
+            {
+                sys_printf("result at %i is not a boolean when calling %s\n", res_num, func);
+                return;
+            }
+            *va_arg(args, bool *) = lua_toboolean(lua_state, res_num);
             break;
 
         default:
