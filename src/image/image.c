@@ -187,7 +187,7 @@ bool image_resize (image_t *image, int outwidth, int outheight)
     uint8_t *outdata;
     int      inrowlen, outrowlen, i;
 
-    if (NULL == image || outwidth < 1 || outheight < 1)
+    if (NULL == image || outwidth < 2 || outheight < 2)
     {
         sys_printf("bad args (image=%p, outwidth=%i, outheight=%i)\n", image, outwidth, outheight);
         return false;
