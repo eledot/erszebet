@@ -155,7 +155,7 @@ void cmdbuf_add_file (const char *filename)
         return;
     }
 
-    size = fs_open_read_close(filename, &buf, CMDBUF_SIZE - cmdbuf_len - 1, mempool, 0);
+    size = fs_open_read_close(filename, &buf, CMDBUF_SIZE - cmdbuf_len - 1, mempool, false);
 
     if (size < 0)
     {

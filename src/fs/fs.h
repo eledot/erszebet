@@ -75,11 +75,11 @@ typedef enum
  * @param name File name
  * @param mode One of fs_modes_e
  * @param size Pointer to store file size (or NULL if you don't want it)
- * @param shout Non-zero to shout about failures
+ * @param shout true if it should shout about failures
  *
  * @return File handle on success, NULL on error
  */
-fs_file_t fs_open (const char *name, int mode, int *size, int shout) GNUC_NONNULL_ARGS(1);
+fs_file_t fs_open (const char *name, int mode, int *size, bool shout) GNUC_NONNULL_ARGS(1);
 
 /**
  * @brief Closes a file

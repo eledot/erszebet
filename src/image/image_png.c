@@ -99,7 +99,7 @@ GNUC_NONNULL static bool image_png_load (const char *name, image_t *im)
     png_infop   info = NULL;
     png_byte    depth, color_type;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &size, false)))
         return false;
 
     if (NULL == (pngst = png_create_read_struct(PNG_LIBPNG_VER_STRING,

@@ -127,7 +127,7 @@ bool r_font_load (const char *name, int ptsize, r_font_t **font)
 
     snprintf(tmp, sizeof(tmp), "fonts/%s.ttf", name);
 
-    file = fs_open(tmp, FS_RDONLY, NULL, 1);
+    file = fs_open(tmp, FS_RDONLY, NULL, true);
 
     if (NULL == file)
     {

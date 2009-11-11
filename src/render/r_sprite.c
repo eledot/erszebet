@@ -102,7 +102,7 @@ bool r_sprite_load (const char  *name,
 
     snprintf(tmp, sizeof(tmp), "spr/%s.txt", name);
 
-    if (1 > (size = fs_open_read_close(tmp, &data, 4096, r_mempool, 1)))
+    if (1 > (size = fs_open_read_close(tmp, &data, 4096, r_mempool, true)))
     {
         sys_printf("sprite \"%s\" not found\n", name);
         return false;

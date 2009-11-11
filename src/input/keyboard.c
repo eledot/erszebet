@@ -257,7 +257,7 @@ void keyboard_shutdown (void)
 
     keyboard_i = false;
 
-    if (NULL != (f = fs_open("config.cfg", FS_WRONLY, NULL, 1)))
+    if (NULL != (f = fs_open("config.cfg", FS_WRONLY, NULL, true)))
     {
         for (i = 0; i < STSIZE(key_binds) ;i++)
         {

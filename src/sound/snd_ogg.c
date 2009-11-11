@@ -122,7 +122,7 @@ GNUC_NONNULL static bool snd_ogg_load (const char   *name,
     OggVorbis_File *vorbisfile = NULL;
     vorbis_info    *vorbisinfo = NULL;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, false)))
         return false;
 
     if (NULL == (vorbisfile = mem_alloc(snd_mempool, sizeof(*vorbisfile))))

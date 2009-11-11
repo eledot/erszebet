@@ -115,7 +115,7 @@ GNUC_NONNULL static bool image_pvrtc_load (const char *name, image_t *im)
     if (!image_pvrtc_i)
         return false;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &size, false)))
         return false;
 
     if (size <= (int)sizeof(header))

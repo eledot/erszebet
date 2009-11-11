@@ -24,7 +24,7 @@
 fs_open_read_close
 =================
 */
-int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, int shout)
+int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, bool shout)
 {
     int        size;
     fs_file_t *f;
@@ -38,7 +38,7 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, shout)))
         return -1;
 
-    if (size < 1 || !max_size)
+    if (size < 1)
     {
         fs_close(f);
         return 0;
@@ -66,7 +66,7 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
 fs_open_write_close
 =================
 */
-int fs_open_write_close (const char *name, const void *buffer, int size, int shout)
+int fs_open_write_close (const char *name, const void *buffer, int size, bool shout)
 {
     fs_file_t *f;
 
@@ -142,7 +142,7 @@ int fs_file_exists (const char *name)
 {
     fs_file_t *f;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, NULL, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, NULL, false)))
         return 0;
 
     fs_close(f);

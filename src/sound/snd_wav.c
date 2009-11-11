@@ -156,7 +156,7 @@ GNUC_NONNULL static bool snd_wav_load (const char   *name,
     wav_info_t wav;
     uint8_t    tmp[4096];
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, false)))
         return false;
 
     s = fs_read(f, tmp, sizeof(tmp));

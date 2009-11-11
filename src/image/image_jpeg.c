@@ -211,7 +211,7 @@ GNUC_NONNULL static bool image_jpeg_load (const char *name, image_t *im)
     struct jpeg_decompress_struct ds;
     struct jpeg_error_mgr         em;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &size, false)))
         return false;
 
     ds.err = jpeg_std_error(&em);

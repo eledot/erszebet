@@ -353,7 +353,7 @@ GNUC_NONNULL static bool snd_flac_load (const char   *name,
     FLAC__StreamDecoder          *dec = NULL;
     FLAC__StreamDecoderInitStatus status;
 
-    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, 0)))
+    if (NULL == (f = fs_open(name, FS_RDONLY, &file_size, false)))
         return false;
 
     if (NULL == (dec = FLAC__stream_decoder_new()))

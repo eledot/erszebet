@@ -33,13 +33,13 @@
  *
  * @param name File name
  * @param buffer Pointer to buffer to allocate and fill with data
- * @param max_size Maximal size of buffer to allocate and data to read
+ * @param max_size Maximal size of buffer to allocate and data to read or <= 0 to load file of any size.
  * @param pool Memory pool to use for buffer allocation
- * @param shout Non-zero to shout about failures
+ * @param shout true if it should shout about failures
  *
  * @return Size of data on success, <0 on failure
  */
-int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, int shout)
+int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, bool shout)
     GNUC_NONNULL;
 
 /**
@@ -48,11 +48,11 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
  * @param name File name
  * @param buffer Buffer to write to the file
  * @param size Buffer size
- * @param shout Non-zero to shout about failures
+ * @param shout true if it should shout about failures
  *
  * @return Size of written data on success, <0 on failure
  */
-int fs_open_write_close (const char *name, const void *buffer, int size, int shout)
+int fs_open_write_close (const char *name, const void *buffer, int size, bool shout)
     GNUC_NONNULL;
 
 int fs_get_size (fs_file_t f) GNUC_NONNULL;

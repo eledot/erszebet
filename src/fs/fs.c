@@ -66,7 +66,7 @@ path_t paths[FS_MAX_PATHS];
 fs_open
 =================
 */
-fs_file_t fs_open (const char *name_, int mode, int *size, int shout)
+fs_file_t fs_open (const char *name_, int mode, int *size, bool shout)
 {
     int         i, m, f;
     struct stat st;
