@@ -33,7 +33,6 @@ typedef struct g_entity_s
     /* internal fields */
     int lua_ref;
     int lua_dataref;
-    int internal_flags;
     void *physics_data;
     bool  render_valid;
     int   render_index;
