@@ -38,14 +38,13 @@ typedef struct g_field_s
 
     const union
     {
-        const int     INTEGER;
         const double  DOUBLE;
+        const int     INTEGER;
+        const double *VECTOR;
         const char   *STRING;
         const char   *STRING_COPY;
-        const double *VECTOR;
-        const void   *CUSTOM_CALLBACK;
         const bool    BOOL;
-        const bool    FUNCTION;
+        const void   *CUSTOM_CALLBACK;
     }default_value;
 
     int       index;
