@@ -45,6 +45,52 @@ const char *g_field_type_to_string (int type)
 
 /*
 =================
+g_field_value_to_string
+=================
+*/
+int g_field_value_to_string (const void *data, const g_field_t *field, char *buffer, int size)
+{
+    const void *value = data + field->offset;
+    int len = 0;
+
+    switch (field->type)
+    {
+    case G_FIELD_TYPE_DOUBLE:
+        len = snprintf(buffer, size, "%-2.2lf", *(const double *)value);
+        break;
+
+    case G_FIELD_TYPE_INTEGER:
+        len = snprintf(buffer, size, "%i", *(const int *)value);
+        break;
+
+    case G_FIELD_TYPE_VECTOR:
+        len = snprintf(buffer, size, "{ %-2.2lf, %-2.2lf, %-2.2lf }",
+                       ((const double *)value)[0],
+                       ((const double *)value)[1],
+                       ((const double *)value)[2]);
+        break;
+
+    case G_FIELD_TYPE_STRING:
+    case G_FIELD_TYPE_STRING_COPY:
+        if (NULL == *(const char **)value)
+            len = snprintf(buffer, size, "null");
+        else
+            len = snprintf(buffer, size, "\"%s\"", *(const char **)value);
+        break;
+
+    case G_FIELD_TYPE_BOOL:
+        len = snprintf(buffer, size, (*(const bool *)value) ? "true" : "false");
+        break;
+
+    default:
+        break;
+    }
+
+    return len;
+}
+
+/*
+=================
 g_fields_set_default_values
 =================
 */
