@@ -30,13 +30,15 @@ extern const g_render_plugin_t g_render_plugin_sprite;
 extern const g_render_plugin_t g_render_plugin_circle;
 extern const g_render_plugin_t g_render_plugin_line;
 extern const g_render_plugin_t g_render_plugin_text;
+extern const g_render_plugin_t g_render_plugin_scissor;
 
 static const g_render_plugin_t * const g_render_plugins[] =
 {
     &g_render_plugin_sprite,
     &g_render_plugin_circle,
     &g_render_plugin_line,
-    &g_render_plugin_text
+    &g_render_plugin_text,
+    &g_render_plugin_scissor
 };
 
 enum { g_render_plugins_num = STSIZE(g_render_plugins) };

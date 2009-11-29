@@ -174,8 +174,26 @@ g_entity_string
 */
 GNUC_NONNULL static void g_entity_string (const g_entity_t *ent, char *buffer, int size)
 {
-    /* FIXME */
-    snprintf(buffer, size, "entity: %p ref=%i dataref=%i", ent, ent->lua_ref, ent->lua_dataref);
+    int len;
+
+    len = snprintf(buffer,
+                   size,
+                   "entity: %p "
+                   "ref=%i "
+                   "dataref=%i "
+                   "classname=%s "
+                   "origin={ %-2.2lf, %-2.2lf, %-2.2lf } "
+                   "angle=%-2.2lf "
+                   "nextthink=%-2.2lf "
+                   "lastthink=%-2.2lf",
+                   ent,
+                   ent->lua_ref,
+                   ent->lua_dataref,
+                   NULL != ent->classname ? ent->classname : "\"\"",
+                   ent->origin[0], ent->origin[1], ent->origin[2],
+                   ent->angle,
+                   ent->nextthink,
+                   ent->lastthink);
 }
 
 /*
