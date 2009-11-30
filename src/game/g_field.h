@@ -74,6 +74,7 @@ typedef struct g_field_s
     }
 
 const char *g_field_type_to_string (int type) GNUC_CONST;
+int g_field_value_to_string (const void *data, const g_field_t *field, char *buffer, int size);
 
 void g_fields_set_default_values (void *data, const g_field_t *fields) GNUC_NONNULL;
 void g_fields_free_values (void *data, const g_field_t *fields) GNUC_NONNULL;
