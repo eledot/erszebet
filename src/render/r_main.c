@@ -24,7 +24,6 @@
 static bool r_i = false;
 mem_pool_t r_mempool;
 
-static cvar_t *r_show_fps;
 cvar_t *r_fov;
 
 /* FIXME -- threaded screenshot cmd and shout if failed to take a shot */
@@ -101,38 +100,6 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
 
 /*
 =================
-r_get_fps
-=================
-*/
-static int r_get_fps (void)
-{
-#define FPSCNT 32
-    int        i, total, t, frame_time;
-    static int previous_times[FPSCNT], index, fps, previous;
-
-    t = (int)(sys_get_time() * 1000);
-    frame_time = t - previous;
-    previous = t;
-
-    previous_times[index % FPSCNT] = frame_time;
-    index++;
-
-    if (index > FPSCNT/2)
-    {
-        for (total = i = 0; i < FPSCNT ;i++)
-            total += previous_times[i];
-
-        if (!total)
-            total = 1;
-
-        fps = 1000 * FPSCNT / total;
-    }
-
-    return MIN(9999, fps);
-}
-
-/*
-=================
 r_frame
 =================
 */
@@ -155,7 +122,6 @@ r_init
 */
 bool r_init (void)
 {
-    r_show_fps = cvar_get("r_show_fps", "0", 0);
     r_fov = cvar_get("r_fov", "90", 0);
 
     cmd_register("screenshot_jpeg", NULL, &screenshot_f, 0);
