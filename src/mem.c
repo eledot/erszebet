@@ -279,6 +279,7 @@ void *mem_alloc_real (mem_pool_t  pool,
 #ifdef ENGINE_MEM_DEBUG
         sys_printf("alloc was at %s - %s:%i\n", func, file, line);
 #endif /* ENGINE_MEM_DEBUG */
+        return NULL;
     }
 
     memset(a, 0, real);
