@@ -149,7 +149,8 @@ cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, i
             return NULL;
         }
 
-        strlcpy(c->alias, alias, sizeof(c->alias));
+        if (NULL != alias)
+            strlcpy(c->alias, alias, sizeof(c->alias));
     }
 
     return c;
