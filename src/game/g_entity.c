@@ -237,7 +237,9 @@ GNUC_NONNULL static int ent_lua_index (lua_State *lst)
 
     if (NULL == ent)
     {
-        sys_printf("invalid entity\n");
+        /* FIXME -- rewrite entity creation/removal and
+           get rid of "invalid entities" popping around */
+        /* sys_printf("invalid entity\n"); */
         lua_pushnil(lst);
         return 1;
     }
@@ -267,7 +269,9 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 
     if (NULL == ent)
     {
-        sys_printf("invalid entity\n");
+        /* FIXME -- rewrite entity creation/removal and
+           get rid of "invalid entities" popping around */
+        /* sys_printf("invalid entity\n"); */
         return 0;
     }
 
