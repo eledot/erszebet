@@ -43,6 +43,7 @@ void gl_check_error (const char *func, const char *file, int line)
     int         err;
 
     gl_error = 0;
+    errno = 0;
 
     err = glGetError();
 
