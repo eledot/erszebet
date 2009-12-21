@@ -772,8 +772,8 @@ void g_shutdown (void)
 
     g_call_func("g_shutdown", "");
     g_render_shutdown();
-    g_physics_shutdown();
     g_entity_shutdown();
+    g_physics_shutdown();
     lua_close(lua_state);
     lua_state = NULL;
 
