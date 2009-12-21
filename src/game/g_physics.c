@@ -192,7 +192,7 @@ GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num, boo
     if (NULL == data)
         return;
 
-    data->shapes = ent->physics_data + sizeof(g_physics_data_t);
+    data->shapes = (void *)ent->physics_data + sizeof(g_physics_data_t);
     data->is_static = is_static;
 
     if (data->is_static)
