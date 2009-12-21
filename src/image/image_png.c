@@ -37,7 +37,7 @@ static void epng_read (png_structp png_ptr, png_bytep data, png_size_t length)
 
     if ((int)length != fs_read(png_get_io_ptr(png_ptr), data, length))
     {
-        snprintf(tmp, sizeof(tmp), "failed to read %i bytes\n", length);
+        snprintf(tmp, sizeof(tmp), "failed to read %zu bytes\n", length);
         epng_error(png_ptr, tmp);
     }
 }
