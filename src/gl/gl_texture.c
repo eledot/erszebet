@@ -212,7 +212,10 @@ void gl_texture_delete (int gltex)
     GLuint tex = gltex;
 
     if (gltex)
+    {
         glDeleteTextures(1, &tex);
+        GLERROR();
+    }
 }
 
 /*
