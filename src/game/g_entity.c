@@ -22,18 +22,20 @@
 
 GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent);
 GNUC_NONNULL static void ent_set_angle_callback (g_entity_t *ent);
+GNUC_NONNULL static void ent_set_attached_to (g_entity_t *ent);
 
 static g_field_t ent_fields_base[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_entity_t
-    G_FIELD("classname", classname, STRING_COPY, NULL,  NULL),
-    G_FIELD("nextthink", nextthink, DOUBLE,      0.0,   NULL),
-    G_FIELD("lastthink", lastthink, DOUBLE,      0.0,   NULL),
-    G_FIELD("origin",    origin,    VECTOR,      NULL,  &ent_set_origin_callback),
-    G_FIELD("origin_x",  origin[0], DOUBLE,      0.0,   &ent_set_origin_callback),
-    G_FIELD("origin_y",  origin[1], DOUBLE,      0.0,   &ent_set_origin_callback),
-    G_FIELD("origin_z",  origin[2], DOUBLE,      0.0,   &ent_set_origin_callback),
-    G_FIELD("angle",     angle,     DOUBLE,      0.0,   &ent_set_angle_callback),
+    G_FIELD("classname",   classname,   STRING_COPY,     NULL, NULL),
+    G_FIELD("nextthink",   nextthink,   DOUBLE,          0.0,  NULL),
+    G_FIELD("lastthink",   lastthink,   DOUBLE,          0.0,  NULL),
+    G_FIELD("origin",      origin,      VECTOR,          NULL, &ent_set_origin_callback),
+    G_FIELD("origin_x",    origin[0],   DOUBLE,          0.0,  &ent_set_origin_callback),
+    G_FIELD("origin_y",    origin[1],   DOUBLE,          0.0,  &ent_set_origin_callback),
+    G_FIELD("origin_z",    origin[2],   DOUBLE,          0.0,  &ent_set_origin_callback),
+    G_FIELD("angle",       angle,       DOUBLE,          0.0,  &ent_set_angle_callback),
+    G_FIELD("attached_to", attached_to, CUSTOM_CALLBACK, NULL, &ent_set_attached_to),
     G_FIELD_NULL
 };
 
@@ -107,7 +109,7 @@ GNUC_NONNULL static int ent_get_field (const g_entity_t *ent, const char *field)
 ent_set_origin_callback
 =================
 */
-GNUC_NONNULL static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static void ent_set_origin_callback (g_entity_t *ent)
 {
     sglib_g_entity_t_sort(&entities);
     g_physics_update_ent_origin_angle(ent);
@@ -118,9 +120,51 @@ GNUC_NONNULL static void ent_set_origin_callback (GNUC_UNUSED g_entity_t *ent)
 ent_set_angle_callback
 =================
 */
-GNUC_NONNULL static void ent_set_angle_callback (GNUC_UNUSED g_entity_t *ent)
+GNUC_NONNULL static void ent_set_angle_callback (g_entity_t *ent)
 {
     g_physics_update_ent_origin_angle(ent);
+}
+
+/*
+=================
+ent_set_attached_to
+=================
+*/
+GNUC_NONNULL static void ent_set_attached_to (g_entity_t *ent)
+{
+    g_entity_t *to;
+
+    if (NULL != ent->attached_to)
+        ent->attached_to->num_attachments--;
+
+    lua_getfield(lua_state, lua_entity_value_index, "__ref");
+
+    if (lua_isnil(lua_state, -1))
+    {
+        sys_printf("removing attach\n");
+        lua_pop(lua_state, 1);
+        ent->attached_to = NULL;
+        return;
+    }
+
+    to = (g_entity_t *)lua_touserdata(lua_state, -1);
+    lua_pop(lua_state, 1);
+
+    if (NULL == to || ent == to)
+    {
+        sys_printf("invalid entity\n");
+        return;
+    }
+
+    if (NULL == ent->attached_to)
+    {
+        ent->offset[0] = ent->origin[0];
+        ent->offset[1] = ent->origin[1];
+        sys_printf("new attach\n");
+    }
+
+    to->num_attachments++;
+    ent->attached_to = to;
 }
 
 /*
@@ -287,6 +331,31 @@ GNUC_NONNULL static int ent_lua_newindex (lua_State *lst)
 
 /*
 =================
+g_entity_remove_attachment
+=================
+*/
+static void g_entity_remove_attachment (g_entity_t *ent)
+{
+    if (NULL != ent->attached_to)
+        ent->attached_to->num_attachments--;
+
+    if (ent->num_attachments <= 0)
+    {
+        struct sglib_g_entity_t_iterator it;
+        g_entity_t *e;
+
+        for (e = sglib_g_entity_t_it_init(&it, entities);
+             NULL != e;
+             e = sglib_g_entity_t_it_next(&it))
+        {
+            if (e->attached_to == ent)
+                e->attached_to = NULL;
+        }
+    }
+}
+
+/*
+=================
 g_entity_create
 =================
 */
@@ -334,6 +403,8 @@ GNUC_NONNULL static void g_entity_delete (g_entity_t *ent)
     /* remove all handlers, mark invalid */
     ent->lua_ref = LUA_REFNIL;
     ent->lua_dataref = LUA_REFNIL;
+
+    g_entity_remove_attachment(ent);
 }
 
 /*
@@ -441,6 +512,13 @@ void g_entity_frame (void)
          NULL != ent;
          ent = sglib_g_entity_t_it_next(&it))
     {
+        if (NULL != ent->attached_to)
+        {
+            ent->origin[0] = ent->attached_to->origin[0] + ent->offset[0];
+            ent->origin[1] = ent->attached_to->origin[1] + ent->offset[1];
+            g_physics_update_ent_origin_angle(ent);
+        }
+
         if (IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
         {
             ent->lastthink = ent->nextthink;

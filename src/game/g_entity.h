@@ -38,13 +38,14 @@ typedef struct g_entity_s
     int   render_index;
     void *render_data;
 
+    int num_attachments;
+    struct g_entity_s *attached_to;
     struct g_entity_s *next;
 
     /* fields accessible by lua code */
     char *classname;
 
-    bool think;
-
+    double offset[3];
     double origin[3];
     double angle;
 
