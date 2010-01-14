@@ -127,7 +127,7 @@ GNUC_NONNULL static bool snd_ogg_load (const char   *name,
 
     if (NULL == (vorbisfile = mem_alloc(snd_mempool, sizeof(*vorbisfile))))
     {
-        sys_printf("failed to allocate %i bytes\n", sizeof(*vorbisfile));
+        sys_printf("failed to allocate %zu bytes\n", sizeof(*vorbisfile));
         goto error;
     }
 
