@@ -24,6 +24,7 @@
 #include "render/r_texture.h"
 #include "render/r_sprite.h"
 #include "render/r_font.h"
+#include "render/r_linefont.h"
 
 extern mem_pool_t r_mempool;
 

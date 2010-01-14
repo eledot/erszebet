@@ -64,11 +64,134 @@ GNUC_NONNULL static void r_sprite_get_align (PUV const char *name, const char *w
 
 /*
 =================
+r_sprite_search_minimal
+=================
+*/
+GNUC_NONNULL static void r_sprite_search_minimal (const image_t *image, int num_frames, float *coords)
+{
+    int i, j, n;
+    const uint8_t *p;
+    const int w = image->width << 2;
+
+    if (num_frames == 1)
+    {
+        /* FIXME -- test this */
+
+        /* top to bottom */
+        for (i = 0, p = image->data; i < image->height ;i++, p += w)
+            for (j = 0; j < image->width ;j++)
+                if (p[(j << 2) + 3])
+                    break;
+
+        coords[5] = coords[7] = i;
+
+        /* bottom to top */
+        for (i = image->height - 1, p = image->data; i >= 0 ;i--, p += w)
+            for (j = 0; j < image->width ;j++)
+                if (p[(j << 2) + 3])
+                    break;
+
+        coords[1] = coords[3] = i;
+
+        /* left to right */
+        for (i = 0; i < image->width ;i++)
+            for (j = 0, p = image->data + (i << 2); j < image->width ;j++, p += w)
+                if (p[3])
+                    break;
+
+        coords[0] = coords[4] = i;
+
+        /* right to left */
+        for (i = image->width - 1; i >= 0 ;i--)
+            for (j = 0, p = image->data + (i << 2); j < image->width ;j++, p += w)
+                if (p[3])
+                    break;
+
+        coords[6] = coords[2] = i;
+    }
+    else
+    {
+        i = 0;
+
+        sys_printf("searching for minimals in %ix%i image\n", image->width, image->height);
+
+        /* search for frames */
+        for (n = 0; n < num_frames ;n++)
+        {
+            sys_printf("frame %i\n", n);
+
+            /* left to right */
+            for (; i < image->width ;i += 2)
+            {
+                p = image->data + (i << 2);
+
+                /* top to bottom */
+                for (j = 0; j < image->height ;j++, p += w)
+                {
+                    if (p[3])
+                    {
+                        int oldj = j;
+
+                        coords[(n << 3) + 0] = coords[(n << 3) + 4] = i;
+
+                        for (i += 2; i < image->width ;i += 2)
+                        {
+                            p = image->data + (i << 2);
+
+                            /* top to bottom */
+                            for (j = 0; j < image->height ;j++, p += w)
+                            {
+                                if (p[3])
+                                    break;
+                            }
+
+                            if (j == image->height)
+                            {
+                                coords[(n << 3) + 6] = coords[(n << 3) + 2] = i;
+                                j = oldj;
+                                break;
+                            }
+                        }
+
+                        j = oldj;
+                        goto out;
+                    }
+                }
+            }
+
+        out: (void)0;
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 0], coords[(n << 3) + 4]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 1], coords[(n << 3) + 3]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 5], coords[(n << 3) + 7]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 6], coords[(n << 3) + 2]);
+        }
+    }
+
+    for (n = 0; n < num_frames ;n++)
+    {
+        coords[(n << 3) + 0] /= image->width;
+        coords[(n << 3) + 4] /= image->width;
+        coords[(n << 3) + 1] = coords[(n << 3) + 3] = 1.0f;
+        coords[(n << 3) + 5] = coords[(n << 3) + 7] = 0.0f;
+        coords[(n << 3) + 6] /= image->width;
+        coords[(n << 3) + 2] /= image->width;
+/*
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 0], coords[(n << 3) + 4]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 1], coords[(n << 3) + 3]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 5], coords[(n << 3) + 7]);
+        sys_printf("%.2f %.2f\n", coords[(n << 3) + 6], coords[(n << 3) + 2]);
+*/
+    }
+}
+
+/*
+=================
 r_sprite_load
 =================
 */
 bool r_sprite_load (const char  *name,
                     int          type,
+                    bool         search_minimal,
                     r_sprite_t **sprite)
 {
     char tmp[MISC_MAX_FILENAME];
@@ -77,6 +200,7 @@ bool r_sprite_load (const char  *name,
     void *data = NULL;
     char *d, *namecopy;
     const char *frames_names[MAX_FRAMES];
+    image_t tmpimage, *image = NULL;
 
     if (NULL == name || NULL == frames_names || NULL == sprite)
     {
@@ -132,6 +256,9 @@ bool r_sprite_load (const char  *name,
 
     nlen = strlen(name) + 1;
 
+    if (search_minimal)
+        image = &tmpimage;
+
     /* one-line sprite */
     if (num == 2 && *frames_names[0] == '*')
     {
@@ -146,7 +273,7 @@ bool r_sprite_load (const char  *name,
         if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
             goto error;
 
-        if (!r_texture_load(frames_names[1], type, s->frames))
+        if (!r_texture_load(frames_names[1], type, image, s->frames))
         {
             sys_printf("failed to load texture for sprite \"%s\"\n", name);
             goto error;
@@ -155,15 +282,25 @@ bool r_sprite_load (const char  *name,
         s->type = R_SPRITE_TYPE_LINE;
         namecopy = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
         s->inc = s->frames[0]->texw / (float)num;
+
+        if (NULL != image)
+        {
+            s->frames_coords = mem_alloc(r_mempool, sizeof(s->frames_coords[0]) * 8 * num);
+            r_sprite_search_minimal(image, num, s->frames_coords);
+            mem_free(image->data);
+        }
     }
     else
     {
         if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
             goto error;
 
+        if (NULL != image)
+            s->frames_coords = mem_alloc(r_mempool, sizeof(s->frames_coords[0]) * num);
+
         for (i = 0; i < num ;i++)
         {
-            if (!r_texture_load(frames_names[i], type, &s->frames[i]))
+            if (!r_texture_load(frames_names[i], type, image, &s->frames[i]))
             {
                 sys_printf("failed to load frame %i (\"%s\")\n", i, frames_names[i]);
 
@@ -171,6 +308,12 @@ bool r_sprite_load (const char  *name,
                     r_texture_unload(s->frames[i]);
 
                 goto error;
+            }
+
+            if (NULL != image)
+            {
+                r_sprite_search_minimal(image, 1, &(s->frames_coords[i << 3]));
+                mem_free(image->data);
             }
         }
 
@@ -286,7 +429,6 @@ void r_sprite_draw (const r_sprite_t *sprite,
     verts[5] = verts[7] = originy + height;
     verts[6] = verts[2] = originx + width;
 
-
     if (R_SPRITE_TYPE_TEXTURES == sprite->type)
     {
         tex = sprite->frames[frame];
@@ -302,10 +444,26 @@ void r_sprite_draw (const r_sprite_t *sprite,
     {
         tex = sprite->frames[0];
 
-        vt[0] = vt[4] = frame * sprite->inc;
-        vt[1] = vt[3] = tex->texh;
-        vt[5] = vt[7] = 0.0f;
-        vt[6] = vt[2] = vt[0] + sprite->inc;
+        if (NULL == sprite->frames_coords)
+        {
+            vt[0] = vt[4] = frame * sprite->inc;
+            vt[1] = vt[3] = tex->texh;
+            vt[5] = vt[7] = 0.0f;
+            vt[6] = vt[2] = vt[0] + sprite->inc;
+        }
+        else
+        {
+            //sys_printf("%.0f %.0f %.0f %.0f\n", verts[0], verts[1], verts[5], verts[6]);
+
+            memcpy(vt, &sprite->frames_coords[frame << 3], sizeof(float) * 8);
+/*
+            vt[0] = vt[4] = sprite->frames_coords[(frame << 3) + 0];
+            vt[1] = vt[3] = sprite->frames_coords[(frame << 3) + 1];
+            vt[5] = vt[7] = sprite->frames_coords[(frame << 3) + 5];
+            vt[6] = vt[2] = sprite->frames_coords[(frame << 3) + 6];
+*/
+            //sys_printf("%.2f %.2f %.2f %.2f\n", vt[0], vt[1], vt[5], vt[6]);
+        }
 
         gl_draw_quad(tex->gltex, verts, vt);
     }

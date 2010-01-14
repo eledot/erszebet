@@ -92,7 +92,7 @@ GNUC_NONNULL static void circle_set_texture_callback (g_entity_t *ent)
         ent->render_valid = false;
     }
 
-    if (!r_texture_load(r->name, R_TEX_DEFAULT, &r->texture))
+    if (!r_texture_load(r->name, R_TEX_DEFAULT, NULL, &r->texture))
         return;
 
     ent->render_valid = true;

@@ -131,7 +131,9 @@ bool r_init (void)
 
     if (!r_texture_init() ||
         !r_sprite_init() ||
-        !r_font_init())
+        !r_font_init() ||
+        !r_linefont_init())
+
     {
         return false;
     }
@@ -155,6 +157,7 @@ void r_shutdown (void)
 
     r_i = false;
 
+    r_linefont_shutdown();
     r_font_shutdown();
     r_sprite_shutdown();
     r_texture_shutdown();

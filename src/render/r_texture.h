@@ -43,7 +43,10 @@ typedef struct r_texture_s
     struct r_texture_s *prev;
 }r_texture_t;
 
-bool r_texture_load (const char *name, int type, r_texture_t **tex) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+bool r_texture_load (const char   *name,
+                     int           type,
+                     image_t      *out_image,
+                     r_texture_t **tex) GNUC_NONNULL_ARGS(1,4) GNUC_WARN_UNUSED_RES;
 void r_texture_unload (r_texture_t *tex) GNUC_NONNULL;
 
 bool r_texture_init (void);

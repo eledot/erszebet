@@ -53,6 +53,7 @@ GNUC_NONNULL static void sprite_reload_callback (g_entity_t *ent)
 
     if (!r_sprite_load(r->name,
                        r->ui ? R_TEX_SCREEN_UI : R_TEX_DEFAULT,
+                       false,
                        &r->sprite))
     {
         return;

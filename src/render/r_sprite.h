@@ -46,6 +46,9 @@ typedef struct r_sprite_s
     int   type;
     float inc;
 
+    /* FIXME -- this is temporary hack right now */
+    float *frames_coords;
+
     struct r_sprite_s *next;
 
     r_texture_t *frames[0];
@@ -53,6 +56,7 @@ typedef struct r_sprite_s
 
 bool r_sprite_load (const char  *name,
                     int          type,
+                    bool         search_minimal,
                     r_sprite_t **sprite) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void r_sprite_unload (r_sprite_t *sprite) GNUC_NONNULL;
 
