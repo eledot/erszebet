@@ -240,6 +240,36 @@ void r_font_unload (r_font_t *font)
 
 /*
 =================
+r_list_fonts_f
+=================
+*/
+static void r_list_fonts_f (GNUC_UNUSED const struct cmd_s *cmd,
+                            int source,
+                            GNUC_UNUSED int argc,
+                            GNUC_UNUSED const char **argv)
+{
+    struct sglib_font_t_iterator it;
+    const font_t *font;
+
+    if (source == CMD_SRC_KEY_UP)
+        return;
+
+    sys_printf("----------- fonts list -----------\n");
+
+    for (font = sglib_font_t_it_init(&it, fonts);
+         NULL != font;
+         font = sglib_font_t_it_next(&it))
+    {
+        sys_printf("font: %p name=%s ptsize=%i ref=%i\n",
+                   font,
+                   font->parms.name,
+                   font->parms.ptsize,
+                   font->ref);
+    }
+}
+
+/*
+=================
 r_font_init
 =================
 */
@@ -258,6 +288,8 @@ bool r_font_init (void)
     }
 
     fonts = NULL;
+
+    cmd_register("r_list_fonts", NULL, &r_list_fonts_f, 0);
 
     return true;
 }
