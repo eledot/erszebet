@@ -242,6 +242,11 @@ void g_render_init (void)
         }
     }
 
+    g_set_integer("G_TEXT_ALIGN_LEFT", G_TEXT_ALIGN_LEFT);
+    g_set_integer("G_TEXT_ALIGN_RIGHT", G_TEXT_ALIGN_RIGHT);
+    g_set_integer("G_TEXT_ALIGN_TOP", G_TEXT_ALIGN_TOP);
+    g_set_integer("G_TEXT_ALIGN_BOTTOM", G_TEXT_ALIGN_BOTTOM);
+
     cmd_register("g_list_render_plugins", NULL, &g_list_render_plugins_f, 0);
 
     sys_printf("+g_render\n");

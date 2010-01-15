@@ -22,14 +22,6 @@
 #include "render/r_font.h"
 #include "gl/gl_private.h"
 
-typedef enum
-{
-    G_TEXT_ALIGN_LEFT   = (1 << 0),
-    G_TEXT_ALIGN_RIGHT  = (1 << 1),
-    G_TEXT_ALIGN_TOP    = (1 << 2),
-    G_TEXT_ALIGN_BOTTOM = (1 << 3)
-}g_text_alignments_e;
-
 typedef struct ent_render_text_s
 {
     RENDER_PLUGIN_COMMON_DATA;
@@ -175,21 +167,6 @@ GNUC_NONNULL static void ent_render_text_draw (const g_entity_t *ent)
     gl_draw_quad(r->gltex, r->verts, texcoords);
 }
 
-/*
-=================
-ent_render_text_init
-=================
-*/
-static bool ent_render_text_init (void)
-{
-    g_set_integer("G_TEXT_ALIGN_LEFT", G_TEXT_ALIGN_LEFT);
-    g_set_integer("G_TEXT_ALIGN_RIGHT", G_TEXT_ALIGN_RIGHT);
-    g_set_integer("G_TEXT_ALIGN_TOP", G_TEXT_ALIGN_TOP);
-    g_set_integer("G_TEXT_ALIGN_BOTTOM", G_TEXT_ALIGN_BOTTOM);
-
-    return true;
-}
-
 static g_field_t ent_fields_render_text[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_text_t
@@ -208,6 +185,5 @@ const g_render_plugin_t g_render_plugin_text =
     .render_data_size = sizeof(ent_render_text_t),
     .fields = ent_fields_render_text,
     .unset = &ent_render_text_unset,
-    .draw = &ent_render_text_draw,
-    .init = ent_render_text_init
+    .draw = &ent_render_text_draw
 };

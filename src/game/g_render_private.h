@@ -24,6 +24,14 @@
 #include "game/g_field.h"
 #include "game/g_entity.h"
 
+typedef enum
+{
+    G_TEXT_ALIGN_LEFT   = (1 << 0),
+    G_TEXT_ALIGN_RIGHT  = (1 << 1),
+    G_TEXT_ALIGN_TOP    = (1 << 2),
+    G_TEXT_ALIGN_BOTTOM = (1 << 3)
+}g_text_alignments_e;
+
 #define RENDER_PLUGIN_COMMON_DATA               \
     double color[3];                            \
     double alpha;                               \

@@ -28,11 +28,48 @@ typedef struct ent_render_text2_s
 
     r_linefont_t *font;
 
+    int w;
+    int h;
+    int align;
+
+    int offset[2];
+
     const char *fontname;
     const char *chars;
 
     char *text;
 }ent_render_text2_t;
+
+enum { default_align = G_TEXT_ALIGN_LEFT | G_TEXT_ALIGN_TOP };
+
+/*
+=================
+text2_set_align_callback
+=================
+*/
+GNUC_NONNULL static void text2_set_align_callback (g_entity_t *ent)
+{
+    ent_render_text2_t *r = ent->render_data;
+
+    if (NULL == r->font || NULL == r->text)
+        return;
+
+    r_linefont_get_text_window(r->font, r->text, &r->w, &r->h);
+
+    r->offset[0] = r->offset[1] = 0;
+
+    if (r->align & G_TEXT_ALIGN_BOTTOM)
+        r->offset[1] -= r->h;
+    else if (!(r->align & G_TEXT_ALIGN_TOP))
+        r->offset[1] -= r->h / 2;
+
+    if (r->align & G_TEXT_ALIGN_RIGHT)
+        r->offset[0] -= r->w;
+    else if (!(r->align & G_TEXT_ALIGN_LEFT))
+        r->offset[0] -= r->w / 2;
+
+    ent->render_valid = true;
+}
 
 /*
 =================
@@ -56,7 +93,7 @@ GNUC_NONNULL static void text2_set_font_callback (g_entity_t *ent)
     if (!r_linefont_load(r->fontname, r->chars, &r->font))
         return;
 
-    ent->render_valid = true;
+    ent->render_valid = (NULL != r->text);
     r->fontname = r->font->sprite->name;
     r->chars = r->font->chars;
 }
@@ -85,18 +122,17 @@ GNUC_NONNULL static void ent_render_text2_draw (const g_entity_t *ent)
 {
     ent_render_text2_t *r = ent->render_data;
 
-    if (NULL == r->text)
-        return;
-
+    gl_translate_rotate(r->offset[0], r->offset[1], 0);
     r_linefont_draw(r->font, r->text);
 }
 
 static g_field_t ent_fields_render_text2[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_text2_t
-    G_FIELD("font",  fontname, STRING,      NULL, &text2_set_font_callback),
-    G_FIELD("chars", chars,    STRING,      NULL, &text2_set_font_callback),
-    G_FIELD("text",  text,     STRING_COPY, NULL, NULL), 
+    G_FIELD("align", align,    INTEGER,     default_align, &text2_set_align_callback),
+    G_FIELD("font",  fontname, STRING,      NULL,          &text2_set_font_callback),
+    G_FIELD("chars", chars,    STRING,      NULL,          &text2_set_font_callback),
+    G_FIELD("text",  text,     STRING_COPY, NULL,          &text2_set_align_callback), 
     G_FIELD_NULL
 };
 
