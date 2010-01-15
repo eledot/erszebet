@@ -148,15 +148,13 @@ void r_linefont_draw (r_linefont_t *font, const char *text)
     {
         for (j = 0; j < realfont->charslen ;j++)
         {
-            if (text[i] == realfont->parms.chars[j])
+            if (text[i] == font->chars[j])
             {
-                const float *coords = &realfont->parms.sprite->frames_coords[j << 3];
-                double w = realfont->parms.sprite->frames[0]->w * (coords[6] - coords[0]);
-                r_sprite_draw(realfont->parms.sprite,
-                              j,
-                              0,
-                              64);
-                gl_translate_rotate(32, 0.0, 0.0);
+                const float *coords = &font->sprite->frames_coords[j << 3];
+                double width = (coords[6] - coords[0]) * font->sprite->frames[0]->w;
+                double height = font->sprite->frames[0]->h;
+                r_sprite_draw(font->sprite, j, width, height);
+                gl_translate_rotate(width, 0.0, 0.0);
                 break;
             }
         }
