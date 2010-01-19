@@ -86,7 +86,7 @@ cvar_t *cvar_get (const char *name, const char *str, int flags) GNUC_NONNULL;
 /**
  * @brief initializes cvar module
  */
-bool cvar_init (void);
+erbool cvar_init (void);
 
 /**
  * @brief deinitializes cvar module

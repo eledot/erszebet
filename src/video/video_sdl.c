@@ -25,7 +25,7 @@
 
 #define DEFAULT_FLAGS (SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_OPENGL)
 
-static bool video_i = false;
+static erbool video_i = false;
 
 static SDL_Surface *surf;
 
@@ -39,11 +39,11 @@ static int nograb;
 int video_orientation;
 int video_width;
 int video_height;
-bool video_fullscreen;
-bool video_grabbed = false;
+erbool video_fullscreen;
+erbool video_grabbed = false;
 double video_aspect;
 
-static bool input_grabbed = true;
+static erbool input_grabbed = true;
 
 /*
 =================
@@ -178,7 +178,7 @@ void video_frame (void)
 video_set_mode
 =================
 */
-bool video_set_mode (int w, int h, bool fullscreen)
+erbool video_set_mode (int w, int h, erbool fullscreen)
 {
     int flags = DEFAULT_FLAGS;
 
@@ -223,7 +223,7 @@ bool video_set_mode (int w, int h, bool fullscreen)
 video_init
 =================
 */
-bool video_init (void)
+erbool video_init (void)
 {
     int w, h, i;
 

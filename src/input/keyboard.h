@@ -133,7 +133,7 @@ typedef enum
  *
  * @param repeat true to turn on key repeats, false to switch it off
  */
-void key_set_repeat (bool repeat);
+void key_set_repeat (erbool repeat);
 
 /**
  * @brief Receives keyvoard-related events
@@ -144,9 +144,9 @@ void key_set_repeat (bool repeat);
  * @param mod Mod flags (key_mods_e)
  * @param down true - 'down' event, false - 'up' event
  */
-void key_event (int printable, int printable_shift, int normal, int mod, bool is_down);
+void key_event (int printable, int printable_shift, int normal, int mod, erbool is_down);
 
-bool keyboard_init (void);
+erbool keyboard_init (void);
 void keyboard_shutdown (void);
 
 #endif /* !_KEYBOARD_H */

@@ -47,7 +47,7 @@ static cvar_t *gl_picmip;
 gl_texture_create
 =================
 */
-bool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh)
+erbool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh)
 {
     int    max, sw, sh, mip;
     GLuint tex;
@@ -223,7 +223,7 @@ void gl_texture_delete (int gltex)
 gl_texture_init
 =================
 */
-bool gl_texture_init (void)
+erbool gl_texture_init (void)
 {
     gl_trilinear = cvar_get("gl_trilinear", "1", CVAR_FL_SAVE);
     gl_anisotropy_level = cvar_get("gl_anisotropy_level", "1", CVAR_FL_SAVE);

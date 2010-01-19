@@ -22,7 +22,7 @@
 #define HASH_SIZE ('z' - 'a')
 #define MAX_CVARS 256
 
-static bool cvar_i = false;
+static erbool cvar_i = false;
 
 static cvar_t *cvars[HASH_SIZE];
 static mem_pool_t mempool;
@@ -231,7 +231,7 @@ cvar_t *cvar_get (const char *name, const char *str, int flags)
 cvar_init
 =================
 */
-bool cvar_init (void)
+erbool cvar_init (void)
 {
     memset(cvars, 0, sizeof(cvars));
 

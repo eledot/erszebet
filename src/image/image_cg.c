@@ -19,13 +19,13 @@
 
 #ifdef ENGINE_IMAGE_CG
 
-#include <CoreGraphics.h>
+#include <CoreGraphics/CoreGraphics.h>
 
 #include "image/image_private.h"
 
 typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
                                  const CGFloat          decode[],
-                                 bool                   shouldInterpolate,
+                                 erbool                   shouldInterpolate,
                                  CGColorRenderingIntent intent);
 
 static const im_prov_t providers[] =
@@ -39,7 +39,7 @@ static const im_prov_t providers[] =
 image_cg_load
 =================
 */
-GNUC_NONNULL static bool image_cg_load (const char *name, image_t *im)
+GNUC_NONNULL static erbool image_cg_load (const char *name, image_t *im)
 {
     CGDataProviderRef provider = NULL;
     CGImageRef        image = NULL;

@@ -28,8 +28,10 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-bool engine_frame (void);
-bool engine_start (void);
+#include "common.h"
+
+erbool engine_frame (void);
+erbool engine_start (void);
 void engine_stop (void);
 
 #endif /* !_ENGINE_H */

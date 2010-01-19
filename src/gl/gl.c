@@ -21,7 +21,7 @@
 #include "gl/gl_private.h"
 #include "render/r_texture.h"
 
-static bool gl_i = false;
+static erbool gl_i = false;
 
 mem_pool_t mempool;
 
@@ -84,7 +84,7 @@ void gl_clear (void)
 gl_get_screen_rgb
 =================
 */
-bool gl_get_screen_rgb (image_t *image)
+erbool gl_get_screen_rgb (image_t *image)
 {
     int size;
 
@@ -350,7 +350,7 @@ void gl_switch_3d (void)
 gl_init
 =================
 */
-bool gl_init (void)
+erbool gl_init (void)
 {
     const char *s;
 

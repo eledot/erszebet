@@ -101,7 +101,7 @@ static int sdl_rwops_close (struct SDL_RWops *context)
 r_font_load
 =================
 */
-bool r_font_load (const char *name, int ptsize, r_font_t **font)
+erbool r_font_load (const char *name, int ptsize, r_font_t **font)
 {
     int namelen;
     char tmp[MISC_MAX_FILENAME], *namecopy;
@@ -273,7 +273,7 @@ static void r_list_fonts_f (GNUC_UNUSED const struct cmd_s *cmd,
 r_font_init
 =================
 */
-bool r_font_init (void)
+erbool r_font_init (void)
 {
     const SDL_version *ver;
 

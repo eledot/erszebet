@@ -42,7 +42,7 @@ void snd_unload (snd_sound_t *sound);
 
 void snd_frame (void);
 
-bool snd_init (void);
+erbool snd_init (void);
 void snd_shutdown (void);
 
 #endif /* !_SND_OPENAL_H */

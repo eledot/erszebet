@@ -26,7 +26,7 @@ typedef struct r_font_s
     int         ptsize;
 }r_font_t;
 
-bool r_font_load (const char *name, int ptsize, r_font_t **font);
+erbool r_font_load (const char *name, int ptsize, r_font_t **font);
 void r_font_unload (r_font_t *font);
 
 void r_font_draw_to_texture (r_font_t *font,
@@ -37,7 +37,7 @@ void r_font_draw_to_texture (r_font_t *font,
                              int *texw,
                              int *texh);
 
-bool r_font_init (void);
+erbool r_font_init (void);
 void r_font_shutdown (void);
 
 #endif /* !_R_FONT_H */

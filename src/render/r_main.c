@@ -21,7 +21,7 @@
 #include "render/r_private.h"
 #include "gl/gl.h"
 
-static bool r_i = false;
+static erbool r_i = false;
 mem_pool_t r_mempool;
 
 cvar_t *r_fov;
@@ -39,7 +39,7 @@ static void screenshot_f (const struct cmd_s *cmd, GNUC_UNUSED int source, int a
     const char *ext;
     image_t     im;
     int         i, *last_number;
-    bool       (*save) (const char *name, image_t *im) = NULL;
+    erbool       (*save) (const char *name, image_t *im) = NULL;
     static int  last_number_jpeg = 0;
     static int  last_number_png = 0;
 
@@ -120,7 +120,7 @@ void r_frame (void)
 r_init
 =================
 */
-bool r_init (void)
+erbool r_init (void)
 {
     r_fov = cvar_get("r_fov", "90", 0);
 

@@ -22,7 +22,7 @@
 #define HASH_SIZE ('z' - 'a')
 #define MAX_CMDS 256
 
-static bool cmd_i = false;
+static erbool cmd_i = false;
 
 static cmd_t *cmds[HASH_SIZE];
 static mem_pool_t mempool;
@@ -161,7 +161,7 @@ cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, i
 cmd_init
 =================
 */
-bool cmd_init (void)
+erbool cmd_init (void)
 {
     memset(cmds, 0, sizeof(cmds));
 

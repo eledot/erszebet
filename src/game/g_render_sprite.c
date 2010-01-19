@@ -29,7 +29,7 @@ typedef struct ent_render_sprite_s
     const char *name;
     double width;
     double height;
-    bool ui;
+    erbool ui;
     int frame;
 }ent_render_sprite_t;
 
@@ -118,7 +118,7 @@ static g_field_t ent_fields_render_sprite[] =
     G_FIELD("width",  width,  DOUBLE,  0.0,  NULL),
     G_FIELD("height", height, DOUBLE,  0.0,  NULL),
     G_FIELD("frame",  frame,  INTEGER, 0,    &sprite_set_frame_callback),
-    G_FIELD("ui",     ui,     BOOL,    true, &sprite_reload_callback),
+    G_FIELD("ui",     ui,     ERBOOL,    true, &sprite_reload_callback),
     G_FIELD_NULL
 };
 

@@ -27,7 +27,7 @@ typedef enum
     G_FIELD_TYPE_VECTOR,
     G_FIELD_TYPE_STRING,
     G_FIELD_TYPE_STRING_COPY,
-    G_FIELD_TYPE_BOOL,
+    G_FIELD_TYPE_ERBOOL,
     G_FIELD_TYPE_CUSTOM_CALLBACK,
     G_FIELD_TYPES_NUM
 }ent_fields_types_e;
@@ -43,7 +43,7 @@ typedef struct g_field_s
         const double *VECTOR;
         const char   *STRING;
         const char   *STRING_COPY;
-        const bool    BOOL;
+        const erbool    ERBOOL;
         const void   *CUSTOM_CALLBACK;
     }default_value;
 
@@ -78,7 +78,7 @@ int g_field_value_to_string (const void *data, const g_field_t *field, char *buf
 
 void g_fields_set_default_values (void *data, const g_field_t *fields) GNUC_NONNULL;
 void g_fields_free_values (void *data, const g_field_t *fields) GNUC_NONNULL;
-void g_fields_pop (void *data, const g_field_t *fields, bool check) GNUC_NONNULL;
+void g_fields_pop (void *data, const g_field_t *fields, erbool check) GNUC_NONNULL;
 void g_fields_push (const void *data, const g_field_t *fields) GNUC_NONNULL;
 
 #endif /* !_G_FIELD_H */

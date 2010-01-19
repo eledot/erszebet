@@ -24,8 +24,8 @@
 int video_orientation;
 int video_width;
 int video_height;
-bool video_fullscreen;
-bool video_grabbed = true;
+erbool video_fullscreen;
+erbool video_grabbed = true;
 double video_aspect;
 
 /*
@@ -60,7 +60,7 @@ void video_frame (void)
 video_set_mode
 =================
 */
-bool video_set_mode (int w, int h, bool fullscreen)
+erbool video_set_mode (int w, int h, erbool fullscreen)
 {
     return false;
 }
@@ -70,7 +70,7 @@ bool video_set_mode (int w, int h, bool fullscreen)
 video_init
 =================
 */
-bool video_init (void)
+erbool video_init (void)
 {
     /* FIXME -- take this from accelerometer? */
     video_orientation = VIDEO_LANDSCAPE;

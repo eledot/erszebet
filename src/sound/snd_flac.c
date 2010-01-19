@@ -115,7 +115,7 @@ static FLAC__StreamDecoderLengthStatus eflac_decoder_length (GNUC_UNUSED const F
 eflac_decoder_eof
 =================
 */
-static FLAC__bool eflac_decoder_eof (GNUC_UNUSED const FLAC__StreamDecoder *decoder, void *client_data)
+static FLAC__erbool eflac_decoder_eof (GNUC_UNUSED const FLAC__StreamDecoder *decoder, void *client_data)
 {
     snd_stream_t *s = client_data;
 
@@ -345,7 +345,7 @@ static int snd_flac_stream_func (GNUC_UNUSED snd_stream_t *stream, GNUC_UNUSED i
 snd_flac_load
 =================
 */
-GNUC_NONNULL static bool snd_flac_load (const char   *name,
+GNUC_NONNULL static erbool snd_flac_load (const char   *name,
                                         snd_stream_t *stream)
 {
     fs_file_t                     f;

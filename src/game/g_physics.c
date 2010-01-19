@@ -29,8 +29,8 @@ typedef struct g_physics_data_s
     cpShape **shapes;
     int       shapes_num;
 
-    bool is_static;
-    bool is_solid;
+    erbool is_static;
+    erbool is_solid;
 
     /* fields accessible by lua code */
     double velocity[3];
@@ -57,7 +57,7 @@ static void physics_set_body_callback (g_entity_t *ent) GNUC_NONNULL;
 static g_field_t ent_fields_physics[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_physics_data_t
-    G_FIELD("solid",          is_solid,    BOOL,     true,         NULL),
+    G_FIELD("solid",          is_solid,    ERBOOL,     true,         NULL),
     G_FIELD("velocity",       velocity,    VECTOR,   NULL,         &physics_common_callback),
     G_FIELD("velocity_x",     velocity[0], DOUBLE,   0.0,          &physics_common_callback),
     G_FIELD("velocity_y",     velocity[1], DOUBLE,   0.0,          &physics_common_callback),
@@ -182,7 +182,7 @@ GNUC_NONNULL void g_physics_mem_free (g_entity_t *ent)
 g_physics_new_obj
 =================
 */
-GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num, bool is_static)
+GNUC_NONNULL static void g_physics_new_obj (g_entity_t *ent, int shapes_num, erbool is_static)
 {
     g_physics_data_t *data;
 
@@ -275,12 +275,12 @@ void g_physics_frame (void)
 g_physics_touch
 =================
 */
-GNUC_NONNULL_ARGS(1, 3, 4) static bool g_physics_touch (g_entity_t *self,
+GNUC_NONNULL_ARGS(1, 3, 4) static erbool g_physics_touch (g_entity_t *self,
                                                         g_entity_t *other,
                                                         const double *origin,
                                                         const double *normal)
 {
-    bool ret = false;
+    erbool ret = false;
 
     lua_getref(lua_state, self->lua_dataref);
     lua_getfield(lua_state, -1, "touch");
@@ -320,7 +320,7 @@ GNUC_NONNULL static int g_physics_collision (cpShape   *a,
                                              GNUC_UNUSED void *data)
 {
     int i;
-    bool valid;
+    erbool valid;
     const g_physics_data_t *apd;
     const g_physics_data_t *bpd;
 
@@ -332,8 +332,8 @@ GNUC_NONNULL static int g_physics_collision (cpShape   *a,
 
     for (i = 0, valid = true; i < num_contacts && valid ;i++)
     {
-        bool atouch_blocked = true;
-        bool btouch_blocked = true;
+        erbool atouch_blocked = true;
+        erbool btouch_blocked = true;
         double origin[3];
         double normal[3];
 
@@ -432,7 +432,7 @@ static void physics_set_body_callback (g_entity_t *ent)
 {
     g_physics_data_t *data;
     int i, type, shapes_num;
-    bool is_static = false;
+    erbool is_static = false;
 
     g_physics_mem_free(ent);
 

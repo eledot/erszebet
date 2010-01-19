@@ -40,6 +40,8 @@
 
 @property NSTimeInterval animation_interval;
 
+- (BOOL)createFramebuffer;
+- (void)destroyFramebuffer;
 - (void)startAnimation;
 - (void)stopAnimation;
 - (void)drawView;

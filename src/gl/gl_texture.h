@@ -39,10 +39,10 @@ typedef enum
                       GL_TEX_FL_NOLOD |                                 \
                       GL_TEX_FL_NOSCALE)
 
-bool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+erbool gl_texture_create (image_t *image, int flags, int *gltex, int *texw, int *texh) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_texture_delete (int gltex);
 
-bool gl_texture_init (void);
+erbool gl_texture_init (void);
 void gl_texture_shutdown (void);
 
 #endif /* !_GL_TEXTURE_H */

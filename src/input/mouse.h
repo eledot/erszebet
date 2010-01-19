@@ -36,14 +36,14 @@
  * @param dx Relative cursor X offset in pixels
  * @param dy Relative cursor Y offset in pixels
  */
-void mouse_event (int button, bool is_down, int dx, int dy);
+void mouse_event (int button, erbool is_down, int dx, int dy);
 
 /**
  * @brief Mouse module initialization
  *
  * @return 0 on success
  */
-bool mouse_init (void);
+erbool mouse_init (void);
 
 /**
  * @brief Mouse module deinitialization

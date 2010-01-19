@@ -50,7 +50,7 @@ const char *fs_get_resource_path (const char *filename, mem_pool_t mempool)
     }
 
     buffer = mem_alloc_static(MISC_MAX_FILENAME);
-    CFURLGetFileSystemRepresentation(url, true, buffer, MISC_MAX_FILENAME);
+    CFURLGetFileSystemRepresentation(url, true, (unsigned char *)buffer, MISC_MAX_FILENAME);
     CFRelease(path);
     CFRelease(url);
 
@@ -120,7 +120,7 @@ CGDataProviderRef fs_get_data_provider (const char *name_)
 fs_helpers_apple_init
 =================
 */
-bool fs_helpers_apple_init (void)
+erbool fs_helpers_apple_init (void)
 {
     if (NULL == (cg_main_bundle = CFBundleGetMainBundle()))
     {
@@ -145,7 +145,7 @@ void fs_helpers_apple_shutdown (void)
 
 #include "common.h"
 
-bool fs_helpers_apple_init (void) { return true; }
+erbool fs_helpers_apple_init (void) { return true; }
 void fs_helpers_apple_shutdown (void) { }
 
 #endif /* _FS_HELPERS_APPLE_H */

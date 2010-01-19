@@ -31,17 +31,23 @@
 /**
  * @brief Default game resources path
  */
+#ifndef FS_DEFAULT_BASE
 #define FS_DEFAULT_BASE "/usr/share/games/"GAME_NAME
+#endif
 
 /**
  * @brief Default user-home directory name of the game
  */
+#ifndef FS_HOME_BASE
 #define FS_HOME_BASE    "."GAME_NAME
+#endif
 
 /**
  * @brief Default mod directory
  */
+#ifndef FS_DEFAULT_GAME
 #define FS_DEFAULT_GAME "base"
+#endif
 
 /**
  * @brief File handle
@@ -79,7 +85,7 @@ typedef enum
  *
  * @return File handle on success, NULL on error
  */
-fs_file_t fs_open (const char *name, int mode, int *size, bool shout) GNUC_NONNULL_ARGS(1);
+fs_file_t fs_open (const char *name, int mode, int *size, erbool shout) GNUC_NONNULL_ARGS(1);
 
 /**
  * @brief Closes a file
@@ -128,11 +134,11 @@ int fs_seek (fs_file_t f, int offset, int origin) GNUC_NONNULL;
  */
 int fs_tell (fs_file_t f) GNUC_NONNULL;
 
-bool fs_mkdir (const char *name) GNUC_NONNULL;
+erbool fs_mkdir (const char *name) GNUC_NONNULL;
 
-bool fs_unlink (const char *name) GNUC_NONNULL;
+erbool fs_unlink (const char *name) GNUC_NONNULL;
 
-bool fs_init (void);
+erbool fs_init (void);
 
 void fs_shutdown (void);
 

@@ -26,7 +26,7 @@
 #define GAME_MAIN_FILE fs_get_resource_path("main.lua", g_mempool)
 #endif
 
-static bool g_i = false;
+static erbool g_i = false;
 
 mem_pool_t g_mempool;
 lua_State *lua_state;
@@ -184,7 +184,7 @@ void g_call_func (const char *func, const char *types, ...)
             break;
 
         case 'b':
-            lua_pushboolean(lua_state, va_arg(args, bool));
+            lua_pushboolean(lua_state, va_arg(args, erbool));
             break;
 
         case '.':
@@ -245,7 +245,7 @@ done:
                 sys_printf("result at %i is not a boolean when calling %s\n", res_num, func);
                 return;
             }
-            *va_arg(args, bool *) = lua_toboolean(lua_state, res_num);
+            *va_arg(args, erbool *) = lua_toboolean(lua_state, res_num);
             break;
 
         default:
@@ -336,7 +336,7 @@ void g_push_vector (const double *vector, int num)
 g_pop_vector
 =================
 */
-bool g_pop_vector (int index, double *vector, int num)
+erbool g_pop_vector (int index, double *vector, int num)
 {
     int i;
 
@@ -383,7 +383,7 @@ void g_push_strings (const char **strings, int num)
 g_pop_field
 =================
 */
-void g_pop_field (void *data, int offset, int type, int index, bool check)
+void g_pop_field (void *data, int offset, int type, int index, erbool check)
 {
     void *field = data + offset;
 
@@ -422,9 +422,9 @@ void g_pop_field (void *data, int offset, int type, int index, bool check)
             *(char **)field = mem_strdup(g_mempool, luaL_checkstring(lua_state, index));
         break;
 
-    case G_FIELD_TYPE_BOOL:
+    case G_FIELD_TYPE_ERBOOL:
         if (!check || lua_isboolean(lua_state, index))
-            *(bool *)field = lua_toboolean(lua_state, index);
+            *(erbool *)field = lua_toboolean(lua_state, index);
         break;
 
     case G_FIELD_TYPE_CUSTOM_CALLBACK:
@@ -467,8 +467,8 @@ void g_push_field (const void *data, int offset, int type)
             lua_pushstring(lua_state, *(const char **)field);
         break;
 
-    case G_FIELD_TYPE_BOOL:
-        lua_pushboolean(lua_state, *(const bool *)field);
+    case G_FIELD_TYPE_ERBOOL:
+        lua_pushboolean(lua_state, *(const erbool *)field);
         break;
 
     case G_FIELD_TYPE_CUSTOM_CALLBACK:
@@ -500,7 +500,7 @@ void g_frame (void)
 g_lua_call_real
 =================
 */
-bool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
+erbool g_lua_call_real (int args, int ret, PUV const char *file, PUV int line, PUV const char *func)
 {
     int base = lua_gettop(lua_state) - args;
     lua_pushcfunction(lua_state, g_lua_traceback);
@@ -713,7 +713,7 @@ void g_draw (void)
 g_init
 =================
 */
-bool g_init (void)
+erbool g_init (void)
 {
     const char *file;
 

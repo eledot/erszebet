@@ -23,7 +23,7 @@
 #include "image/image.h"
 
 void gl_clear (void);
-bool gl_get_screen_rgb (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+erbool gl_get_screen_rgb (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void gl_color (double r, double g, double b, double a);
 void gl_translate_rotate (double x, double y, double angle);
 void gl_scale (double scalex, double scaley);
@@ -40,7 +40,7 @@ void gl_set_viewport (int x, int y, int w, int h);
 void gl_switch_2d (void);
 void gl_switch_3d (void);
 
-bool gl_init (void);
+erbool gl_init (void);
 void gl_shutdown (void);
 
 #endif /* !_GL_H */

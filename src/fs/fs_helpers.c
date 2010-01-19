@@ -24,7 +24,7 @@
 fs_open_read_close
 =================
 */
-int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, bool shout)
+int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_t pool, erbool shout)
 {
     int        size;
     fs_file_t *f;
@@ -66,7 +66,7 @@ int fs_open_read_close (const char *name, void **buffer, int max_size, mem_pool_
 fs_open_write_close
 =================
 */
-int fs_open_write_close (const char *name, const void *buffer, int size, bool shout)
+int fs_open_write_close (const char *name, const void *buffer, int size, erbool shout)
 {
     fs_file_t *f;
 

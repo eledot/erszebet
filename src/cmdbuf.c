@@ -21,7 +21,7 @@
 
 #define CMDBUF_SIZE 32768
 
-static bool cmdbuf_i = false;
+static erbool cmdbuf_i = false;
 
 static char *cmdbuf;
 static int   cmdbuf_len;
@@ -279,7 +279,7 @@ static void exec_f (GNUC_UNUSED const struct cmd_s *cmd,
 cmdbuf_init
 =================
 */
-bool cmdbuf_init (void)
+erbool cmdbuf_init (void)
 {
     mem_alloc_static_pool("cmdbuf", CMDBUF_SIZE * 2);
 

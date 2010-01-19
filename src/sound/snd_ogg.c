@@ -114,7 +114,7 @@ static int snd_ogg_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_ogg_load
 =================
 */
-GNUC_NONNULL static bool snd_ogg_load (const char   *name,
+GNUC_NONNULL static erbool snd_ogg_load (const char   *name,
                                        snd_stream_t *stream)
 {
     fs_file_t       f;

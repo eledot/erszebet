@@ -25,7 +25,7 @@ typedef struct ent_render_line_s
     RENDER_PLUGIN_COMMON_DATA;
 
     r_texture_t *texture;
-    bool draw;
+    erbool draw;
     float verts[8];
     float texcoords[8];
 

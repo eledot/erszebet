@@ -90,7 +90,7 @@ static void epng_flush (GNUC_UNUSED png_structp png_ptr)
 image_png_load
 =================
 */
-GNUC_NONNULL static bool image_png_load (const char *name, image_t *im)
+GNUC_NONNULL static erbool image_png_load (const char *name, image_t *im)
 {
     fs_file_t   f;
     int         size, r, width, height, inc;
@@ -200,7 +200,7 @@ error:
 image_png_save
 =================
 */
-GNUC_NONNULL static bool image_png_save (const char *name, const image_t *im)
+GNUC_NONNULL static erbool image_png_save (const char *name, const image_t *im)
 {
     fs_file_t   f;
     png_structp pngst;

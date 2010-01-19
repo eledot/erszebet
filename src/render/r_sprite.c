@@ -178,9 +178,9 @@ GNUC_NONNULL static void r_sprite_search_minimal (const image_t     *image,
 r_sprite_load
 =================
 */
-bool r_sprite_load (const char  *name,
+erbool r_sprite_load (const char  *name,
                     int          type,
-                    bool         search_minimal,
+                    erbool         search_minimal,
                     r_sprite_t **sprite)
 {
     char tmp[MISC_MAX_FILENAME];
@@ -489,7 +489,7 @@ static void r_list_sprites_f (GNUC_UNUSED const struct cmd_s *cmd,
 r_sprite_init
 =================
 */
-bool r_sprite_init (void)
+erbool r_sprite_init (void)
 {
     sprites = NULL;
 

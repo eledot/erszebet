@@ -42,7 +42,7 @@ static double cursor_y;
 mouse_event
 =================
 */
-void mouse_event (int button, bool is_down, int dx, int dy)
+void mouse_event (int button, erbool is_down, int dx, int dy)
 {
     if (button > 0 && button < STSIZE(buttons_name))
     {
@@ -69,7 +69,7 @@ void mouse_event (int button, bool is_down, int dx, int dy)
 mouse_init
 =================
 */
-bool mouse_init (void)
+erbool mouse_init (void)
 {
     cursor_x = cursor_y = 0.0;
 

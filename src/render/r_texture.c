@@ -39,7 +39,7 @@ static r_texture_t *textures;
 r_texture_load
 =================
 */
-bool r_texture_load (const char *name, int type, image_t *out_image, r_texture_t **tex)
+erbool r_texture_load (const char *name, int type, image_t *out_image, r_texture_t **tex)
 {
     int gltex, nlen, w, h, texw, texh;
     char tmp[MISC_MAX_FILENAME], *namecopy;
@@ -187,7 +187,7 @@ static void r_list_textures_f (GNUC_UNUSED const struct cmd_s *cmd,
 r_texture_init
 =================
 */
-bool r_texture_init (void)
+erbool r_texture_init (void)
 {
     textures = NULL;
 

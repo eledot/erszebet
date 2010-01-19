@@ -24,6 +24,7 @@
 #import "eagl_view.h"
 #import "common.h"
 #import "gl_private.h"
+#import "engine.h"
 
 @interface EAGLView()
 
@@ -46,31 +47,49 @@
     return [CAEAGLLayer class];
 }
 
-- (id) initWithCoder:(NSCoder *)coder
+-(id)initWithFrame:(CGRect)frame
 {
-    if ((self = [super initWithCoder:coder]))
+    self = [super initWithFrame:frame];
+    if(self != nil)
     {
-        CAEAGLLayer *eagl_layer = (CAEAGLLayer *)self.layer;
-
-        eagl_layer.opaque = YES;
-        eagl_layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys
-                                                      : [NSNumber numberWithBool:NO],
-                                                      kEAGLDrawablePropertyRetainedBacking,
-                                                      kEAGLColorFormatRGBA8,
-                                                      kEAGLDrawablePropertyColorFormat,
-                                                      nil];
-
-        context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-
-        if (!context || ![EAGLContext setCurrentContext:context])
-        {
-            [self release];
-            return nil;
-        }
-
-        animation_interval = 1.0 / 60.0;
-        [self setMultipleTouchEnabled:YES];
+        self = [self init];
     }
+
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder*)coder
+{
+    if((self = [super initWithCoder:coder]))
+    {
+        self = [self init];
+    }       
+
+    return self;
+}
+
+- (id) init
+{
+    CAEAGLLayer *eagl_layer = (CAEAGLLayer *)self.layer;
+
+    eagl_layer.opaque = YES;
+    eagl_layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys
+                                        : [NSNumber numberWithBool:NO],
+                                                  kEAGLDrawablePropertyRetainedBacking,
+                                                  kEAGLColorFormatRGBA8,
+                                                  kEAGLDrawablePropertyColorFormat,
+                                                  nil];
+
+    context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+
+    if (!context || ![EAGLContext setCurrentContext:context])
+    {
+        [self release];
+        return nil;
+    }
+
+    animation_interval = 1.0 / 60.0;
+    [self setMultipleTouchEnabled:YES];
 
     return self;
 }
@@ -119,8 +138,6 @@
     GLERROR();
     glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &video_height);
     GLERROR();
-
-    sys_printf("== %i %i\n", video_width, video_height);
 
     glGenRenderbuffersOES(1, &buffer_depth);
     GLERROR();

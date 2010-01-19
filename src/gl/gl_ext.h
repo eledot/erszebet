@@ -22,7 +22,7 @@
 
 #define GL_ADD_EXT_PROTO(cvar)                  \
     extern cvar_t *cvar;                        \
-    extern bool ext_##cvar
+    extern erbool ext_##cvar
 
 GL_ADD_EXT_PROTO(gl_nv_fog_distance);
 GL_ADD_EXT_PROTO(gl_ext_fog_coord);

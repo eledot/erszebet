@@ -24,7 +24,7 @@ extern cvar_t *r_fov;
 
 void r_frame (void);
 
-bool r_init (void);
+erbool r_init (void);
 void r_shutdown (void);
 
 #endif /* !_R_MAIN_H */

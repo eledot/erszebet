@@ -56,12 +56,12 @@ typedef struct image_s
     struct image_s *next;
 }image_t;
 
-bool image_load (const char *name, image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+erbool image_load (const char *name, image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 int image_mipmap (image_t *image) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
-bool image_resize (image_t *image, int width, int height) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
-bool image_scale (image_t *image, int width, int height) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+erbool image_resize (image_t *image, int width, int height) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
+erbool image_scale (image_t *image, int width, int height) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 
-bool image_init (void);
+erbool image_init (void);
 void image_shutdown (void);
 
 #endif /* !_IMAGE_H */

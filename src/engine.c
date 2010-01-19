@@ -65,7 +65,7 @@ static void echo_f (GNUC_UNUSED const struct cmd_s *cmd,
 engine_frame
 =================
 */
-bool engine_frame (void)
+erbool engine_frame (void)
 {
     if (engine_quit_flag)
         return false;
@@ -86,7 +86,7 @@ bool engine_frame (void)
 engine_start
 =================
 */
-bool engine_start (void)
+erbool engine_start (void)
 {
     init_time();
     sys_get_time();

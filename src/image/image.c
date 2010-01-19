@@ -19,7 +19,7 @@
 
 #include "image/image_private.h"
 
-static bool image_i = false;
+static erbool image_i = false;
 
 mem_pool_t image_mempool;
 
@@ -46,7 +46,7 @@ static const image_plugin_t * const image_plugins[] =
 
 enum { image_plugins_num = STSIZE(image_plugins) };
 
-static bool image_plugins_usable[image_plugins_num];
+static erbool image_plugins_usable[image_plugins_num];
 
 /*
 =================
@@ -94,7 +94,7 @@ static void resample_lerp_line (const uint8_t *in, uint8_t *out, int inwidth, in
 image_load
 =================
 */
-bool image_load (const char *name, image_t *image)
+erbool image_load (const char *name, image_t *image)
 {
     int i;
     const char * const *exts;
@@ -182,7 +182,7 @@ int image_mipmap (image_t *image)
 image_resize
 =================
 */
-bool image_resize (image_t *image, int outwidth, int outheight)
+erbool image_resize (image_t *image, int outwidth, int outheight)
 {
     uint8_t *outdata;
     int      inrowlen, outrowlen, i;
@@ -226,7 +226,7 @@ bool image_resize (image_t *image, int outwidth, int outheight)
 image_scale
 =================
 */
-bool image_scale (image_t *image, int outwidth, int outheight)
+erbool image_scale (image_t *image, int outwidth, int outheight)
 {
     int            i, j, yi, oldy, f, fstep, endy;
     uint8_t       *out, *outdata, *row1, *row2;
@@ -376,7 +376,7 @@ bool image_scale (image_t *image, int outwidth, int outheight)
 image_init
 =================
 */
-bool image_init (void)
+erbool image_init (void)
 {
     int i;
     char tmp[16];

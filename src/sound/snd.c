@@ -36,7 +36,7 @@ typedef struct sound_s
     ALuint al_buffer;
     ALuint al_buffer2;
 
-    bool streaming;
+    erbool streaming;
     snd_stream_t stream;
 
     struct sound_s *next;
@@ -45,8 +45,8 @@ typedef struct sound_s
 
 mem_pool_t snd_mempool;
 
-static bool snd_i = false;
-static bool alc_done = false;
+static erbool snd_i = false;
+static erbool alc_done = false;
 
 static ALCdevice *snd_device;
 static ALCcontext *snd_context;
@@ -78,7 +78,7 @@ static const snd_plugin_t * const snd_plugins[] =
 
 enum { snd_plugins_num = STSIZE(snd_plugins) };
 
-static bool snd_plugins_usable[snd_plugins_num];
+static erbool snd_plugins_usable[snd_plugins_num];
 
 #ifdef ENGINE_SND_DEBUG
 
@@ -255,7 +255,7 @@ int snd_get_stream_format (int bps, int channels)
 snd_load_internal
 =================
 */
-static GNUC_NONNULL bool snd_load_internal (const char *name, sound_t *sound)
+static GNUC_NONNULL erbool snd_load_internal (const char *name, sound_t *sound)
 {
     int i;
     const char * const *exts;
@@ -397,7 +397,7 @@ void snd_frame (void)
 snd_init
 =================
 */
-bool snd_init (void)
+erbool snd_init (void)
 {
     const char *s;
     char tmp[16];
@@ -528,7 +528,7 @@ snd_sound_t snd_load (GNUC_UNUSED const char *name, GNUC_UNUSED int flags) { ret
 void snd_unload (GNUC_UNUSED snd_sound_t *sound) { }
 void snd_frame (void) { }
 
-bool snd_init (void) { return true; }
+erbool snd_init (void) { return true; }
 void snd_shutdown (void) { }
 
 #endif /* ENGINE_SND */

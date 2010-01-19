@@ -50,7 +50,7 @@ typedef struct file_s
 SGLIB_DEFINE_SORTED_LIST_PROTOTYPES(file_t, FILE_NAME_COMPARATOR, next);
 SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(file_t, FILE_NAME_COMPARATOR, next);
 
-static bool fs_i = false;
+static erbool fs_i = false;
 
 static file_t *files;
 static mem_pool_t mempool;
@@ -66,7 +66,7 @@ path_t paths[FS_MAX_PATHS];
 fs_open
 =================
 */
-fs_file_t fs_open (const char *name_, int mode, int *size, bool shout)
+fs_file_t fs_open (const char *name_, int mode, int *size, erbool shout)
 {
     int         i, m, f;
     struct stat st;
@@ -286,7 +286,7 @@ int fs_tell (fs_file_t f)
 fs_mkdir
 =================
 */
-bool fs_mkdir (const char *name)
+erbool fs_mkdir (const char *name)
 {
     int  i;
     char tmp[MISC_MAX_FILENAME * 2];
@@ -311,7 +311,7 @@ bool fs_mkdir (const char *name)
 fs_unlink
 =================
 */
-bool fs_unlink (const char *name)
+erbool fs_unlink (const char *name)
 {
     int  i;
     char tmp[MISC_MAX_FILENAME * 2];
@@ -403,7 +403,7 @@ static void fs_list_files_f (GNUC_UNUSED const struct cmd_s *cmd,
 fs_init
 =================
 */
-bool fs_init (void)
+erbool fs_init (void)
 {
     const char *home, *s;
     char        tmp[MISC_MAX_FILENAME];

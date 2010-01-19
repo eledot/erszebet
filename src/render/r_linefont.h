@@ -28,7 +28,7 @@ typedef struct r_linefont_s
     char       *chars;
 }r_linefont_t;
 
-bool r_linefont_load (const char *name, const char *chars, r_linefont_t **font)
+erbool r_linefont_load (const char *name, const char *chars, r_linefont_t **font)
     GNUC_NONNULL;
 void r_linefont_unload (r_linefont_t *font)
     GNUC_NONNULL;
@@ -38,7 +38,7 @@ void r_linefont_get_text_window (r_linefont_t *font, const char *text, int *widt
 void r_linefont_draw (r_linefont_t *font, const char *text)
     GNUC_NONNULL;
 
-bool r_linefont_init (void);
+erbool r_linefont_init (void);
 void r_linefont_shutdown (void);
 
 #endif /* !_R_LINEFONT_H */

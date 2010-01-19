@@ -57,7 +57,7 @@ typedef struct pvrtc_header_s
     unsigned int surfs_num; /* number of surfaces */
 }pvrtc_header_t;
 
-static bool image_pvrtc_i = false;
+static erbool image_pvrtc_i = false;
 
 /*
 =================
@@ -105,7 +105,7 @@ GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
 image_pvrtc_load
 =================
 */
-GNUC_NONNULL static bool image_pvrtc_load (const char *name, image_t *im)
+GNUC_NONNULL static erbool image_pvrtc_load (const char *name, image_t *im)
 {
     fs_file_t      f;
     int            size, format, mipmaps_num = 1, pf;
@@ -140,7 +140,7 @@ GNUC_NONNULL static bool image_pvrtc_load (const char *name, image_t *im)
         header.width  < 1 ||
         header.height < 1)
     {
-        sys_printf("bad image size (%ux%u)\n", header.width, header.header);
+        sys_printf("bad image size (%ux%u)\n", header.width, header.height);
         goto error;
     }
 
@@ -188,7 +188,6 @@ GNUC_NONNULL static bool image_pvrtc_load (const char *name, image_t *im)
     im->data       = data;
     im->data_size  = header.data_size;
     im->format     = format;
-    im->pixel_type = 0;
     im->miplevels  = mipmaps_num;
     im->teximage2d = &image_pvrtc_teximage2d;
 

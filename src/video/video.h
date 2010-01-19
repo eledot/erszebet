@@ -49,12 +49,12 @@ extern int video_height;
 /**
  * @brief Non-zero in fullscreen mode
  */
-extern bool video_fullscreen;
+extern erbool video_fullscreen;
 
 /**
  * @brief Non-zero if input is grabbed
  */
-extern bool video_grabbed;
+extern erbool video_grabbed;
 
 /**
  * @brief video_width/video_height
@@ -66,7 +66,7 @@ extern double video_aspect;
  */
 void video_frame (void);
 
-bool video_set_mode (int w, int h, bool fullscreen);
+erbool video_set_mode (int w, int h, erbool fullscreen);
 
 /**
  * @brief Toggles input grabbing
@@ -83,7 +83,7 @@ void video_fullscreen_toggle (void);
  *
  * @return 0 on success
  */
-bool video_init (void);
+erbool video_init (void);
 
 /**
  * @brief Video module deinitialization

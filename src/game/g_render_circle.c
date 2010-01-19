@@ -27,7 +27,7 @@ typedef struct ent_render_circle_s
     RENDER_PLUGIN_COMMON_DATA;
 
     r_texture_t *texture;
-    bool draw;
+    erbool draw;
     float coords[(CIRCLE_SEGMENTS + 1) << 2];
 
     char *name;

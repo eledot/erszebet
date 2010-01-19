@@ -28,10 +28,10 @@ typedef struct image_plugin_s
 {
     const char *name;
     const char * const *extensions;
-    bool (*init) (void);
+    erbool (*init) (void);
     void (*shutdown) (void);
-    bool (*load) (const char *name, image_t *im);
-    bool (*save) (const char *name, const image_t *im);
+    erbool (*load) (const char *name, image_t *im);
+    erbool (*save) (const char *name, const image_t *im);
 }image_plugin_t;
 
 #endif /* !_IMAGE_PRIVATE_H */

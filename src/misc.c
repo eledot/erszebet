@@ -33,7 +33,7 @@ static int  tok_bufferpos = 0;
 parse_token
 =================
 */
-static bool parse_token (const char **datapointer)
+static erbool parse_token (const char **datapointer)
 {
     int         len;
     const char *data = *datapointer;
@@ -162,7 +162,7 @@ int string_tokenize (const char *text)
 filename_is_valid
 =================
 */
-bool filename_is_valid (const char *name)
+erbool filename_is_valid (const char *name)
 {
     int len, i, d;
 
@@ -217,7 +217,7 @@ bool filename_is_valid (const char *name)
 varname_is_valid
 =================
 */
-bool varname_is_valid (const char *name)
+erbool varname_is_valid (const char *name)
 {
     int len, i;
 

@@ -74,7 +74,7 @@ double sys_get_time (void)
 sys_mkdir
 =================
 */
-bool sys_mkdir (char *path)
+erbool sys_mkdir (char *path)
 {
     int i;
 
@@ -118,7 +118,7 @@ bool sys_mkdir (char *path)
 sys_unlink
 =================
 */
-bool sys_unlink (const char *filename)
+erbool sys_unlink (const char *filename)
 {
     if (NULL == filename || !filename[0])
     {

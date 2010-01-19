@@ -62,7 +62,7 @@ int lua_entity_value_index;
 g_entity_is_valid
 =================
 */
-bool g_entity_is_valid (const g_entity_t *ent)
+erbool g_entity_is_valid (const g_entity_t *ent)
 {
     return NULL != ent && LUA_REFNIL != ent->lua_ref;
 }
@@ -172,7 +172,7 @@ GNUC_NONNULL static void ent_set_attached_to (g_entity_t *ent)
 ent_set_field
 =================
 */
-GNUC_NONNULL static bool ent_set_field (g_entity_t *ent, const char *field, int index)
+GNUC_NONNULL static erbool ent_set_field (g_entity_t *ent, const char *field, int index)
 {
     const g_field_t *f;
     void *data = NULL;

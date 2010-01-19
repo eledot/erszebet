@@ -25,7 +25,7 @@
 
 #define GL_ADD_EXT_VAR(cvar)                                   \
     cvar_t *cvar;                                              \
-    bool ext_##cvar = false
+    erbool ext_##cvar = false
 
 #define GL_ADD_EXT_VAR2(cvar)                                   \
     GL_ADD_EXT_VAR(cvar);                                       \
@@ -77,11 +77,11 @@ int gl_max_clip_planes;
 gl_add_extension
 =================
 */
-static bool gl_add_extension (GNUC_UNUSED const char   *name,
+static erbool gl_add_extension (GNUC_UNUSED const char   *name,
                               GNUC_UNUSED cvar_t      **cvar,
                               GNUC_UNUSED const char   *cvar_name,
                               GNUC_UNUSED libgl_func_t *funcs,
-                              GNUC_UNUSED bool        (*init_func) (bool ok))
+                              GNUC_UNUSED erbool        (*init_func) (erbool ok))
 {
 #if 0
     const char *s;
@@ -118,7 +118,7 @@ no:
 nvfog_init
 =================
 */
-static bool nvfog_init (bool ok)
+static erbool nvfog_init (erbool ok)
 {
     if (!ok)
         return true;
@@ -131,7 +131,7 @@ static bool nvfog_init (bool ok)
 lod_bias_get_max
 =================
 */
-static bool lod_bias_get_max (bool ok)
+static erbool lod_bias_get_max (erbool ok)
 {
     if (!ok)
         return true;
@@ -149,7 +149,7 @@ static bool lod_bias_get_max (bool ok)
 aniso_get_max
 =================
 */
-static bool aniso_get_max (bool ok)
+static erbool aniso_get_max (erbool ok)
 {
     if (!ok)
         return true;
@@ -167,7 +167,7 @@ static bool aniso_get_max (bool ok)
 compressed_init
 =================
 */
-static bool compressed_init (bool ok)
+static erbool compressed_init (erbool ok)
 {
     if (!ok)
         return true;
@@ -196,7 +196,7 @@ static bool compressed_init (bool ok)
 gen_mipmap_init
 =================
 */
-static bool gen_mipmap_init (bool ok)
+static erbool gen_mipmap_init (erbool ok)
 {
     if (!ok)
         return true;
@@ -214,7 +214,7 @@ static bool gen_mipmap_init (bool ok)
 tex3d_init
 =================
 */
-static bool tex3d_init (bool ok)
+static erbool tex3d_init (erbool ok)
 {
     if (!ok)
         return true;
@@ -232,7 +232,7 @@ static bool tex3d_init (bool ok)
 texcubemap_init
 =================
 */
-static bool texcubemap_init (bool ok)
+static erbool texcubemap_init (erbool ok)
 {
     if (!ok)
         return true;
@@ -250,7 +250,7 @@ static bool texcubemap_init (bool ok)
 clipvol_init
 =================
 */
-static bool clipvol_init (bool ok)
+static erbool clipvol_init (erbool ok)
 {
     if (!ok)
         return true;

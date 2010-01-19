@@ -34,7 +34,7 @@ typedef struct g_entity_s
     int lua_ref;
     int lua_dataref;
     void *physics_data;
-    bool  render_valid;
+    erbool  render_valid;
     int   render_index;
     void *render_data;
 
@@ -55,7 +55,7 @@ typedef struct g_entity_s
 
 extern int lua_entity_value_index;
 
-bool g_entity_is_valid (const g_entity_t *ent) GNUC_CONST;
+erbool g_entity_is_valid (const g_entity_t *ent) GNUC_CONST;
 
 void g_entity_add_field (g_field_t *field) GNUC_NONNULL;
 void g_entity_add_field_list (g_field_t *fields, int index) GNUC_NONNULL;

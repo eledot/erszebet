@@ -20,7 +20,7 @@
 #include "common.h"
 #include "video/video_private.h"
 
-static bool keyboard_i = false;
+static erbool keyboard_i = false;
 
 static mem_pool_t mempool;
 
@@ -115,7 +115,7 @@ static const char *key_names[] =
 
 static bind_t key_binds['z' - '0'];
 static bind_t key_special_binds[STSIZE(key_names)];
-static bool key_repeat;
+static erbool key_repeat;
 
 /*
 =================
@@ -175,7 +175,7 @@ static void bind_f (GNUC_UNUSED const struct cmd_s *cmd, GNUC_UNUSED int source,
 key_set_repeat
 =================
 */
-void key_set_repeat (bool repeat)
+void key_set_repeat (erbool repeat)
 {
 #ifdef ENGINE_VIDEO_SDL
     if (repeat)
@@ -190,7 +190,7 @@ void key_set_repeat (bool repeat)
 key_event
 =================
 */
-void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int mod, bool is_down)
+void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int mod, erbool is_down)
 {
     if (is_down)
     {
@@ -225,7 +225,7 @@ void key_event (int printable, GNUC_UNUSED int printable_shift, int normal, int 
 keyboard_init
 =================
 */
-bool keyboard_init (void)
+erbool keyboard_init (void)
 {
     mem_alloc_static_pool("keyboard", 0);
 

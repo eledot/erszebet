@@ -40,7 +40,7 @@
 #undef false
 #undef true
 
-typedef enum { false = 0, true } bool;
+typedef enum { false = 0, true } erbool;
 
 /**
  * @brief Maximal filename length (passed to fs_* funcs) including \0
@@ -75,7 +75,7 @@ extern int         tok_argc;
 extern const char *tok_argv[];
 
 int string_tokenize (const char *text) GNUC_NONNULL;
-bool filename_is_valid (const char *name) GNUC_NONNULL GNUC_CONST;
-bool varname_is_valid (const char *name) GNUC_NONNULL GNUC_CONST;
+erbool filename_is_valid (const char *name) GNUC_NONNULL GNUC_CONST;
+erbool varname_is_valid (const char *name) GNUC_NONNULL GNUC_CONST;
 
 #endif /* !_MISC_H */

@@ -61,7 +61,7 @@ static int snd_wav_stream_func (GNUC_UNUSED snd_stream_t *stream,
 snd_wav_find_chunk
 =================
 */
-GNUC_NONNULL static bool snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
+GNUC_NONNULL static erbool snd_wav_find_chunk (const uint8_t **buffer, int *size, const char *chunk)
 {
     int i;
 
@@ -86,7 +86,7 @@ GNUC_NONNULL static bool snd_wav_find_chunk (const uint8_t **buffer, int *size, 
 snd_wav_get_wav_info
 =================
 */
-GNUC_NONNULL static bool snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
+GNUC_NONNULL static erbool snd_wav_get_wav_info (const uint8_t *buffer, int size, wav_info_t *wav)
 {
     const uint8_t *b  = buffer;
     int            s  = size;
@@ -148,7 +148,7 @@ GNUC_NONNULL static bool snd_wav_get_wav_info (const uint8_t *buffer, int size, 
 snd_wav_load
 =================
 */
-GNUC_NONNULL static bool snd_wav_load (const char   *name,
+GNUC_NONNULL static erbool snd_wav_load (const char   *name,
                                        snd_stream_t *stream)
 {
     fs_file_t  f;

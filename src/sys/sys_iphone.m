@@ -24,18 +24,22 @@
 
 #import "engine.h"
 
-@implementation erszebet_iphoneAppDelegate
-
+@implementation AppDelegate
 @synthesize window;
-@synthesize glView;
 
 - (void) applicationDidFinishLaunching:(UIApplication *)application
 {
     errno = 0;
 
+    CGRect winSize = [[UIScreen mainScreen] bounds];
+    window = [[UIWindow alloc] initWithFrame:winSize];
+    glView = [[EAGLView alloc] initWithFrame:winSize];
+    [window addSubview:glView];
     glView.animation_interval = 1.0 / 60.0;
+
     [glView createFramebuffer];
     [glView startAnimation];
+    [window makeKeyAndVisible];
 
     engine_start();
 }
@@ -58,8 +62,8 @@
 
 - (void) dealloc
 {
-    [glView release];
     [window release];
+    [glView release];
     [super dealloc];
 }
 
@@ -76,7 +80,7 @@ int main (int argc, char **argv)
 
     sys_arg_set(argc, argv);
 
-    int res = UIApplicationMain(argc, argv, nil, nil);
+    int res = UIApplicationMain(argc, argv, nil, @"AppDelegate");
     [pool release];
 
     return res;

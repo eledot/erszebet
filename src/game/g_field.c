@@ -33,7 +33,7 @@ const char *g_field_type_to_string (int type)
         [G_FIELD_TYPE_VECTOR] = "vector",
         [G_FIELD_TYPE_STRING] = "string_callback",
         [G_FIELD_TYPE_STRING_COPY] = "string_copy",
-        [G_FIELD_TYPE_BOOL] = "bool",
+        [G_FIELD_TYPE_ERBOOL] = "erbool",
         [G_FIELD_TYPE_CUSTOM_CALLBACK] = "custom_callback"
     };
 
@@ -78,8 +78,8 @@ int g_field_value_to_string (const void *data, const g_field_t *field, char *buf
             len = snprintf(buffer, size, "\"%s\"", *(const char **)value);
         break;
 
-    case G_FIELD_TYPE_BOOL:
-        len = snprintf(buffer, size, (*(const bool *)value) ? "true" : "false");
+    case G_FIELD_TYPE_ERBOOL:
+        len = snprintf(buffer, size, (*(const erbool *)value) ? "true" : "false");
         break;
 
     default:
@@ -131,8 +131,8 @@ void g_fields_set_default_values (void *data, const g_field_t *fields)
             /* NULL by default */
             break;
 
-        case G_FIELD_TYPE_BOOL:
-            *(bool *)field = f->default_value.BOOL;
+        case G_FIELD_TYPE_ERBOOL:
+            *(erbool *)field = f->default_value.ERBOOL;
             break;
 
         default:
@@ -171,7 +171,7 @@ void g_fields_free_values (void *data, const g_field_t *fields)
 g_fields_pop
 =================
 */
-void g_fields_pop (void *data, const g_field_t *fields, bool check)
+void g_fields_pop (void *data, const g_field_t *fields, erbool check)
 {
     const g_field_t *f;
 

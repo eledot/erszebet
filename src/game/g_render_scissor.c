@@ -26,7 +26,7 @@ typedef struct ent_render_scissor_s
 
     int width;
     int height;
-    bool disabler;
+    erbool disabler;
 }ent_render_scissor_t;
 
 /*
@@ -64,7 +64,7 @@ static g_field_t ent_fields_render_scissor[] =
 #define STRUCTURE_FOR_OFFSETS ent_render_scissor_t
     G_FIELD("width",    width,    INTEGER, 0,    NULL),
     G_FIELD("height",   height,   INTEGER, 0,    NULL),
-    G_FIELD("disabler", disabler, BOOL,    true, NULL),
+    G_FIELD("disabler", disabler, ERBOOL,    true, NULL),
     G_FIELD_NULL
 };
 

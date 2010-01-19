@@ -203,7 +203,7 @@ static void ejpeg_dest (j_compress_ptr cinfo, void *outfile)
 image_jpeg_load
 =================
 */
-GNUC_NONNULL static bool image_jpeg_load (const char *name, image_t *im)
+GNUC_NONNULL static erbool image_jpeg_load (const char *name, image_t *im)
 {
     fs_file_t                     f;
     unsigned char                *p, *image = NULL;
@@ -291,7 +291,7 @@ error:
 image_jpeg_save
 =================
 */
-GNUC_NONNULL static bool image_jpeg_save (const char *name, const image_t *im)
+GNUC_NONNULL static erbool image_jpeg_save (const char *name, const image_t *im)
 {
     fs_file_t                   f;
     struct jpeg_compress_struct cs;

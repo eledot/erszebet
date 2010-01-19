@@ -37,7 +37,7 @@ typedef struct snd_stream_s
     int       stream_data_size;
     int       stream_data_format;
     int       stream_data_rate;
-    bool      streaming;
+    erbool      streaming;
 
     int       data_size;
     uint8_t  *data;
@@ -52,9 +52,9 @@ typedef struct snd_plugin_s
 {
     const char *name;
     const char * const *extensions;
-    bool (*init) (void);
+    erbool (*init) (void);
     void (*shutdown) (void);
-    bool (*load) (const char *name, snd_stream_t *stream);
+    erbool (*load) (const char *name, snd_stream_t *stream);
 }snd_plugin_t;
 
 extern mem_pool_t snd_mempool;

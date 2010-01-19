@@ -54,9 +54,9 @@ typedef struct r_sprite_s
     r_texture_t *frames[0];
 }r_sprite_t;
 
-bool r_sprite_load (const char  *name,
+erbool r_sprite_load (const char  *name,
                     int          type,
-                    bool         search_minimal,
+                    erbool         search_minimal,
                     r_sprite_t **sprite) GNUC_NONNULL GNUC_WARN_UNUSED_RES;
 void r_sprite_unload (r_sprite_t *sprite) GNUC_NONNULL;
 
@@ -65,7 +65,7 @@ void r_sprite_draw (const r_sprite_t *sprite,
                     double width,
                     double height) GNUC_NONNULL;
 
-bool r_sprite_init (void);
+erbool r_sprite_init (void);
 void r_sprite_shutdown (void);
 
 #endif /* !_R_SPRITE_H */

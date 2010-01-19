@@ -65,7 +65,7 @@ cmd_t *cmd_find (const char *name)
 cmd_t *cmd_register (const char *name, const char *alias, cmd_action_t action, int flags)
     GNUC_NONNULL_ARGS(1, 3);
 
-bool cmd_init (void);
+erbool cmd_init (void);
 void cmd_shutdown (void);
 
 #endif /* !_CMD_H */

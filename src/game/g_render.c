@@ -45,7 +45,7 @@ static const g_render_plugin_t * const g_render_plugins[] =
 
 enum { g_render_plugins_num = STSIZE(g_render_plugins) };
 
-static bool g_render_plugins_usable[g_render_plugins_num];
+static erbool g_render_plugins_usable[g_render_plugins_num];
 
 static g_field_t ent_fields_render_common[] =
 {

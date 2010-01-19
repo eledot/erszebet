@@ -42,7 +42,7 @@ static linefont_t *fonts;
 r_linefont_load
 =================
 */
-bool r_linefont_load (const char *name, const char *chars, r_linefont_t **font)
+erbool r_linefont_load (const char *name, const char *chars, r_linefont_t **font)
 {
     int charslen;
     r_sprite_t *sprite, tmpsprite = { .name = name, 0 };
@@ -193,7 +193,7 @@ void r_linefont_draw (r_linefont_t *font, const char *text)
 r_linefont_init
 =================
 */
-bool r_linefont_init (void)
+erbool r_linefont_init (void)
 {
     fonts = NULL;
 
