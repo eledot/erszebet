@@ -47,23 +47,18 @@
     return [CAEAGLLayer class];
 }
 
--(id)initWithFrame:(CGRect)frame
+- (id) initWithFrame:(CGRect)frame
 {
-    self = [super initWithFrame:frame];
-    if(self != nil)
-    {
+    if ((self = [super initWithFrame:frame]))
         self = [self init];
-    }
 
     return self;
 }
 
-- (id)initWithCoder:(NSCoder*)coder
+- (id) initWithCoder:(NSCoder*)coder
 {
-    if((self = [super initWithCoder:coder]))
-    {
+    if ((self = [super initWithCoder:coder]))
         self = [self init];
-    }       
 
     return self;
 }
