@@ -65,7 +65,7 @@ erbool r_linefont_load (const char *name, const char *chars, r_linefont_t **font
             realfont = NULL;
     }
 
-    if (!r_sprite_load(name, R_SPRITE_TYPE_LINE, true, &sprite))
+    if (!r_sprite_load(name, R_TEX_DEFAULT, true, &sprite))
     {
         sys_printf("can\'t load sprite \"%s\" for linefont\n", name);
         return false;

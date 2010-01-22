@@ -28,7 +28,7 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(r_texture_t, TEXTURE_NAME_COMPARATOR, next);
 
 static const int types[] =
 {
-    0,
+    GL_TEX_FL_UI - GL_TEX_FL_NOSCALE,
     GL_TEX_FL_UI
 };
 

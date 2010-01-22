@@ -76,25 +76,25 @@ GNUC_NONNULL static void r_sprite_search_minimal (const image_t     *image,
     const uint8_t *p;
     const int w = image->width << 2;
 
+    /* top to bottom */
+    for (i = 0, p = image->data; i < image->height ;i++, p += w)
+        for (j = 0; j < image->width ;j++)
+            if (p[(j << 2) + 3])
+                break;
+
+    coords[1] = coords[3] = i;
+
+    /* bottom to top */
+    for (i = image->height - 1, p = image->data; i >= 0 ;i--, p += w)
+        for (j = 0; j < image->width ;j++)
+            if (p[(j << 2) + 3])
+                break;
+
+    coords[5] = coords[7] = i;
+
     if (num_frames == 1)
     {
         /* FIXME -- test this */
-
-        /* top to bottom */
-        for (i = 0, p = image->data; i < image->height ;i++, p += w)
-            for (j = 0; j < image->width ;j++)
-                if (p[(j << 2) + 3])
-                    break;
-
-        coords[5] = coords[7] = i;
-
-        /* bottom to top */
-        for (i = image->height - 1, p = image->data; i >= 0 ;i--, p += w)
-            for (j = 0; j < image->width ;j++)
-                if (p[(j << 2) + 3])
-                    break;
-
-        coords[1] = coords[3] = i;
 
         /* left to right */
         for (i = 0; i < image->width ;i++)
@@ -162,12 +162,15 @@ GNUC_NONNULL static void r_sprite_search_minimal (const image_t     *image,
         }
     }
 
+    coords[1] = coords[3] = coords[1] * tex->texh / image->height;
+    coords[5] = coords[7] = coords[5] * tex->texh / image->height;
+
     for (n = 0; n < num_frames ;n++)
     {
         coords[(n << 3) + 0] /= image->width / tex->texw;
         coords[(n << 3) + 4] /= image->width / tex->texw;
-        coords[(n << 3) + 1] = coords[(n << 3) + 3] = 1.0f * tex->texh;
-        coords[(n << 3) + 5] = coords[(n << 3) + 7] = 0.0f;
+        coords[(n << 3) + 1] = coords[(n << 3) + 3] = coords[1];
+        coords[(n << 3) + 5] = coords[(n << 3) + 7] = coords[5];
         coords[(n << 3) + 6] /= image->width / tex->texw;
         coords[(n << 3) + 2] /= image->width / tex->texw;
     }
