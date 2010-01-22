@@ -23,7 +23,7 @@
 #define GAME_MAIN_FILE "game/main.lua"
 #else
 #include "fs_helpers_apple.h"
-#define GAME_MAIN_FILE fs_get_resource_path("main.lua", g_mempool)
+#define GAME_MAIN_FILE fs_get_resource_path("luac.out")
 #endif
 
 static erbool g_i = false;

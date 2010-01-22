@@ -53,7 +53,7 @@ SGLIB_DEFINE_SORTED_LIST_FUNCTIONS(file_t, FILE_NAME_COMPARATOR, next);
 static erbool fs_i = false;
 
 static file_t *files;
-static mem_pool_t mempool;
+mem_pool_t fs_mempool;
 
 static cvar_t *fs_base;
 static cvar_t *fs_home;
@@ -137,7 +137,7 @@ fs_file_t fs_open (const char *name_, int mode, int *size, erbool shout)
         if (NULL != size)
             *size = st.st_size;
 
-        if (NULL == (file = mem_alloc_static(sizeof(*file))))
+        if (NULL == (file = mem_alloc(fs_mempool, sizeof(*file))))
         {
             sys_printf("not enough memory for file structure (\"%s\")\n", name);
             continue;
@@ -408,12 +408,6 @@ erbool fs_init (void)
     const char *home, *s;
     char        tmp[MISC_MAX_FILENAME];
 
-    if (!fs_helpers_apple_init())
-    {
-        sys_printf("fs_helpers_apple_init failed\n");
-        return false;
-    }
-
     if (NULL == (home = getenv("HOME")) || !home[0])
     {
         sys_printf("$HOME env var hasn\'t been set\n");
@@ -444,7 +438,13 @@ erbool fs_init (void)
     }
 
     fs_add_paths(fs_base->s, fs_home->s);
-    mem_alloc_static_pool("fs", MAX_FILES * sizeof(file_t));
+    fs_mempool = mem_alloc_pool("fs", MAX_FILES * sizeof(file_t));
+
+    if (!fs_helpers_apple_init())
+    {
+        sys_printf("fs_helpers_apple_init failed\n");
+        return false;
+    }
 
     cmd_register("fs_list_files", NULL, &fs_list_files_f, 0);
 
@@ -470,7 +470,7 @@ void fs_shutdown (void)
     while (NULL != files)
         fs_close(files);
 
-    mem_free_static_pool();
+    mem_free_pool(&fs_mempool);
 
     fs_i = false;
 

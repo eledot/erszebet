@@ -30,64 +30,32 @@ static CFBundleRef cg_main_bundle;
 fs_get_resource_path
 =================
 */
-const char *fs_get_resource_path (const char *filename, mem_pool_t mempool)
+const char *fs_get_resource_path (const char *filename)
 {
-    char       *buffer;
-    CFStringRef path;
-    CFURLRef    url;
+    static char path[MISC_MAX_FILENAME];
 
-    if (NULL == (path = CFStringCreateWithCString(NULL, filename, kCFStringEncodingUTF8)))
-    {
-        sys_printf("CFStringCreateWithCString failed\n");
-        return NULL;
-    }
+    snprintf(path, sizeof(path), "%s/%s", paths[1].path, filename);
 
-    if (NULL == (url = CFBundleCopyResourceURL(cg_main_bundle, path, NULL, NULL)))
-    {
-        sys_printf("CFBundleCopyResourceURL failed\n");
-        CFRelease(path);
-        return NULL;
-    }
-
-    buffer = mem_alloc_static(MISC_MAX_FILENAME);
-    CFURLGetFileSystemRepresentation(url, true, (unsigned char *)buffer, MISC_MAX_FILENAME);
-    CFRelease(path);
-    CFRelease(url);
-
-    return buffer;
+    return path;
 }
 
 /*
 =================
-fs_get_url
+fs_get_resource_url
 =================
 */
-CFURLRef fs_get_url (const char *name_)
+CFURLRef fs_get_resource_url (const char *name)
 {
-    char        name[MISC_MAX_FILENAME * 2];
     CFStringRef filename;
     CFURLRef    url;
-    int         i;
 
-    for (i = 0; i < STSIZE(paths) ;i++)
-    {
-        if (!paths[i].valid)
-            continue;
+    if (NULL == (filename = CFStringCreateWithCString(NULL, fs_get_resource_path(name), kCFStringEncodingUTF8)))
+        return NULL;
 
-        snprintf(name, sizeof(name), "%s/%s", paths[i].path, name_);
+    url = CFBundleCopyResourceURL(cg_main_bundle, filename, NULL, NULL);
+    CFRelease(filename);
 
-        if (NULL == (filename = CFStringCreateWithCString(NULL, name, kCFStringEncodingUTF8)))
-            continue;
-
-        url = CFBundleCopyResourceURL(cg_main_bundle, filename, NULL, NULL);
-
-        CFRelease(filename);
-
-        if (NULL != url)
-            return url;
-    }
-
-    return NULL;
+    return url;
 }
 
 /*
@@ -95,24 +63,9 @@ CFURLRef fs_get_url (const char *name_)
 fs_get_data_provider
 =================
 */
-CGDataProviderRef fs_get_data_provider (const char *name_)
+CGDataProviderRef fs_get_data_provider (const char *name)
 {
-    CGDataProviderRef provider;
-    char              name[MISC_MAX_FILENAME * 2];
-    int               i;
-
-    for (i = 0; i < STSIZE(paths) ;i++)
-    {
-        if (!paths[i].valid)
-            continue;
-
-        snprintf(name, sizeof(name), "%s/%s", paths[i].path, name_);
-
-        if (NULL != (provider = CGDataProviderCreateWithFilename(name)))
-            return provider;
-    }
-
-    return NULL;
+    return CGDataProviderCreateWithFilename(fs_get_resource_path(name));
 }
 
 /*
@@ -122,11 +75,23 @@ fs_helpers_apple_init
 */
 erbool fs_helpers_apple_init (void)
 {
+    CFURLRef url;
+
     if (NULL == (cg_main_bundle = CFBundleGetMainBundle()))
     {
         sys_printf("CFBundleGetMainBundle failed\n");
         return false;
     }
+
+    if (NULL == (url = CFBundleCopyResourcesDirectoryURL(cg_main_bundle)))
+    {
+        sys_printf("CFBundleCopyResourcesDirectoryURL failed\n");
+        CFRelease(cg_main_bundle);
+        return false;
+    }
+
+    CFURLGetFileSystemRepresentation(url, true, (unsigned char *)paths[1].path, sizeof(paths[1].path));
+    CFRelease(url);
 
     return true;
 }

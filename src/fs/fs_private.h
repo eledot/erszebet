@@ -29,6 +29,8 @@ typedef struct
 
 #define FS_MAX_PATHS 4
 
+extern mem_pool_t fs_mempool;
+
 extern path_t paths[FS_MAX_PATHS];
 
 #endif /* !_FS_PRIVATE_H */
