@@ -25,13 +25,13 @@
 
 typedef CGImageRef (*im_prov_t) (CGDataProviderRef      source,
                                  const CGFloat          decode[],
-                                 erbool                   shouldInterpolate,
+                                 bool                   shouldInterpolate,
                                  CGColorRenderingIntent intent);
 
 static const im_prov_t providers[] =
 {
-    &CGImageCreateWithJPEGDataProvider,
-    &CGImageCreateWithPNGDataProvider
+    CGImageCreateWithPNGDataProvider,
+    CGImageCreateWithJPEGDataProvider
 };
 
 /*
@@ -45,8 +45,9 @@ GNUC_NONNULL static erbool image_cg_load (const char *name, image_t *im)
     CGImageRef        image = NULL;
     CGColorSpaceRef   color_space = NULL;
     CGContextRef      context = NULL;
-    int               width, height, error = true, prov;
+    int               width, height, prov;
     unsigned char    *data = NULL;
+    erbool            error = true;
 
     if (NULL == (provider = fs_get_data_provider(name)))
     {
@@ -102,6 +103,8 @@ GNUC_NONNULL static erbool image_cg_load (const char *name, image_t *im)
     im->height = height;
     im->data   = data;
 
+    sys_printf("loaded \"%s\"\n", name);
+
     error = false;
 
 error:
@@ -120,11 +123,11 @@ error:
     if (NULL != data && error)
         mem_free(data);
 
-    return error;
+    return !error;
 }
 
 /* FIXME -- png with premultipled alpha (fix by hand?) */
-static const char * const image_cg_extensions[] = { "jpg", "jpeg", NULL };
+static const char * const image_cg_extensions[] = { "png", "jpg", "jpeg", NULL };
 
 const image_plugin_t image_plugin_cg =
 {
