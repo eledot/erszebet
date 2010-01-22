@@ -26,8 +26,8 @@
 #include <CoreGraphics/CoreGraphics.h>
 
 const char *fs_get_resource_path (const char *filename);
-CFURLRef fs_get_resource_url (const char *name);
-CGDataProviderRef fs_get_data_provider (const char *name);
+CFURLRef fs_get_resource_url (const char *filename);
+CGDataProviderRef fs_get_data_provider (const char *filename);
 
 #endif
 

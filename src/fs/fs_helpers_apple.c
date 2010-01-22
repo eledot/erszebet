@@ -44,16 +44,16 @@ const char *fs_get_resource_path (const char *filename)
 fs_get_resource_url
 =================
 */
-CFURLRef fs_get_resource_url (const char *name)
+CFURLRef fs_get_resource_url (const char *filename)
 {
-    CFStringRef filename;
+    CFStringRef cffilename;
     CFURLRef    url;
 
-    if (NULL == (filename = CFStringCreateWithCString(NULL, fs_get_resource_path(name), kCFStringEncodingUTF8)))
+    if (NULL == (cffilename = CFStringCreateWithCString(NULL, fs_get_resource_path(filename), kCFStringEncodingUTF8)))
         return NULL;
 
-    url = CFBundleCopyResourceURL(cg_main_bundle, filename, NULL, NULL);
-    CFRelease(filename);
+    url = CFBundleCopyResourceURL(cg_main_bundle, cffilename, NULL, NULL);
+    CFRelease(cffilename);
 
     return url;
 }
@@ -63,9 +63,9 @@ CFURLRef fs_get_resource_url (const char *name)
 fs_get_data_provider
 =================
 */
-CGDataProviderRef fs_get_data_provider (const char *name)
+CGDataProviderRef fs_get_data_provider (const char *filename)
 {
-    return CGDataProviderCreateWithFilename(fs_get_resource_path(name));
+    return CGDataProviderCreateWithFilename(fs_get_resource_path(filename));
 }
 
 /*
