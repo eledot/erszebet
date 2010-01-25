@@ -90,8 +90,18 @@ erbool fs_helpers_apple_init (void)
         return false;
     }
 
+    CFStringRef home_dir = (CFStringRef)NSHomeDirectory();
+
+    CFStringGetCString(home_dir, paths[0].path, sizeof(paths[0].path), kCFStringEncodingASCII);
+    paths[0].valid = 1;
+    paths[0].rdonly = 0;
+
     CFURLGetFileSystemRepresentation(url, true, (unsigned char *)paths[1].path, sizeof(paths[1].path));
     CFRelease(url);
+    paths[1].valid = 1;
+    paths[1].rdonly = 1;
+
+    paths[2].valid = paths[3].valid = 0;
 
     return true;
 }
