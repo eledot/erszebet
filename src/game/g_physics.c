@@ -298,11 +298,10 @@ GNUC_NONNULL_ARGS(1, 3, 4) static erbool g_physics_touch (g_entity_t *self,
         g_push_vector(normal, 3);
 
         g_lua_call(4, 1);
-        lua_pop(lua_state, 1);
         ret = lua_toboolean(lua_state, 0);
     }
 
-    lua_pop(lua_state, 1);
+    lua_pop(lua_state, 2);
 
     return ret;
 }
