@@ -19,14 +19,27 @@
 
 #ifdef ENGINE_OS_IPHONE
 
+#include <QuartzCore/QuartzCore.h>
+#include <CoreGraphics/CoreGraphics.h>
+#include <CoreGraphics/CGColor.h>
+
 #include "render/r_private.h"
 #include "gl/gl_private.h"
 #include "sglib.h"
 
 typedef struct font_s
 {
-    r_font_t parms;
-    int      ref;
+    r_font_t  parms;
+    int       ref;
+
+    int glyph_delta;
+    int num_glyphs;
+    int units_per_em;
+    int ascent;
+    int descent;
+    int height;
+
+    CGFontRef cg_font;
 
     struct font_s *next;
 }font_t;
@@ -45,8 +58,94 @@ r_font_load
 */
 erbool r_font_load (const char *name, int ptsize, r_font_t **font)
 {
-    return false;
+    char tmp[MISC_MAX_FILENAME], *namecopy;
+    font_t *realfont, s = { .parms.name = name, 0 };
+
+    realfont = sglib_font_t_find_member(fonts, &s);
+
+    while (NULL != realfont)
+    {
+        if (realfont->parms.ptsize == ptsize)
+        {
+            realfont->ref++;
+            *font = (r_font_t *)realfont;
+            return true;
+        }
+
+        realfont = realfont->next;
+
+        if (NULL != realfont && FONT_NAME_COMPARATOR(&s, realfont))
+            realfont = NULL;
+    }
+
+    snprintf(tmp, sizeof(tmp), "fonts/%s.ttf", name);
+
+    CGDataProviderRef provider = fs_get_data_provider(tmp);
+
+    if (NULL == provider)
+    {
+        sys_printf("\"%s\": NULL provider\n", name);
+        return false;
+    }
+
+    CGFontRef cg_font = CGFontCreateWithDataProvider(provider);
+    CGDataProviderRelease(provider);
+
+    if (NULL == cg_font)
+    {
+        sys_printf("\"%s\": failed to create font from file\n", name);
+        return false;
+    }
+
+    int num_glyphs = CGFontGetNumberOfGlyphs(cg_font);
+    int glyph_delta = CGFontGetGlyphWithGlyphName(cg_font, CFSTR("A")) - 'A';
+    int units_per_em = CGFontGetUnitsPerEm(cg_font);
+    int ascent = CGFontGetAscent(cg_font);
+    int descent = CGFontGetDescent(cg_font);
+
+    int namelen = strlen(name);
+
+    realfont = mem_alloc(r_mempool, sizeof(*realfont) + namelen + 1);
+
+    namecopy = (void *)realfont + sizeof(*realfont);
+    realfont->parms.name = namecopy;
+    realfont->parms.ptsize = ptsize;
+    realfont->ref = 1;
+    strlcpy(namecopy, name, namelen + 1);
+
+    realfont->num_glyphs = num_glyphs;
+    realfont->glyph_delta = glyph_delta;
+    realfont->units_per_em = units_per_em;
+    realfont->ascent = ascent;
+    realfont->descent = descent;
+    realfont->height = (ascent - descent) * ptsize / units_per_em;
+
+    realfont->cg_font = cg_font;
+
+    *font = (r_font_t *)realfont;
+    sglib_font_t_add(&fonts, realfont);
+
+    return true;
 }
+
+/*
+=================
+get_text_width
+=================
+*/
+static int get_text_width (const CGGlyph *glyphs, int len, const font_t *realfont)
+{
+    int advances[len];
+    CGFontGetGlyphAdvances(realfont->cg_font, glyphs, len, advances);
+
+    int advance = 0;
+    for (int i = 0; i < len ;i++)
+        advance += advances[i];
+
+    return advance * realfont->parms.ptsize / realfont->units_per_em;
+}
+
+extern void CGFontGetGlyphsForUnichars(CGFontRef, const UniChar[], const CGGlyph[], size_t);
 
 /*
 =================
@@ -61,6 +160,68 @@ void r_font_draw_to_texture (r_font_t *font,
                              int *texw,
                              int *texh)
 {
+    font_t *realfont = (font_t *)font;
+    CFStringRef string = CFStringCreateWithBytes(nil, (const unsigned char *)text, strlen(text), kCFStringEncodingUTF8, false);
+    int len = CFStringGetLength(string);
+    CGGlyph glyphs[len];
+    UniChar chars[len];
+
+    for (int i = 0; i < len ;i++)
+        chars[i] = CFStringGetCharacterAtIndex(string, i);
+
+    CGFontGetGlyphsForUnichars(realfont->cg_font, chars, glyphs, len);
+
+    *w = get_text_width(glyphs, len, realfont);
+    *h = realfont->height;
+
+    sys_printf(">>  HEIGHT is %i\n", *h);
+
+    unsigned char *data = mem_alloc(r_mempool, (*w) * (*h));
+    CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
+    CGContextRef context = CGBitmapContextCreate(data, *w, *h, 8, *w, space, kCGImageAlphaNone);
+    float components[] = { 1, 1 };
+    CGColorRef color = CGColorCreate(space, components);
+    CGColorSpaceRelease(space);
+
+    CGContextSetTextDrawingMode(context, kCGTextFill);
+    CGContextSetFillColorWithColor(context, color);
+    CGContextSetStrokeColorWithColor(context, color);
+
+    CGContextSetFont(context, realfont->cg_font);
+    CGContextSetFontSize(context, realfont->parms.ptsize);
+
+    CGContextShowGlyphsAtPoint(context, 0, (*h) - realfont->parms.ptsize, glyphs, len);
+    CGContextFlush(context);
+
+    image_t im = { .name = "text", .miplevels = 0, .format = 0 };
+    im.width = *w;
+    im.height = *h;
+    im.data_size = (*w) * (*h) << 2;
+    im.data = mem_alloc(r_mempool, im.data_size);
+
+    for (int i = 0; i < *h ;i++)
+    {
+        unsigned char *target = im.data + (*w) * (i << 2);
+
+        for (int j = 0; j < *w ;j++)
+        {
+            unsigned char c = data[(*w) * i + j];
+            target[(j << 2) + 0] = target[(j << 2) + 1] = target[(j << 2) + 2] = c;
+            target[(j << 2) + 3] = c ? 0xff : 0x00;
+        }
+    }
+
+    if (!gl_texture_create(&im, GL_TEX_FL_UI, gltex, texw, texh))
+    {
+        sys_printf("failed to draw to texture (gl_texture_create)\n");
+    }
+
+    if (NULL != im.data)
+        mem_free(im.data);
+
+    CGColorRelease(color);
+    CGContextRelease(context);
+    mem_free(data);
 }
 
 /*
@@ -70,6 +231,14 @@ r_font_unload
 */
 void r_font_unload (r_font_t *font)
 {
+    font_t *realfont = (font_t *)font;
+
+    if (--realfont->ref > 0)
+        return;
+
+    CGFontRelease(realfont->cg_font);
+    sglib_font_t_delete(&fonts, realfont);
+    mem_free(realfont);
 }
 
 /*
