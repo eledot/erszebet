@@ -174,8 +174,6 @@ void r_font_draw_to_texture (r_font_t *font,
     *w = get_text_width(glyphs, len, realfont);
     *h = realfont->height;
 
-    sys_printf(">>  HEIGHT is %i\n", *h);
-
     unsigned char *data = mem_alloc(r_mempool, (*w) * (*h));
     CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
     CGContextRef context = CGBitmapContextCreate(data, *w, *h, 8, *w, space, kCGImageAlphaNone);
