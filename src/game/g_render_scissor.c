@@ -62,9 +62,9 @@ GNUC_NONNULL static void ent_render_scissor_set (g_entity_t *ent)
 static g_field_t ent_fields_render_scissor[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_scissor_t
-    G_FIELD("width",    width,    INTEGER, 0,    NULL),
-    G_FIELD("height",   height,   INTEGER, 0,    NULL),
-    G_FIELD("disabler", disabler, ERBOOL,    true, NULL),
+    G_FIELD("width",    width,    INTEGER, 0,     NULL),
+    G_FIELD("height",   height,   INTEGER, 0,     NULL),
+    G_FIELD("disabler", disabler, ERBOOL,  false, NULL),
     G_FIELD_NULL
 };
 
