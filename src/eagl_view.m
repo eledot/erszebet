@@ -149,6 +149,10 @@
                                  buffer_depth);
     GLERROR();
 
+    video_orientation = (([UIDevice currentDevice].orientation == UIDeviceOrientationPortrait) ?
+                         VIDEO_PORTRAIT :
+                         VIDEO_LANDSCAPE);
+
     if (GL_FRAMEBUFFER_COMPLETE_OES != glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES))
     {
         GLERROR();
