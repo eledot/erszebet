@@ -125,6 +125,9 @@ static void render_set_callback (g_entity_t *ent)
             f->callback(ent);
         }
     }
+
+    if (NULL != plugin_new->set)
+        plugin_new->set(ent);
 }
 
 /*
