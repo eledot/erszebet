@@ -32,7 +32,8 @@ mem_pool_t g_mempool;
 lua_State *lua_state;
 double g_time;
 
-static double g_start_time;
+static double  g_start_time;
+static cvar_t *g_speed;
 
 enum
 {
@@ -489,7 +490,7 @@ g_frame
 */
 void g_frame (void)
 {
-    g_time = sys_time - g_start_time;
+    g_time = (sys_time - g_start_time) * g_speed->f;
     g_set_double("time", g_time);
     g_entity_frame();
     g_physics_frame();
@@ -724,6 +725,9 @@ g_init
 erbool g_init (void)
 {
     const char *file;
+
+    g_speed = cvar_get("g_speed", "1.0", CVAR_FL_MIN);
+    g_speed->min = 0.1;
 
     g_mempool = mem_alloc_pool("game", 0);
 
