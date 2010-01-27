@@ -57,7 +57,7 @@ static void physics_set_body_callback (g_entity_t *ent) GNUC_NONNULL;
 static g_field_t ent_fields_physics[] =
 {
 #define STRUCTURE_FOR_OFFSETS g_physics_data_t
-    G_FIELD("solid",          is_solid,    ERBOOL,     true,         NULL),
+    G_FIELD("solid",          is_solid,    ERBOOL,   true,         NULL),
     G_FIELD("velocity",       velocity,    VECTOR,   NULL,         &physics_common_callback),
     G_FIELD("velocity_x",     velocity[0], DOUBLE,   0.0,          &physics_common_callback),
     G_FIELD("velocity_y",     velocity[1], DOUBLE,   0.0,          &physics_common_callback),
@@ -372,7 +372,7 @@ void g_physics_update_ent_origin_angle (g_entity_t *ent)
     if (NULL == data)
         return;
 
-    data->body->p = cpv(ent->origin[0], ent->origin[1]);
+    cpBodySetPos(data->body, cpv(ent->origin[0], ent->origin[1]));
     cpBodySetAngle(data->body, ent->angle);
 
     /* rehash static objects */
