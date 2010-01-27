@@ -160,7 +160,6 @@ GNUC_NONNULL static void ent_set_attached_to (g_entity_t *ent)
     {
         ent->offset[0] = ent->origin[0];
         ent->offset[1] = ent->origin[1];
-        sys_printf("new attach\n");
     }
 
     to->num_attachments++;
