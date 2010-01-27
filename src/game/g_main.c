@@ -625,10 +625,18 @@ game_lua_get_video_info
 static int game_lua_get_video_info (lua_State *lst)
 {
     lua_createtable(lst, VIDEO_INFO_LAST - 1, 0);
+#ifdef ENGINE_OS_IPHONE
     lua_pushinteger(lst, (video_orientation == VIDEO_LANDSCAPE) ? VIDEO_INFO_HEIGHT : VIDEO_INFO_WIDTH);
+#else
+    lua_pushinteger(lst, VIDEO_INFO_WIDTH);
+#endif
     lua_pushinteger(lst, video_width);
     lua_settable(lst, -3);
+#ifdef ENGINE_OS_IPHONE
     lua_pushinteger(lst, (video_orientation == VIDEO_LANDSCAPE) ? VIDEO_INFO_WIDTH : VIDEO_INFO_HEIGHT);
+#else
+    lua_pushinteger(lst, VIDEO_INFO_HEIGHT);
+#endif
     lua_pushinteger(lst, video_height);
     lua_settable(lst, -3);
     lua_pushinteger(lst, VIDEO_INFO_FULLSCREEN);
