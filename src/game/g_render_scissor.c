@@ -45,7 +45,14 @@ GNUC_NONNULL static void ent_render_scissor_draw (const g_entity_t *ent)
     else
     {
         glEnable(GL_SCISSOR_TEST);
+#ifdef ENGINE_OS_IPHONE
+        if (video_orientation == VIDEO_LANDSCAPE)
+            glScissor(ent->origin[1], ent->origin[0], r->height, r->width);
+        else
+            glScissor(ent->origin[0], ent->origin[1], r->width, r->height);
+#else
         glScissor(ent->origin[0], ent->origin[1], r->width, r->height);
+#endif
     }
 }
 
