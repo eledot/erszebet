@@ -265,7 +265,7 @@ erbool r_sprite_load (const char  *name,
         if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
             goto error;
 
-        if (!r_texture_load(frames_names[1], type, image, s->frames))
+        if (!r_texture_load(frames_names[1], type, image, &s->frames[0]))
         {
             sys_printf("failed to load texture for sprite \"%s\"\n", name);
             goto error;
@@ -282,6 +282,34 @@ erbool r_sprite_load (const char  *name,
             mem_free(image->data);
         }
     }
+    /* montaged textures */
+    else if (num == 3 && *frames_names[0] == '#')
+    {
+        num = strtol(frames_names[0] + 1, NULL, 0);
+        int in_row = strtol(frames_names[1], NULL, 0);
+
+        if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + sizeof(r_texture_t *) + nlen)))
+            goto error;
+
+        if (!r_texture_load(frames_names[2], type, image, &s->frames[0]))
+        {
+            sys_printf("failed to load texture for sprite \"%s\"\n", name);
+            goto error;
+        }
+
+        s->type = R_SPRITE_TYPE_GRID;
+        namecopy = (char *)s + sizeof(r_sprite_t) + sizeof(r_texture_t *);
+        s->inc = s->frames[0]->texw / (float)in_row;
+        s->in_column = ceilf((float)num / (float)in_row);
+        s->hinc = s->frames[0]->texh / s->in_column;
+        s->in_row = in_row;
+
+        sys_printf("!! %i %i %.2f %.2f !!\n", s->in_row, s->in_column, s->inc, s->hinc);
+
+        if (NULL != image)
+            mem_free(image->data);
+    }
+    /* normal sprite */
     else
     {
         if (NULL == (s = mem_alloc(r_mempool, sizeof(r_sprite_t) + num * sizeof(r_texture_t *) + nlen)))
@@ -402,14 +430,21 @@ void r_sprite_draw (const r_sprite_t *sprite,
 
     if (!(int)width)
     {
-        if (NULL == sprite->frames_coords)
+        if (R_SPRITE_TYPE_GRID == sprite->type)
+            width = tex->w / sprite->in_row;
+        else if (NULL == sprite->frames_coords)
             width = tex->w / sprite->frames_num;
         else
             width = tex->w * (sprite->frames_coords[(frame << 3) + 6] - sprite->frames_coords[(frame << 3) + 0]);
     }
 
     if (!(int)height)
-        height = tex->h;
+    {
+        if (R_SPRITE_TYPE_GRID == sprite->type)
+            height = tex->h / sprite->in_column;
+        else
+            height = tex->h;
+    }
 
     if (sprite->align & SPRITE_ALIGN_TOP)
         originy -= height;
@@ -434,8 +469,18 @@ void r_sprite_draw (const r_sprite_t *sprite,
         vt[1] = vt[3] = tex->texh;
         vt[5] = vt[7] = 0.0f;
         vt[6] = vt[2] = tex->texw;
+    }
+    else if (R_SPRITE_TYPE_GRID == sprite->type)
+    {
+        tex = sprite->frames[0];
 
-        gl_draw_quad(tex->gltex, verts, vt);
+        int y = frame / sprite->in_row;
+        int x = frame % sprite->in_row;
+
+        vt[0] = vt[4] = x * sprite->inc;
+        vt[5] = vt[7] = y * sprite->hinc;
+        vt[6] = vt[2] = vt[0] + sprite->inc;
+        vt[1] = vt[3] = vt[5] + sprite->hinc;
     }
     else
     {
@@ -452,9 +497,9 @@ void r_sprite_draw (const r_sprite_t *sprite,
         {
             vt = &sprite->frames_coords[frame << 3];
         }
-
-        gl_draw_quad(tex->gltex, verts, vt);
     }
+
+    gl_draw_quad(tex->gltex, verts, vt);
 }
 
 /*

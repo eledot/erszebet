@@ -25,7 +25,8 @@
 typedef enum
 {
     R_SPRITE_TYPE_TEXTURES = 0,
-    R_SPRITE_TYPE_LINE
+    R_SPRITE_TYPE_LINE,
+    R_SPRITE_TYPE_GRID
 }r_sprite_type_e;
 
 typedef enum
@@ -45,6 +46,9 @@ typedef struct r_sprite_s
     int   align;
     int   type;
     float inc;
+    float hinc;
+    int   in_row;
+    int   in_column;
 
     /* FIXME -- this is temporary hack right now */
     float *frames_coords;
