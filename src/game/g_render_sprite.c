@@ -62,8 +62,17 @@ GNUC_NONNULL static void sprite_reload_callback (g_entity_t *ent)
     ent->render_valid = true;
     r->name = r->sprite->name;
     r->frame = 0;
-    r->width = r->sprite->frames[0]->w / r->sprite->frames_num;
-    r->height = r->sprite->frames[0]->h;
+
+    if (R_SPRITE_TYPE_GRID == r->sprite->type)
+    {
+        r->width = r->sprite->frames[0]->w / r->sprite->in_row;
+        r->height = r->sprite->frames[0]->h / r->sprite->in_column;
+    }
+    else
+    {
+        r->width = r->sprite->frames[0]->w / r->sprite->frames_num;
+        r->height = r->sprite->frames[0]->h;
+    }
 }
 
 /*
