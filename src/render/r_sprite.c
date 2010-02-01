@@ -304,8 +304,6 @@ erbool r_sprite_load (const char  *name,
         s->hinc = s->frames[0]->texh / s->in_column;
         s->in_row = in_row;
 
-        sys_printf("!! %i %i %.2f %.2f !!\n", s->in_row, s->in_column, s->inc, s->hinc);
-
         if (NULL != image)
             mem_free(image->data);
     }
