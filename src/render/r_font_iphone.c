@@ -204,8 +204,8 @@ void r_font_draw_to_texture (r_font_t *font,
         for (int j = 0; j < *w ;j++)
         {
             unsigned char c = data[(*w) * i + j];
-            target[(j << 2) + 0] = target[(j << 2) + 1] = target[(j << 2) + 2] = c;
-            target[(j << 2) + 3] = c ? 0xff : 0x00;
+            target[(j << 2) + 0] = target[(j << 2) + 1] = target[(j << 2) + 2] = 0xff;
+            target[(j << 2) + 3] = c;
         }
     }
 
