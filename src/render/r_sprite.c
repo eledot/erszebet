@@ -120,7 +120,7 @@ GNUC_NONNULL static void r_sprite_search_minimal (const image_t     *image,
         for (n = 0; n < num_frames ;n++)
         {
             /* left to right */
-            for (; i < image->width ;i += 2)
+            for (; i < image->width ;i++)
             {
                 p = image->data + (i << 2);
 
@@ -131,9 +131,9 @@ GNUC_NONNULL static void r_sprite_search_minimal (const image_t     *image,
                     {
                         int oldj = j;
 
-                        coords[(n << 3) + 0] = coords[(n << 3) + 4] = i;
+                        coords[(n << 3) + 0] = coords[(n << 3) + 4] = i - 1;
 
-                        for (i += 2; i < image->width ;i += 2)
+                        for (i++; i < image->width ;i++)
                         {
                             p = image->data + (i << 2);
 
