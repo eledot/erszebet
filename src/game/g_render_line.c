@@ -150,9 +150,12 @@ GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
 static g_field_t ent_fields_render_line[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_line_t
-    G_FIELD("texture", name,   STRING, NULL, &line_set_texture_callback),
-    G_FIELD("width",   width,  DOUBLE, 1.0,  &line_recalculate),
-    G_FIELD("finish",  finish, VECTOR, NULL, &line_recalculate),
+    G_FIELD("texture",  name,      STRING, NULL, &line_set_texture_callback),
+    G_FIELD("width",    width,     DOUBLE, 1.0,  &line_recalculate),
+    G_FIELD("finish",   finish,    VECTOR, NULL, &line_recalculate),
+    G_FIELD("finish_x", finish[0], DOUBLE, 0.0,  &line_recalculate),
+    G_FIELD("finish_y", finish[1], DOUBLE, 0.0,  &line_recalculate),
+    G_FIELD("finish_z", finish[2], DOUBLE, 0.0,  &line_recalculate),
     G_FIELD_NULL
 };
 

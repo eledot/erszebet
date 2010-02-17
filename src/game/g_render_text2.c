@@ -32,7 +32,7 @@ typedef struct ent_render_text2_s
     int h;
     int align;
 
-    int offset[2];
+    float offset[2];
 
     const char *fontname;
     const char *chars;

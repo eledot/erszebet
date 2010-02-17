@@ -172,7 +172,7 @@ void r_font_draw_to_texture (r_font_t *font,
     CGFontGetGlyphsForUnichars(realfont->cg_font, chars, glyphs, len);
 
     *w = get_text_width(glyphs, len, realfont);
-    *h = realfont->height;
+    *h = realfont->height * 1.25;
 
     unsigned char *data = mem_alloc(r_mempool, (*w) * (*h));
     CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
@@ -208,7 +208,7 @@ void r_font_draw_to_texture (r_font_t *font,
             target[(j << 2) + 3] = c;
         }
     }
-
+ 
     if (!gl_texture_create(&im, GL_TEX_FL_UI, gltex, texw, texh))
     {
         sys_printf("failed to draw to texture (gl_texture_create)\n");

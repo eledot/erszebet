@@ -19,6 +19,7 @@
 
 #ifdef ENGINE_OS_IPHONE
 
+#import "AudioToolbox/AudioToolbox.h"
 #import "sys/sys_iphone.h"
 #import "eagl_view.h"
 
@@ -26,6 +27,16 @@
 
 @implementation AppDelegate
 @synthesize window;
+
+/*
+=================
+commonCallbackInterrupt
+=================
+*/
+static void commonCallbackInterrupt (void *sp, AudioQueuePropertyID st)
+{
+    /* FIXME */
+}
 
 - (void) applicationDidFinishLaunching:(UIApplication *)application
 {
@@ -40,6 +51,11 @@
     [glView createFramebuffer];
     [glView startAnimation];
     [window makeKeyAndVisible];
+
+    UInt32 category = kAudioSessionCategory_MediaPlayback;
+    AudioSessionInitialize(NULL, NULL, commonCallbackInterrupt, self);
+    AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(category), &category);
+    AudioSessionSetActive(true);
 
     engine_start();
 }

@@ -492,8 +492,8 @@ void g_frame (void)
 {
     g_time = (sys_time - g_start_time) * g_speed->f;
     g_set_double("time", g_time);
-    g_entity_frame();
     g_physics_frame();
+    g_entity_frame();
 }
 
 /*
