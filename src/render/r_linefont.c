@@ -145,7 +145,7 @@ void r_linefont_get_text_window (r_linefont_t *font, const char *text, int *widt
     int i, j;
 
     *width = 0;
-    *height = font->sprite->frames[0]->h;
+    *height = font->sprite->frames_coords[5] * font->sprite->frames[0]->h;
 
     for (i = 0; text[i] ;i++)
     {
@@ -178,7 +178,7 @@ void r_linefont_draw (r_linefont_t *font, const char *text)
             if (text[i] == font->chars[j])
             {
                 const float *coords = &font->sprite->frames_coords[j << 3];
-                int width = (coords[6] - coords[0]) * font->sprite->frames[0]->w;
+                float width = (coords[6] - coords[0]) * font->sprite->frames[0]->w;
                 int height = font->sprite->frames[0]->h;
                 r_sprite_draw(font->sprite, j, width, height);
                 gl_translate_rotate(width, 0.0, 0.0);
