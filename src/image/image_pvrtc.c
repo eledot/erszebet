@@ -66,8 +66,6 @@ GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
 {
     int            i, off, width, height;
     unsigned char *data;
-    erbool         with_alpha = (GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG == im->format ||
-                                 GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG == im->format);
 
     width = im->width;
     height = im->height;
