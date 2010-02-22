@@ -57,8 +57,6 @@ typedef struct pvrtc_header_s
     unsigned int surfs_num; /* number of surfaces */
 }pvrtc_header_t;
 
-static erbool image_pvrtc_i = false;
-
 /*
 =================
 image_pvrtc_teximage2d
@@ -68,18 +66,29 @@ GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
 {
     int            i, off, width, height;
     unsigned char *data;
+    erbool         with_alpha = (GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG == im->format ||
+                                 GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG == im->format);
 
     width = im->width;
     height = im->height;
-    off = (width * height) >> 2;
 
-    for (data = im->data, i = 0; data < im->data + im->data_size - off && i < im->miplevels ;i++)
+    if (GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG == im->format ||
+        GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG == im->format)
+    {
+        off = (width * height) >> 2;
+    }
+    else
+    {
+        off = (width * height) >> 1;
+    }
+
+    for (data = im->data, i = 0; i < im->miplevels ;i++)
     {
         glCompressedTexImage2D(GL_TEXTURE_2D,
                                i,
                                im->format,
-                               im->width,
-                               im->height,
+                               width,
+                               height,
                                0,
                                off,
                                data);
@@ -88,15 +97,16 @@ GNUC_NONNULL static void image_pvrtc_teximage2d (image_t *im)
             GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG == im->format)
         {
             data += ((width * height << 1) + 7) >> 3;
+            off = (width * height) >> 2;
         }
         else
         {
             data += ((width * height << 2) + 7) >> 3;
+            off = (width * height) >> 1;
         }
 
         width  > 1 ? width  >>= 1 : 1;
         height > 1 ? height >>= 1 : 1;
-        off = (width * height) >> 2;
     }
 }
 
@@ -111,9 +121,6 @@ GNUC_NONNULL static erbool image_pvrtc_load (const char *name, image_t *im)
     int            size, format, mipmaps_num = 1, pf;
     unsigned char *data = NULL;
     pvrtc_header_t header;
-
-    if (!image_pvrtc_i)
-        return false;
 
     if (NULL == (f = fs_open(name, FS_RDONLY, &size, false)))
         return false;
