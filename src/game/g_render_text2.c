@@ -129,10 +129,12 @@ GNUC_NONNULL static void ent_render_text2_draw (const g_entity_t *ent)
 static g_field_t ent_fields_render_text2[] =
 {
 #define STRUCTURE_FOR_OFFSETS ent_render_text2_t
-    G_FIELD("align", align,    INTEGER,     default_align, &text2_set_align_callback),
-    G_FIELD("font",  fontname, STRING,      NULL,          &text2_set_font_callback),
-    G_FIELD("chars", chars,    STRING,      NULL,          &text2_set_font_callback),
-    G_FIELD("text",  text,     STRING_COPY, NULL,          &text2_set_align_callback), 
+    G_FIELD("align",  align,    INTEGER,     default_align, &text2_set_align_callback),
+    G_FIELD("font",   fontname, STRING,      NULL,          &text2_set_font_callback),
+    G_FIELD("chars",  chars,    STRING,      NULL,          &text2_set_font_callback),
+    G_FIELD("text",   text,     STRING_COPY, NULL,          &text2_set_align_callback), 
+    G_FIELD("width",  w,        INTEGER,     0,             NULL),
+    G_FIELD("height", h,        INTEGER,     0,             NULL),
     G_FIELD_NULL
 };
 
