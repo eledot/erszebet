@@ -36,10 +36,6 @@ typedef struct cpHashSetBin {
 typedef int (*cpHashSetEqlFunc)(void *ptr, void *elt);
 // Used by cpHashSetInsert(). Called to transform the ptr into an element.
 typedef void *(*cpHashSetTransFunc)(void *ptr, void *data);
-// Iterator function for a hashset.
-typedef void (*cpHashSetIterFunc)(void *elt, void *data);
-// Reject function. Returns true if elt should be dropped.
-typedef int (*cpHashSetRejectFunc)(void *elt, void *data);
 
 typedef struct cpHashSet {
 	// Number of elements stored in the table.
@@ -54,7 +50,10 @@ typedef struct cpHashSet {
 	// Defaults to NULL.
 	void *default_value;
 	
-	cpHashSetBin **table;
+	// The table and recycled bins
+	cpHashSetBin **table, *pooledBins;
+	
+	cpArray *allocatedBuffers;
 } cpHashSet;
 
 // Basic allocation/destruction functions.
@@ -74,6 +73,9 @@ void *cpHashSetRemove(cpHashSet *set, cpHashValue hash, void *ptr);
 void *cpHashSetFind(cpHashSet *set, cpHashValue hash, void *ptr);
 
 // Iterate over a hashset.
+typedef void (*cpHashSetIterFunc)(void *elt, void *data);
 void cpHashSetEach(cpHashSet *set, cpHashSetIterFunc func, void *data);
-// Iterate over a hashset while rejecting certain elements.
-void cpHashSetReject(cpHashSet *set, cpHashSetRejectFunc func, void *data);
+
+// Iterate over a hashset, drop the element if the func returns false.
+typedef int (*cpHashSetFilterFunc)(void *elt, void *data);
+void cpHashSetFilter(cpHashSet *set, cpHashSetFilterFunc func, void *data);

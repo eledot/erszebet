@@ -27,7 +27,7 @@
 cpBody*
 cpBodyAlloc(void)
 {
-	return (cpBody *)malloc(sizeof(cpBody));
+	return (cpBody *)cpmalloc(sizeof(cpBody));
 }
 
 cpBodyVelocityFunc cpBodyUpdateVelocityDefault = cpBodyUpdateVelocity;
@@ -55,6 +55,8 @@ cpBodyInit(cpBody *body, cpFloat m, cpFloat i)
 	body->w_bias = 0.0f;
 	
 	body->data = NULL;
+	body->v_limit = (cpFloat)INFINITY;
+	body->w_limit = (cpFloat)INFINITY;
 //	body->active = 1;
 
 	return body;
@@ -66,13 +68,15 @@ cpBodyNew(cpFloat m, cpFloat i)
 	return cpBodyInit(cpBodyAlloc(), m, i);
 }
 
-void cpBodyDestroy(GNUC_UNUSED cpBody *body){}
+void cpBodyDestroy(cpBody *body){}
 
 void
 cpBodyFree(cpBody *body)
 {
-	if(body) cpBodyDestroy(body);
-	free(body);
+	if(body){
+		cpBodyDestroy(body);
+		cpfree(body);
+	}
 }
 
 void
@@ -100,14 +104,16 @@ void
 cpBodySlew(cpBody *body, cpVect pos, cpFloat dt)
 {
 	cpVect delta = cpvsub(pos, body->p);
-	body->v = cpvmult(delta, 1.0/dt);
+	body->v = cpvmult(delta, 1.0f/dt);
 }
 
 void
 cpBodyUpdateVelocity(cpBody *body, cpVect gravity, cpFloat damping, cpFloat dt)
 {
-	body->v = cpvadd(cpvmult(body->v, damping), cpvmult(cpvadd(gravity, cpvmult(body->f, body->m_inv)), dt));
-	body->w = body->w*damping + body->t*body->i_inv*dt;
+	body->v = cpvclamp(cpvadd(cpvmult(body->v, damping), cpvmult(cpvadd(gravity, cpvmult(body->f, body->m_inv)), dt)), body->v_limit);
+	
+	cpFloat w_limit = body->w_limit;
+	body->w = cpfclamp(body->w*damping + body->t*body->i_inv*dt, -w_limit, w_limit);
 }
 
 void

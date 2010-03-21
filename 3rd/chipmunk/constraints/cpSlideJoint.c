@@ -21,8 +21,8 @@
 
 #include <stdlib.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 static void
 preStep(cpSlideJoint *joint, cpFloat dt, cpFloat dt_inv)
@@ -35,14 +35,14 @@ preStep(cpSlideJoint *joint, cpFloat dt, cpFloat dt_inv)
 	
 	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
 	cpFloat dist = cpvlength(delta);
-	cpFloat pdist = 0.0;
+	cpFloat pdist = 0.0f;
 	if(dist > joint->max) {
 		pdist = dist - joint->max;
 	} else if(dist < joint->min) {
 		pdist = joint->min - dist;
 		dist = -dist;
 	}
-	joint->n = cpvmult(delta, 1.0f/(dist ? dist : INFINITY));
+	joint->n = cpvmult(delta, 1.0f/(dist ? dist : (cpFloat)INFINITY));
 	
 	// calculate mass normal
 	joint->nMass = 1.0f/k_scalar(a, b, joint->r1, joint->r2, joint->n);
@@ -106,7 +106,7 @@ CP_DefineClassGetter(cpSlideJoint)
 cpSlideJoint *
 cpSlideJointAlloc(void)
 {
-	return (cpSlideJoint *)malloc(sizeof(cpSlideJoint));
+	return (cpSlideJoint *)cpmalloc(sizeof(cpSlideJoint));
 }
 
 cpSlideJoint *
@@ -119,7 +119,7 @@ cpSlideJointInit(cpSlideJoint *joint, cpBody *a, cpBody *b, cpVect anchr1, cpVec
 	joint->min = min;
 	joint->max = max;
 	
-	joint->jnAcc = 0.0;
+	joint->jnAcc = 0.0f;
 	
 	return joint;
 }

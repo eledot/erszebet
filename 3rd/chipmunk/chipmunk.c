@@ -20,6 +20,7 @@
  */
  
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "chipmunk.h"
 
@@ -31,10 +32,27 @@ extern "C" {
 }
 #endif
 
+void
+cpMessage(char *message, char *condition, char *file, int line, int isError)
+{
+	fprintf(stderr, (isError ? "Aborting due to Chipmunk error: %s\n" : "Chipmunk warning: %s\n"), message);
+	fprintf(stderr, "\tFailed condition: %s\n", condition);
+	fprintf(stderr, "\tSource:%s:%d\n", file, line);
+	
+	if(isError) abort();
+}
+
+
+char *cpVersionString = "5.x.x";
 
 void
 cpInitChipmunk(void)
 {
+#ifndef NDEBUG
+	printf("Initializing Chipmunk v%s (Debug Enabled)\n", cpVersionString);
+	printf("Compile with -DNDEBUG defined to disable debug mode and runtime assertion checks\n");
+#endif
+	
 	cpInitCollisionFuncs();
 }
 
@@ -56,7 +74,7 @@ cpMomentForSegment(cpFloat m, cpVect a, cpVect b)
 cpFloat
 cpMomentForPoly(cpFloat m, const int numVerts, cpVect *verts, cpVect offset)
 {
-	cpVect *tVerts = (cpVect *)calloc(numVerts, sizeof(cpVect));
+	cpVect *tVerts = (cpVect *)cpcalloc(numVerts, sizeof(cpVect));
 	for(int i=0; i<numVerts; i++)
 		tVerts[i] = cpvadd(verts[i], offset);
 	
@@ -73,6 +91,15 @@ cpMomentForPoly(cpFloat m, const int numVerts, cpVect *verts, cpVect offset)
 		sum2 += a;
 	}
 	
-	free(tVerts);
+	cpfree(tVerts);
 	return (m*sum1)/(6.0f*sum2);
 }
+
+cpFloat
+cpMomentForBox(cpFloat m, cpFloat width, cpFloat height)
+{
+	return m*(width*width + height*height)/12.0;
+}
+
+
+#include "chipmunk_ffi.h"

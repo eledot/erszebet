@@ -20,6 +20,4 @@
  */
 
 // Collides two cpShape structures. (this function is lonely :( )
-int cpCollideShapes(cpShape *a, cpShape *b, cpContact **arr);
-
-void cpInitCollisionFuncs(void);
+int cpCollideShapes(cpShape *a, cpShape *b, cpContact *arr);

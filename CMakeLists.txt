@@ -72,7 +72,7 @@ else(WITH_LUAJIT)
   add_definitions(-I${DIR_3RD}/lua)
 endif(WITH_LUAJIT)
 
-add_definitions(-I${DIR_3RD}/chipmunk)
+add_definitions(-I${DIR_3RD}/chipmunk -DTARGET_OS_IPHONE=0)
 add_definitions(-I${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(NOT RELEASE)

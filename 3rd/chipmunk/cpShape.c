@@ -20,15 +20,15 @@
  */
  
 #include <stdlib.h>
-#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "chipmunk.h"
+#include "chipmunk_unsafe.h"
 
 #define CP_DefineShapeGetter(struct, type, member, name) \
 CP_DeclareShapeGetter(struct, type, name){ \
-	assert(shape->klass == &struct##Class); \
+	cpAssert(shape->klass == &struct##Class, "shape is not a "#struct); \
 	return ((struct *)shape)->member; \
 }
 cpHashValue SHAPE_ID_COUNTER = 0;
@@ -45,18 +45,19 @@ cpShapeInit(cpShape *shape, const cpShapeClass *klass, cpBody *body)
 {
 	shape->klass = klass;
 	
-	shape->id = SHAPE_ID_COUNTER;
+	shape->hashid = SHAPE_ID_COUNTER;
 	SHAPE_ID_COUNTER++;
 	
 	shape->body = body;
+	shape->sensor = 0;
 	
 	shape->e = 0.0f;
 	shape->u = 0.0f;
 	shape->surface_v = cpvzero;
 	
 	shape->collision_type = 0;
-	shape->group = 0;
-	shape->layers = -1;
+	shape->group = CP_NO_GROUP;
+	shape->layers = CP_ALL_LAYERS;
 	
 	shape->data = NULL;
 	
@@ -74,8 +75,10 @@ cpShapeDestroy(cpShape *shape)
 void
 cpShapeFree(cpShape *shape)
 {
-	if(shape) cpShapeDestroy(shape);
-	free(shape);
+	if(shape){
+		cpShapeDestroy(shape);
+		cpfree(shape);
+	}
 }
 
 cpBB
@@ -88,20 +91,16 @@ cpShapeCacheBB(cpShape *shape)
 }
 
 int
-cpShapePointQuery(cpShape *shape, cpVect p, cpLayers layers, cpGroup group){
-	if(!(group && shape->group && group == shape->group) && (layers&shape->layers)){
-		return shape->klass->pointQuery(shape, p);
-	}
-	
-	return 0;
+cpShapePointQuery(cpShape *shape, cpVect p){
+	return shape->klass->pointQuery(shape, p);
 }
 
-GNUC_UNUSED static int
-cpShapeSegmentQuery(cpShape *shape, cpVect a, cpVect b, cpLayers layers, cpGroup group, cpSegmentQueryInfo *info){
-	if(!(group && shape->group && group == shape->group) && (layers&shape->layers)){
-		shape->klass->segmentQuery(shape, a, b, info);
-	}
+int
+cpShapeSegmentQuery(cpShape *shape, cpVect a, cpVect b, cpSegmentQueryInfo *info){
+	cpSegmentQueryInfo blank = {NULL, 0.0f, cpvzero};
+	(*info) = blank;
 	
+	shape->klass->segmentQuery(shape, a, b, info);
 	return (info->shape != NULL);
 }
 
@@ -121,7 +120,7 @@ cpSegmentQueryInfoPrint(cpSegmentQueryInfo *info)
 cpCircleShape *
 cpCircleShapeAlloc(void)
 {
-	return (cpCircleShape *)calloc(1, sizeof(cpCircleShape));
+	return (cpCircleShape *)cpcalloc(1, sizeof(cpCircleShape));
 }
 
 static inline cpBB
@@ -160,7 +159,7 @@ circleSegmentQuery(cpShape *shape, cpVect center, cpFloat r, cpVect a, cpVect b,
 	
 	if(det >= 0.0f){
 		cpFloat t = (-qb - cpfsqrt(det))/(2.0f*qa);
-		if(0.0 <= t && t <= 1.0f){
+		if(0.0f<= t && t <= 1.0f){
 			info->shape = shape;
 			info->t = t;
 			info->n = cpvnormalize(cpvlerp(a, b, t));
@@ -206,7 +205,7 @@ CP_DefineShapeGetter(cpCircleShape, cpFloat, r, Radius)
 cpSegmentShape *
 cpSegmentShapeAlloc(void)
 {
-	return (cpSegmentShape *)calloc(1, sizeof(cpSegmentShape));
+	return (cpSegmentShape *)cpcalloc(1, sizeof(cpSegmentShape));
 }
 
 static cpBB
@@ -362,28 +361,28 @@ CP_DefineShapeGetter(cpSegmentShape, cpFloat, r, Radius)
 
 // Unsafe API (chipmunk_unsafe.h)
 
-GNUC_UNUSED static void
+void
 cpCircleShapeSetRadius(cpShape *shape, cpFloat radius)
 {
-	assert(shape->klass == &cpCircleShapeClass);
+	cpAssert(shape->klass == &cpCircleShapeClass, "Shape is not a circle shape.");
 	cpCircleShape *circle = (cpCircleShape *)shape;
 	
 	circle->r = radius;
 }
 
-GNUC_UNUSED static void
+void
 cpCircleShapeSetOffset(cpShape *shape, cpVect offset)
 {
-	assert(shape->klass == &cpCircleShapeClass);
+	cpAssert(shape->klass == &cpCircleShapeClass, "Shape is not a circle shape.");
 	cpCircleShape *circle = (cpCircleShape *)shape;
 	
 	circle->c = offset;
 }
 
-GNUC_UNUSED static void
+void
 cpSegmentShapeSetEndpoints(cpShape *shape, cpVect a, cpVect b)
 {
-	assert(shape->klass == &cpSegmentShapeClass);
+	cpAssert(shape->klass == &cpSegmentShapeClass, "Shape is not a segment shape.");
 	cpSegmentShape *seg = (cpSegmentShape *)shape;
 	
 	seg->a = a;
@@ -391,10 +390,10 @@ cpSegmentShapeSetEndpoints(cpShape *shape, cpVect a, cpVect b)
 	seg->n = cpvperp(cpvnormalize(cpvsub(b, a)));
 }
 
-GNUC_UNUSED static void
+void
 cpSegmentShapeSetRadius(cpShape *shape, cpFloat radius)
 {
-	assert(shape->klass == &cpSegmentShapeClass);
+	cpAssert(shape->klass == &cpSegmentShapeClass, "Shape is not a segment shape.");
 	cpSegmentShape *seg = (cpSegmentShape *)shape;
 	
 	seg->r = radius;

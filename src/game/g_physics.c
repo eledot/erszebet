@@ -311,17 +311,16 @@ GNUC_NONNULL_ARGS(1, 3, 4) static erbool g_physics_touch (g_entity_t *self,
 g_physics_collision
 =================
 */
-GNUC_NONNULL static int g_physics_collision (cpShape   *a,
-                                             cpShape   *b,
-                                             cpContact *contacts,
-                                             int        num_contacts,
-                                             cpFloat    normal_coef,
+GNUC_NONNULL static int g_physics_collision (cpArbiter *arbiter,
+                                             cpSpace   *space,
                                              GNUC_UNUSED void *data)
 {
     int i;
     erbool valid;
-    const g_physics_data_t *apd;
-    const g_physics_data_t *bpd;
+    cpShape *a, *b;
+    const g_physics_data_t *apd, *bpd;
+
+    cpArbiterGetShapes(arbiter, &a, &b);
 
     if (!g_entity_is_valid(a->data) || !g_entity_is_valid(b->data))
         return 0;
@@ -329,18 +328,18 @@ GNUC_NONNULL static int g_physics_collision (cpShape   *a,
     apd = ((const g_entity_t *)a->data)->physics_data;
     bpd = ((const g_entity_t *)b->data)->physics_data;
 
-    for (i = 0, valid = true; i < num_contacts && valid ;i++)
+    for (i = 0, valid = true; i < arbiter->numContacts && valid ;i++)
     {
         erbool atouch_blocked = true;
         erbool btouch_blocked = true;
         double origin[3];
         double normal[3];
 
-        origin[0] = contacts[i].p.x;
-        origin[1] = contacts[i].p.y;
+        origin[0] = arbiter->contacts[i].p.x;
+        origin[1] = arbiter->contacts[i].p.y;
         origin[2] = 0.0;
-        normal[0] = normal_coef * contacts[i].n.x;
-        normal[1] = normal_coef * contacts[i].n.y;
+        normal[0] = arbiter->contacts[i].n.x;
+        normal[1] = arbiter->contacts[i].n.y;
         normal[2] = 0.0;
 
         valid = g_entity_is_valid(a->data) && g_entity_is_valid(b->data);
@@ -644,7 +643,7 @@ void g_physics_init (void)
     physics_space = cpSpaceNew();
     physics_space->gravity = cpv(0.0f, -900.0f);
 
-    cpSpaceSetDefaultCollisionPairFunc(physics_space, g_physics_collision, NULL);
+    cpSpaceSetDefaultCollisionHandler(physics_space, g_physics_collision, NULL, NULL, NULL, NULL);
 
     lua_register(lua_state, "physics_point_query", &phys_lua_point_query);
     lua_register(lua_state, "physics_apply_impulse", &phys_lua_apply_impulse);

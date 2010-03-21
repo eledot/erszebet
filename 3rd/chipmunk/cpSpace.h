@@ -18,21 +18,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
+struct cpSpace;
+
 // Number of frames that contact information should persist.
 extern int cp_contact_persistence;
 
-// User collision pair function.
-typedef int (*cpCollFunc)(cpShape *a, cpShape *b, cpContact *contacts, int numContacts, cpFloat normal_coef, void *data);
+// User collision handler function types.
+typedef int (*cpCollisionBeginFunc)(cpArbiter *arb, struct cpSpace *space, void *data);
+typedef int (*cpCollisionPreSolveFunc)(cpArbiter *arb, struct cpSpace *space, void *data);
+typedef void (*cpCollisionPostSolveFunc)(cpArbiter *arb, struct cpSpace *space, void *data);
+typedef void (*cpCollisionSeparateFunc)(cpArbiter *arb, struct cpSpace *space, void *data);
 
 // Structure for holding collision pair function information.
 // Used internally.
-typedef struct cpCollPairFunc {
+typedef struct cpCollisionHandler {
 	cpCollisionType a;
 	cpCollisionType b;
-	cpCollFunc func;
+	cpCollisionBeginFunc begin;
+	cpCollisionPreSolveFunc preSolve;
+	cpCollisionPostSolveFunc postSolve;
+	cpCollisionSeparateFunc separate;
 	void *data;
-} cpCollPairFunc;
+} cpCollisionHandler;
+
+#define CP_MAX_CONTACTS_PER_ARBITER 6
+typedef struct cpContactBufferHeader {
+	int stamp;
+	struct cpContactBufferHeader *next;
+	unsigned int numContacts;
+} cpContactBufferHeader;
 
 typedef struct cpSpace{
 	// *** User definable fields
@@ -51,6 +66,9 @@ typedef struct cpSpace{
 	
 	// *** Internally Used Fields
 	
+	// When the space is locked, you should not add or remove objects;
+	int locked;
+	
 	// Time stamp. Is incremented on every call to cpSpaceStep().
 	int stamp;
 
@@ -60,8 +78,18 @@ typedef struct cpSpace{
 	
 	// List of bodies in the system.
 	cpArray *bodies;
+	
 	// List of active arbiters for the impulse solver.
-	cpArray *arbiters;
+	cpArray *arbiters, *pooledArbiters;
+	
+	// Linked list ring of contact buffers.
+	// Head is the current buffer. Tail is the oldest buffer.
+	// The list points in the direction of tail->head.
+	cpContactBufferHeader *contactBuffersHead, *contactBuffersTail;
+	
+	// List of buffers to be free()ed when destroying the space.
+	cpArray *allocatedBuffers;
+	
 	// Persistant contact set.
 	cpHashSet *contactSet;
 	
@@ -70,8 +98,10 @@ typedef struct cpSpace{
 	
 	// Set of collisionpair functions.
 	cpHashSet *collFuncSet;
-	// Default collision pair function.
-	cpCollPairFunc defaultPairFunc;
+	// Default collision handler.
+	cpCollisionHandler defaultHandler;
+	
+	cpHashSet *postStepCallbacks;
 } cpSpace;
 
 // Basic allocation/destruction functions.
@@ -85,11 +115,25 @@ void cpSpaceFree(cpSpace *space);
 // Convenience function. Frees all referenced entities. (bodies, shapes and constraints)
 void cpSpaceFreeChildren(cpSpace *space);
 
-// Collision pair function management functions.
-void cpSpaceAddCollisionPairFunc(cpSpace *space, cpCollisionType a, cpCollisionType b,
-                                 cpCollFunc func, void *data);
-void cpSpaceRemoveCollisionPairFunc(cpSpace *space, cpCollisionType a, cpCollisionType b);
-void cpSpaceSetDefaultCollisionPairFunc(cpSpace *space, cpCollFunc func, void *data);
+// Collision handler management functions.
+void cpSpaceSetDefaultCollisionHandler(
+	cpSpace *space,
+	cpCollisionBeginFunc begin,
+	cpCollisionPreSolveFunc preSolve,
+	cpCollisionPostSolveFunc postSolve,
+	cpCollisionSeparateFunc separate,
+	void *data
+);
+void cpSpaceAddCollisionHandler(
+	cpSpace *space,
+	cpCollisionType a, cpCollisionType b,
+	cpCollisionBeginFunc begin,
+	cpCollisionPreSolveFunc preSolve,
+	cpCollisionPostSolveFunc postSolve,
+	cpCollisionSeparateFunc separate,
+	void *data
+);
+void cpSpaceRemoveCollisionHandler(cpSpace *space, cpCollisionType a, cpCollisionType b);
 
 // Add and remove entities from the system.
 cpShape *cpSpaceAddShape(cpSpace *space, cpShape *shape);
@@ -102,10 +146,26 @@ void cpSpaceRemoveStaticShape(cpSpace *space, cpShape *shape);
 void cpSpaceRemoveBody(cpSpace *space, cpBody *body);
 void cpSpaceRemoveConstraint(cpSpace *space, cpConstraint *constraint);
 
+// Post Step function definition
+typedef void (*cpPostStepFunc)(cpSpace *space, void *obj, void *data);
+// Register a post step function to be called after cpSpaceStep() has finished.
+// obj is used a key, you can only register one callback per unique value for obj
+void cpSpaceAddPostStepCallback(cpSpace *space, cpPostStepFunc func, void *obj, void *data);
+
 // Point query callback function
 typedef void (*cpSpacePointQueryFunc)(cpShape *shape, void *data);
 void cpSpacePointQuery(cpSpace *space, cpVect point, cpLayers layers, cpGroup group, cpSpacePointQueryFunc func, void *data);
 cpShape *cpSpacePointQueryFirst(cpSpace *space, cpVect point, cpLayers layers, cpGroup group);
+
+// Segment query callback function
+typedef void (*cpSpaceSegmentQueryFunc)(cpShape *shape, cpFloat t, cpVect n, void *data);
+int cpSpaceSegmentQuery(cpSpace *space, cpVect start, cpVect end, cpLayers layers, cpGroup group, cpSpaceSegmentQueryFunc func, void *data);
+cpShape *cpSpaceSegmentQueryFirst(cpSpace *space, cpVect start, cpVect end, cpLayers layers, cpGroup group, cpSegmentQueryInfo *out);
+
+// BB query callback function
+typedef void (*cpSpaceBBQueryFunc)(cpShape *shape, void *data);
+void cpSpaceBBQuery(cpSpace *space, cpBB bb, cpLayers layers, cpGroup group, cpSpaceBBQueryFunc func, void *data);
+
 
 // Iterator function for iterating the bodies in a space.
 typedef void (*cpSpaceBodyIterator)(cpBody *body, void *data);

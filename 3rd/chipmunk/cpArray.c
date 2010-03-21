@@ -32,7 +32,7 @@
 cpArray*
 cpArrayAlloc(void)
 {
-	return (cpArray *)calloc(1, sizeof(cpArray));
+	return (cpArray *)cpcalloc(1, sizeof(cpArray));
 }
 
 cpArray*
@@ -42,7 +42,7 @@ cpArrayInit(cpArray *arr, int size)
 	
 	size = (size ? size : 4);
 	arr->max = size;
-	arr->arr = (void **)malloc(size*sizeof(void**));
+	arr->arr = (void **)cpmalloc(size*sizeof(void**));
 	
 	return arr;
 }
@@ -56,15 +56,16 @@ cpArrayNew(int size)
 void
 cpArrayDestroy(cpArray *arr)
 {
-	free(arr->arr);
+	cpfree(arr->arr);
 }
 
 void
 cpArrayFree(cpArray *arr)
 {
-	if(!arr) return;
-	cpArrayDestroy(arr);
-	free(arr);
+	if(arr){
+		cpArrayDestroy(arr);
+		cpfree(arr);
+	}
 }
 
 void
@@ -72,18 +73,31 @@ cpArrayPush(cpArray *arr, void *object)
 {
 	if(arr->num == arr->max){
 		arr->max *= 2;
-		arr->arr = (void **)realloc(arr->arr, arr->max*sizeof(void**));
+		arr->arr = (void **)cprealloc(arr->arr, arr->max*sizeof(void**));
 	}
 	
 	arr->arr[arr->num] = object;
 	arr->num++;
 }
 
-void
-cpArrayDeleteIndex(cpArray *arr, int index)
+void *
+cpArrayPop(cpArray *arr)
 {
-	int last = --arr->num;
-	arr->arr[index] = arr->arr[last];
+	arr->num--;
+	
+	void *value = arr->arr[arr->num];
+	arr->arr[arr->num] = NULL;
+	
+	return value;
+}
+
+void
+cpArrayDeleteIndex(cpArray *arr, int idx)
+{
+	arr->num--;
+	
+	arr->arr[idx] = arr->arr[arr->num];
+	arr->arr[arr->num] = NULL;
 }
 
 void

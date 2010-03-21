@@ -26,9 +26,20 @@
 extern "C" {
 #endif
 
-#include <math.h>
+void cpMessage(char *message, char *condition, char *file, int line, int isError);
+#ifdef NDEBUG
+	#define	cpAssertWarn(condition, message)
+#else
+	#define cpAssertWarn(condition, message) if(!(condition)) cpMessage(message, #condition, __FILE__, __LINE__, 0)
+#endif
+
+#ifdef NDEBUG
+	#define	cpAssert(condition, message)
+#else
+	#define cpAssert(condition, message) if(!(condition)) cpMessage(message, #condition, __FILE__, __LINE__, 1)
+#endif
+
 #include "chipmunk_types.h"
-#include "../../src/gnuc.h"
 	
 static inline cpFloat
 cpfmax(cpFloat a, cpFloat b)
@@ -49,9 +60,50 @@ cpfabs(cpFloat n)
 }
 
 static inline cpFloat
-cpfclamp(cpFloat f, cpFloat min, cpFloat max){
+cpfclamp(cpFloat f, cpFloat min, cpFloat max)
+{
 	return cpfmin(cpfmax(f, min), max);
 }
+
+static inline cpFloat
+cpflerp(cpFloat f1, cpFloat f2, cpFloat t)
+{
+	return f1*(1.0f - t) + f2*t;
+}
+
+static inline cpFloat
+cpflerpconst(cpFloat f1, cpFloat f2, cpFloat d)
+{
+	return f1 + cpfclamp(f2 - f1, -d, d);
+}
+
+#ifndef INFINITY
+	#ifdef _MSC_VER
+		union MSVC_EVIL_FLOAT_HACK
+		{
+			unsigned __int8 Bytes[4];
+			float Value;
+		};
+		static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = {{0x00, 0x00, 0x80, 0x7F}};
+		#define INFINITY (INFINITY_HACK.Value)
+	#endif
+	
+	#ifdef __GNUC__
+		#define INFINITY (__builtin_inf())
+	#endif
+	
+	#ifndef INFINITY
+		#define INFINITY (1e1000)
+	#endif
+#endif
+
+// Maximum allocated size for various Chipmunk buffer sizes
+#define CP_BUFFER_BYTES (32*1024)
+
+#define cpmalloc malloc
+#define cpcalloc calloc
+#define cprealloc realloc
+#define cpfree free
 
 #include "cpVect.h"
 #include "cpBB.h"
@@ -73,6 +125,7 @@ cpfclamp(cpFloat f, cpFloat min, cpFloat max){
 #define CP_HASH_COEF (3344921057ul)
 #define CP_HASH_PAIR(A, B) ((cpHashValue)(A)*CP_HASH_COEF ^ (cpHashValue)(B)*CP_HASH_COEF)
 
+extern char *cpVersionString;
 void cpInitChipmunk(void);
 
 // Calculate the moment of inertia for a circle, r1 and r2 are the inner and outer diameters.
@@ -84,6 +137,9 @@ cpFloat cpMomentForSegment(cpFloat m, cpVect a, cpVect b);
 
 // Calculate the moment of inertia for a solid polygon shape.
 cpFloat cpMomentForPoly(cpFloat m, int numVerts, cpVect *verts, cpVect offset);
+
+// Calculate the moment of inertia for a solid box.
+cpFloat cpMomentForBox(cpFloat m, cpFloat width, cpFloat height);
 
 #ifdef __cplusplus
 }

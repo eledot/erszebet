@@ -65,14 +65,17 @@ k_scalar(cpBody *a, cpBody *b, cpVect r1, cpVect r2, cpVect n)
 	cpFloat mass_sum = a->m_inv + b->m_inv;
 	cpFloat r1cn = cpvcross(r1, n);
 	cpFloat r2cn = cpvcross(r2, n);
-
-	return mass_sum + a->i_inv*r1cn*r1cn + b->i_inv*r2cn*r2cn;
+	
+	cpFloat value = mass_sum + a->i_inv*r1cn*r1cn + b->i_inv*r2cn*r2cn;
+	cpAssert(value != 0.0, "Unsolvable collision or constraint.");
+	
+	return value;
 }
 
 static inline void
 k_tensor(cpBody *a, cpBody *b, cpVect r1, cpVect r2, cpVect *k1, cpVect *k2)
 {
-		// calculate mass matrix
+	// calculate mass matrix
 	// If I wasn't lazy and wrote a proper matrix class, this wouldn't be so gross...
 	cpFloat k11, k12, k21, k22;
 	cpFloat m_sum = a->m_inv + b->m_inv;
@@ -98,7 +101,10 @@ k_tensor(cpBody *a, cpBody *b, cpVect r1, cpVect r2, cpVect *k1, cpVect *k2)
 	k21 += r2nxy; k22 += r2xsq;
 	
 	// invert
-	cpFloat det_inv = 1.0f/(k11*k22 - k12*k21);
+	cpFloat determinant = k11*k22 - k12*k21;
+	cpAssert(determinant != 0.0, "Unsolvable constraint.");
+	
+	cpFloat det_inv = 1.0f/determinant;
 	*k1 = cpv( k22*det_inv, -k12*det_inv);
 	*k2 = cpv(-k21*det_inv,  k11*det_inv);
 }

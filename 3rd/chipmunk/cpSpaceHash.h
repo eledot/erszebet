@@ -51,13 +51,16 @@ typedef struct cpSpaceHash{
 	// BBox callback.
 	cpSpaceHashBBFunc bbfunc;
 
-	// Hashset of all the handles.
+	// Hashset of the handles and the recycled ones.
 	cpHashSet *handleSet;
+	cpArray *pooledHandles;
 	
-	cpSpaceHashBin **table;
-	// List of recycled bins.
-	cpSpaceHashBin *bins;
-
+	// The table and the recycled bins.
+	cpSpaceHashBin **table, *pooledBins;
+	
+	// list of buffers to free on destruction.
+	cpArray *allocatedBuffers;
+	
 	// Incremented on each query. See cpHandle.stamp.
 	int stamp;
 } cpSpaceHash;
@@ -98,3 +101,9 @@ void cpSpaceHashQuery(cpSpaceHash *hash, void *obj, cpBB bb, cpSpaceHashQueryFun
 void cpSpaceHashQueryInsert(cpSpaceHash *hash, void *obj, cpBB bb, cpSpaceHashQueryFunc func, void *data);
 // Rehashes while querying for each object. (Optimized case) 
 void cpSpaceHashQueryRehash(cpSpaceHash *hash, cpSpaceHashQueryFunc func, void *data);
+
+// Segment Query callback.
+// Return value is uesd for early exits of the query.
+// If while traversing the grid, the raytrace function detects that an entire grid cell is beyond the hit point, it will stop the trace.
+typedef cpFloat (*cpSpaceHashSegmentQueryFunc)(void *obj1, void *obj2, void *data);
+void cpSpaceHashSegmentQuery(cpSpaceHash *hash, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpaceHashSegmentQueryFunc func, void *data);

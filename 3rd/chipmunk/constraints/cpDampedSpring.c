@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 static cpFloat
 defaultSpringForce(cpDampedSpring *spring, cpFloat dist){
@@ -31,7 +31,7 @@ defaultSpringForce(cpDampedSpring *spring, cpFloat dist){
 }
 
 static void
-preStep(cpDampedSpring *spring, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
+preStep(cpDampedSpring *spring, cpFloat dt, cpFloat dt_inv)
 {
 	cpBody *a = spring->constraint.a;
 	cpBody *b = spring->constraint.b;
@@ -76,7 +76,7 @@ applyImpulse(cpDampedSpring *spring)
 }
 
 static cpFloat
-getImpulse(GNUC_UNUSED cpConstraint *constraint)
+getImpulse(cpConstraint *constraint)
 {
 	return 0.0f;
 }
@@ -91,7 +91,7 @@ CP_DefineClassGetter(cpDampedSpring)
 cpDampedSpring *
 cpDampedSpringAlloc(void)
 {
-	return (cpDampedSpring *)malloc(sizeof(cpDampedSpring));
+	return (cpDampedSpring *)cpmalloc(sizeof(cpDampedSpring));
 }
 
 cpDampedSpring *

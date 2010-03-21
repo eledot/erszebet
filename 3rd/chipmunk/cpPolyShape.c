@@ -21,14 +21,14 @@
  
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "chipmunk.h"
+#include "chipmunk_unsafe.h"
 
 cpPolyShape *
 cpPolyShapeAlloc(void)
 {
-	return (cpPolyShape *)calloc(1, sizeof(cpPolyShape));
+	return (cpPolyShape *)cpcalloc(1, sizeof(cpPolyShape));
 }
 
 static void
@@ -87,11 +87,11 @@ cpPolyShapeDestroy(cpShape *shape)
 {
 	cpPolyShape *poly = (cpPolyShape *)shape;
 	
-	free(poly->verts);
-	free(poly->tVerts);
+	cpfree(poly->verts);
+	cpfree(poly->tVerts);
 	
-	free(poly->axes);
-	free(poly->tAxes);
+	cpfree(poly->axes);
+	cpfree(poly->tAxes);
 }
 
 static int
@@ -145,7 +145,7 @@ cpPolyValidate(cpVect *verts, int numVerts)
 		cpVect b = verts[(i+1)%numVerts];
 		cpVect c = verts[(i+2)%numVerts];
 		
-		if(cpvcross(cpvsub(b, a), cpvsub(c, b)) >= 0.0f)
+		if(cpvcross(cpvsub(b, a), cpvsub(c, b)) > 0.0f)
 			return 0;
 	}
 	
@@ -155,17 +155,17 @@ cpPolyValidate(cpVect *verts, int numVerts)
 int
 cpPolyShapeGetNumVerts(cpShape *shape)
 {
-	assert(shape->klass == &polyClass);
+	cpAssert(shape->klass == &polyClass, "Shape is not a poly shape.");
 	return ((cpPolyShape *)shape)->numVerts;
 }
 
 cpVect
-cpPolyShapeGetVert(cpShape *shape, int index)
+cpPolyShapeGetVert(cpShape *shape, int idx)
 {
-	assert(shape->klass == &polyClass);
-	assert(index < cpPolyShapeGetNumVerts(shape));
+	cpAssert(shape->klass == &polyClass, "Shape is not a poly shape.");
+	cpAssert(0 <= idx && idx < cpPolyShapeGetNumVerts(shape), "Index out of range.");
 	
-	return ((cpPolyShape *)shape)->verts[index];
+	return ((cpPolyShape *)shape)->verts[idx];
 }
 
 
@@ -174,10 +174,10 @@ setUpVerts(cpPolyShape *poly, int numVerts, cpVect *verts, cpVect offset)
 {
 	poly->numVerts = numVerts;
 
-	poly->verts = (cpVect *)calloc(numVerts, sizeof(cpVect));
-	poly->tVerts = (cpVect *)calloc(numVerts, sizeof(cpVect));
-	poly->axes = (cpPolyShapeAxis *)calloc(numVerts, sizeof(cpPolyShapeAxis));
-	poly->tAxes = (cpPolyShapeAxis *)calloc(numVerts, sizeof(cpPolyShapeAxis));
+	poly->verts = (cpVect *)cpcalloc(numVerts, sizeof(cpVect));
+	poly->tVerts = (cpVect *)cpcalloc(numVerts, sizeof(cpVect));
+	poly->axes = (cpPolyShapeAxis *)cpcalloc(numVerts, sizeof(cpPolyShapeAxis));
+	poly->tAxes = (cpPolyShapeAxis *)cpcalloc(numVerts, sizeof(cpPolyShapeAxis));
 	
 	for(int i=0; i<numVerts; i++){
 		cpVect a = cpvadd(offset, verts[i]);
@@ -194,7 +194,7 @@ cpPolyShape *
 cpPolyShapeInit(cpPolyShape *poly, cpBody *body, int numVerts, cpVect *verts, cpVect offset)
 {
 	// Fail if the user attempts to pass a concave poly, or a bad winding.
-	assert(cpPolyValidate(verts, numVerts));
+	cpAssert(cpPolyValidate(verts, numVerts), "Polygon is concave or has a reversed winding.");
 	
 	setUpVerts(poly, numVerts, verts, offset);
 	cpShapeInit((cpShape *)poly, &polyClass, body);
@@ -208,12 +208,34 @@ cpPolyShapeNew(cpBody *body, int numVerts, cpVect *verts, cpVect offset)
 	return (cpShape *)cpPolyShapeInit(cpPolyShapeAlloc(), body, numVerts, verts, offset);
 }
 
+cpPolyShape *
+cpBoxShapeInit(cpPolyShape *poly, cpBody *body, cpFloat width, cpFloat height)
+{
+	cpFloat hw = width/2.0;
+	cpFloat hh = height/2.0;
+	
+	cpVect verts[] = {
+		cpv(-hw,-hh),
+		cpv(-hw, hh),
+		cpv( hw, hh),
+		cpv( hw,-hh),
+	};
+	
+	return cpPolyShapeInit(poly, body, 4, verts, cpvzero);
+}
+
+cpShape *
+cpBoxShapeNew(cpBody *body, cpFloat width, cpFloat height)
+{
+	return (cpShape *)cpBoxShapeInit(cpPolyShapeAlloc(), body, width, height);
+}
+
 // Unsafe API (chipmunk_unsafe.h)
 
-GNUC_UNUSED static void
+void
 cpPolyShapeSetVerts(cpShape *shape, int numVerts, cpVect *verts, cpVect offset)
 {
-	assert(shape->klass == &polyClass);
+	cpAssert(shape->klass == &polyClass, "Shape is not a poly shape.");
 	cpPolyShapeDestroy(shape);
 	setUpVerts((cpPolyShape *)shape, numVerts, verts, offset);
 }

@@ -21,8 +21,8 @@
 
 #include <stdlib.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 static void
 preStep(cpGearJoint *joint, cpFloat dt, cpFloat dt_inv)
@@ -82,7 +82,7 @@ CP_DefineClassGetter(cpGearJoint)
 cpGearJoint *
 cpGearJointAlloc(void)
 {
-	return (cpGearJoint *)malloc(sizeof(cpGearJoint));
+	return (cpGearJoint *)cpmalloc(sizeof(cpGearJoint));
 }
 
 cpGearJoint *
@@ -108,7 +108,7 @@ cpGearJointNew(cpBody *a, cpBody *b, cpFloat phase, cpFloat ratio)
 void
 cpGearJointSetRatio(cpConstraint *constraint, cpFloat value)
 {
-	cpConstraintCheckCast(constraint, cpGearJointGetClass());
+	cpConstraintCheckCast(constraint, cpGearJoint);
 	((cpGearJoint *)constraint)->ratio = value;
 	((cpGearJoint *)constraint)->ratio_inv = 1.0f/value;
 }

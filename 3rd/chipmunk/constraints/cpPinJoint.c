@@ -22,8 +22,8 @@
 #include <stdlib.h>
 //#include <math.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 static void
 preStep(cpPinJoint *joint, cpFloat dt, cpFloat dt_inv)
@@ -36,7 +36,7 @@ preStep(cpPinJoint *joint, cpFloat dt, cpFloat dt_inv)
 	
 	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
 	cpFloat dist = cpvlength(delta);
-	joint->n = cpvmult(delta, 1.0f/(dist ? dist : INFINITY));
+	joint->n = cpvmult(delta, 1.0f/(dist ? dist : (cpFloat)INFINITY));
 	
 	// calculate mass normal
 	joint->nMass = 1.0f/k_scalar(a, b, joint->r1, joint->r2, joint->n);
@@ -90,7 +90,7 @@ CP_DefineClassGetter(cpPinJoint);
 cpPinJoint *
 cpPinJointAlloc(void)
 {
-	return (cpPinJoint *)malloc(sizeof(cpPinJoint));
+	return (cpPinJoint *)cpmalloc(sizeof(cpPinJoint));
 }
 
 cpPinJoint *
@@ -105,7 +105,7 @@ cpPinJointInit(cpPinJoint *joint, cpBody *a, cpBody *b, cpVect anchr1, cpVect an
 	cpVect p2 = cpvadd(b->p, cpvrotate(anchr2, b->rot));
 	joint->dist = cpvlength(cpvsub(p2, p1));
 
-	joint->jnAcc = 0.0;
+	joint->jnAcc = 0.0f;
 	
 	return joint;
 }

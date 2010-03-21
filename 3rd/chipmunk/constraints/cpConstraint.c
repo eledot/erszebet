@@ -20,30 +20,24 @@
  */
 
 #include <stdlib.h>
-#include <assert.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 // TODO: Comment me!
 
 cpFloat cp_constraint_bias_coef = 0.1f;
 
-void cpConstraintDestroy(GNUC_UNUSED cpConstraint *constraint){}
+void cpConstraintDestroy(cpConstraint *constraint){}
 
 void
 cpConstraintFree(cpConstraint *constraint)
 {
-	if(constraint) cpConstraintDestroy(constraint);
-	free(constraint);
+	if(constraint){
+		cpConstraintDestroy(constraint);
+		cpfree(constraint);
+	}
 }
-
-void
-cpConstraintCheckCast(cpConstraint *constraint, const cpConstraintClass *klass)
-{
-	assert(constraint->klass == klass); // Bad cpConstraint type in cast
-}
-
 
 // *** defined in util.h
 
@@ -54,7 +48,7 @@ cpConstraintInit(cpConstraint *constraint, const cpConstraintClass *klass, cpBod
 	constraint->a = a;
 	constraint->b = b;
 	
-	constraint->maxForce = INFINITY;
+	constraint->maxForce = (cpFloat)INFINITY;
 	constraint->biasCoef = cp_constraint_bias_coef;
-	constraint->maxBias = INFINITY;
+	constraint->maxBias = (cpFloat)INFINITY;
 }

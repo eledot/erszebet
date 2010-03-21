@@ -21,11 +21,11 @@
 
 #include <stdlib.h>
 
-#include "../chipmunk.h"
-#include "util.h"
+#include "chipmunk.h"
+#include "constraints/util.h"
 
 static void
-preStep(cpSimpleMotor *joint, cpFloat dt, GNUC_UNUSED cpFloat dt_inv)
+preStep(cpSimpleMotor *joint, cpFloat dt, cpFloat dt_inv)
 {
 	cpBody *a = joint->constraint.a;
 	cpBody *b = joint->constraint.b;
@@ -77,7 +77,7 @@ CP_DefineClassGetter(cpSimpleMotor)
 cpSimpleMotor *
 cpSimpleMotorAlloc(void)
 {
-	return (cpSimpleMotor *)malloc(sizeof(cpSimpleMotor));
+	return (cpSimpleMotor *)cpmalloc(sizeof(cpSimpleMotor));
 }
 
 cpSimpleMotor *

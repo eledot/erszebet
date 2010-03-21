@@ -18,10 +18,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
-typedef struct cpVect{
-	cpFloat x,y;
-} cpVect;
 
 static const cpVect cpvzero={0.0f,0.0f};
 
@@ -34,6 +30,8 @@ cpv(const cpFloat x, const cpFloat y)
 
 // non-inlined functions
 cpFloat cpvlength(const cpVect v);
+cpVect cpvslerp(const cpVect v1, const cpVect v2, const cpFloat t);
+cpVect cpvslerpconst(const cpVect v1, const cpVect v2, const cpFloat a);
 cpVect cpvforangle(const cpFloat a); // convert radians to a normalized vector
 cpFloat cpvtoangle(const cpVect v); // convert a vector to radians
 char *cpvstr(const cpVect v); // get a string representation of a vector
@@ -132,6 +130,12 @@ static inline cpVect
 cpvclamp(const cpVect v, const cpFloat len)
 {
 	return (cpvdot(v,v) > len*len) ? cpvmult(cpvnormalize(v), len) : v;
+}
+
+static inline cpVect
+cpvlerpconst(cpVect v1, cpVect v2, cpFloat d)
+{
+	return cpvadd(v1, cpvclamp(cpvsub(v2, v1), d));
 }
 
 static inline cpFloat

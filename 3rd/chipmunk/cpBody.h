@@ -42,7 +42,7 @@ typedef struct cpBody{
 	cpFloat m, m_inv;
 	
 	// Moment of inertia and it's inverse.
-	// Always use cpBodySetMass() whenever changing the mass as these values must agree.
+	// Always use cpBodySetMoment() whenever changing the moment as these values must agree.
 	cpFloat i, i_inv;
 	
 	// *** Positional Properties
@@ -64,6 +64,9 @@ typedef struct cpBody{
 	
 	// User defined data pointer.
 	cpDataPointer data;
+	
+	// Maximum velocities this body can move at after integrating velocity
+	cpFloat v_limit, w_limit;
 	
 	// *** Internally Used Fields
 	
@@ -106,6 +109,8 @@ void cpBodySetAngle(cpBody *body, cpFloat a);
 CP_DefineBodyProperty(cpFloat, w, AngVel);
 CP_DefineBodyProperty(cpFloat, t, Torque);
 CP_DefineBodyGetter(cpVect, rot, Rot);
+CP_DefineBodyProperty(cpFloat, v_limit, VelLimit);
+CP_DefineBodyProperty(cpFloat, w_limit, AngVelLimit);
 
 //  Modify the velocity of the body so that it will move to the specified absolute coordinates in the next timestep.
 // Intended for objects that are moved manually with a custom velocity integration function.
