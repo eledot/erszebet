@@ -20,7 +20,7 @@
 #ifndef _G_RENDER_H
 #define _G_RENDER_H
 
-void g_render_entity (const g_entity_t *ent) GNUC_NONNULL;
+void g_render_entity (g_entity_t *ent) GNUC_NONNULL;
 void g_render_mem_free (g_entity_t *ent) GNUC_NONNULL;
 
 void g_render_init (void);

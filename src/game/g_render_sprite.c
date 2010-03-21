@@ -113,7 +113,7 @@ GNUC_NONNULL static void ent_render_sprite_unset (g_entity_t *ent)
 ent_render_sprite_draw
 =================
 */
-GNUC_NONNULL static void ent_render_sprite_draw (const g_entity_t *ent)
+GNUC_NONNULL static void ent_render_sprite_draw (g_entity_t *ent)
 {
     ent_render_sprite_t *r = ent->render_data;
 

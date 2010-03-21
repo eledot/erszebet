@@ -275,10 +275,10 @@ void g_physics_frame (void)
 g_physics_touch
 =================
 */
-GNUC_NONNULL_ARGS(1, 3, 4) static erbool g_physics_touch (g_entity_t *self,
-                                                        g_entity_t *other,
-                                                        const double *origin,
-                                                        const double *normal)
+GNUC_NONNULL_ARGS(1, 3, 4) static erbool g_physics_touch (g_entity_t   *self,
+                                                          g_entity_t   *other,
+                                                          const double *origin,
+                                                          const double *normal)
 {
     erbool ret = false;
 

@@ -118,7 +118,7 @@ GNUC_NONNULL static void ent_render_text2_unset (g_entity_t *ent)
 ent_render_text2_draw
 =================
 */
-GNUC_NONNULL static void ent_render_text2_draw (const g_entity_t *ent)
+GNUC_NONNULL static void ent_render_text2_draw (g_entity_t *ent)
 {
     ent_render_text2_t *r = ent->render_data;
 

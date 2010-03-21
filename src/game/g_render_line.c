@@ -130,7 +130,7 @@ GNUC_NONNULL static void ent_render_line_unset (g_entity_t *ent)
 ent_render_line_draw
 =================
 */
-GNUC_NONNULL static void ent_render_line_draw (const g_entity_t *ent)
+GNUC_NONNULL static void ent_render_line_draw (g_entity_t *ent)
 {
     ent_render_line_t *r = ent->render_data;
 

@@ -32,6 +32,7 @@ extern const g_render_plugin_t g_render_plugin_line;
 extern const g_render_plugin_t g_render_plugin_text;
 extern const g_render_plugin_t g_render_plugin_scissor;
 extern const g_render_plugin_t g_render_plugin_text2;
+extern const g_render_plugin_t g_render_plugin_fade;
 
 static const g_render_plugin_t * const g_render_plugins[] =
 {
@@ -40,7 +41,8 @@ static const g_render_plugin_t * const g_render_plugins[] =
     &g_render_plugin_line,
     &g_render_plugin_text,
     &g_render_plugin_scissor,
-    &g_render_plugin_text2
+    &g_render_plugin_text2,
+    &g_render_plugin_fade
 };
 
 enum { g_render_plugins_num = STSIZE(g_render_plugins) };
@@ -160,7 +162,7 @@ void g_render_mem_free (g_entity_t *ent)
 g_render_entity
 =================
 */
-void g_render_entity (GNUC_UNUSED const g_entity_t *ent)
+void g_render_entity (GNUC_UNUSED g_entity_t *ent)
 {
     if (ent->render_valid)
     {

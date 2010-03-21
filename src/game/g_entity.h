@@ -42,6 +42,8 @@ typedef struct g_entity_s
     struct g_entity_s *attached_to;
     struct g_entity_s *next;
 
+    erbool forced_think;
+
     /* fields accessible by lua code */
     char *classname;
 

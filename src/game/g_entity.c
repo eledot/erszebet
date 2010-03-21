@@ -490,6 +490,26 @@ void g_entity_draw_entities (void)
 
 /*
 =================
+g_entity_think
+=================
+*/
+static void g_entity_think (g_entity_t *ent)
+{
+    ent->lastthink = ent->nextthink;
+    lua_getref(lua_state, ent->lua_dataref);
+    lua_getfield(lua_state, -1, "think");
+
+    if (lua_isfunction(lua_state, -1))
+    {
+        lua_getref(lua_state, ent->lua_ref);
+        g_lua_call(1, 0);
+    }
+
+    lua_pop(lua_state, 1);
+}
+
+/*
+=================
 g_entity_frame
 =================
 */
@@ -518,19 +538,10 @@ void g_entity_frame (void)
             g_physics_update_ent_origin_angle(ent);
         }
 
-        if (IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
+        if (ent->forced_think || IS_BETWEEN(ent->nextthink, ent->lastthink, g_time))
         {
-            ent->lastthink = ent->nextthink;
-            lua_getref(lua_state, ent->lua_dataref);
-            lua_getfield(lua_state, -1, "think");
-
-            if (lua_isfunction(lua_state, -1))
-            {
-                lua_getref(lua_state, ent->lua_ref);
-                g_lua_call(1, 0);
-            }
-
-            lua_pop(lua_state, 1);
+            ent->forced_think = false;
+            g_entity_think(ent);
         }
     }
 }

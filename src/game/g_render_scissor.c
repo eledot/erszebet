@@ -34,7 +34,7 @@ typedef struct ent_render_scissor_s
 ent_render_scissor_draw
 =================
 */
-GNUC_NONNULL static void ent_render_scissor_draw (const g_entity_t *ent)
+GNUC_NONNULL static void ent_render_scissor_draw (g_entity_t *ent)
 {
     ent_render_scissor_t *r = ent->render_data;
 

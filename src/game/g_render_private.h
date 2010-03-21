@@ -45,7 +45,7 @@ typedef struct g_render_plugin_s
 
     void (* const set) (g_entity_t *ent);
     void (* const unset) (g_entity_t *ent);
-    void (* const draw) (const g_entity_t *ent);
+    void (* const draw) (g_entity_t *ent);
 
     erbool (* const init) (void);
     void (* const shutdown) (void);

@@ -485,6 +485,16 @@ void g_push_field (const void *data, int offset, int type)
 
 /*
 =================
+g_real_time
+=================
+*/
+double g_real_time (void)
+{
+    return (sys_get_time() - g_start_time) * g_speed->f;
+}
+
+/*
+=================
 g_frame
 =================
 */
@@ -753,7 +763,7 @@ erbool g_init (void)
 
     file = GAME_MAIN_FILE;
     sys_printf("loading gamecode from \"%s\"\n", file);
-
+	
     if (0 != g_error(luaL_loadfile(lua_state, file), "failed to load gamecode"))
     {
         return false;
