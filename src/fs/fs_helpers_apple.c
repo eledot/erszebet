@@ -68,7 +68,7 @@ CGDataProviderRef fs_get_data_provider (const char *filename)
     return CGDataProviderCreateWithFilename(fs_get_resource_path(filename));
 }
 
-CFStringRef NSHomeDirectory (void);
+void fs_get_documents_path (char *buffer, size_t buffer_size);
 
 /*
 =================
@@ -92,9 +92,7 @@ erbool fs_helpers_apple_init (void)
         return false;
     }
 
-    CFStringRef home_dir = NSHomeDirectory();
-
-    CFStringGetCString(home_dir, paths[0].path, sizeof(paths[0].path), kCFStringEncodingASCII);
+    fs_get_documents_path(paths[0].path, sizeof(paths[0].path));
     paths[0].valid = 1;
     paths[0].rdonly = 0;
 

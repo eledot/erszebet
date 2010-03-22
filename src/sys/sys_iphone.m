@@ -30,6 +30,18 @@
 
 /*
 =================
+fs_get_documents_path
+=================
+*/
+void fs_get_documents_path (char *buffer, size_t buffer_size)
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *dir = [paths objectAtIndex:0];
+    [dir getCString:buffer maxLength:buffer_size encoding:NSUTF8StringEncoding];
+}
+
+/*
+=================
 commonCallbackInterrupt
 =================
 */
