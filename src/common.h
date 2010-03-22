@@ -37,6 +37,13 @@ extern "C"
 #undef assert
 #define assert(unused) (void)0
 
+#if 0
+#define BLACK_AND_WHITE
+#define BW_R 0.3
+#define BW_G 0.59
+#define BW_B 0.11
+#endif
+
 #include "gnuc.h"
 #include "misc.h"
 #include "mem.h"

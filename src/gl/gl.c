@@ -118,7 +118,12 @@ gl_color
 */
 void gl_color (double r, double g, double b, double a)
 {
+#ifdef BLACK_AND_WHITE
+    double bw = BW_R * r + BW_G * g + BW_B * b;
+    eglColor4(bw, bw * 0.8, bw * 0.7, a);
+#else
     eglColor4(r, g, b, a);
+#endif
     GLERROR();
 }
 
@@ -415,7 +420,7 @@ erbool gl_init (void)
     glPointSize(1.0f);
     GLERROR();
 
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     GLERROR();
     glClearDepth(1.0f);
     GLERROR();

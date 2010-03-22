@@ -126,6 +126,22 @@ erbool image_load (const char *name, image_t *image)
 
             if (image_plugins[i]->load(tmp, image))
             {
+#ifdef BLACK_AND_WHITE
+                if (!image->miplevels && !image->format)
+                {
+                    int i, max = image->width * image->height * 4;
+
+                    for (i = 0; i < max ;i += 4)
+                    {
+                        unsigned char bw = (BW_R * image->data[i + 0] +
+                                            BW_G * image->data[i + 1] +
+                                            BW_B * image->data[i + 2]);
+                        image->data[i] = bw;
+                        image->data[i + 1] = bw * 0.8;
+                        image->data[i + 2] = bw * 0.7;
+                    }
+                }
+#endif
                 strlcpy(image->name, name, sizeof(image->name));
                 return true;
             }
