@@ -25,6 +25,7 @@ typedef struct ent_render_fade_s
 {
     RENDER_PLUGIN_COMMON_DATA;
 
+    erbool done;
     double alpha_end;
     double alpha_start;
     double length;
@@ -41,6 +42,7 @@ GNUC_NONNULL static void fade_set_alpha_end_callback (g_entity_t *ent)
     ent_render_fade_t *r = ent->render_data;
 
     r->alpha_start = r->alpha;
+    r->done = false;
 }
 
 /*
@@ -54,6 +56,7 @@ GNUC_NONNULL static void fade_set_length_callback (g_entity_t *ent)
 
     r->time_start = g_real_time();
     ent->render_valid = (r->length > 0);
+    r->done = false;
 }
 
 /*
@@ -69,8 +72,12 @@ GNUC_NONNULL static void ent_render_fade_draw (g_entity_t *ent)
 
     gl_draw_quad(0, verts, texcoords);
 
+    if (r->done)
+        return;
+
     if (r->time_start + r->length < g_real_time())
     {
+        r->done = true;
         r->alpha = r->alpha_end;
         ent->forced_think = true;
     }
