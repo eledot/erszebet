@@ -176,6 +176,7 @@ GNUC_NONNULL static erbool snd_wav_load (const char   *name,
         wav.data_size = file_size - wav.data_start;
     }
 
+    /* FIXME */
     stream->streaming = wav.data_size > PCM_MAX_NONSTREAMING;
 
     stream->stream_data_format = format;

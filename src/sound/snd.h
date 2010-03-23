@@ -20,7 +20,7 @@
 #ifndef _SND_OPENAL_H
 #define _SND_OPENAL_H
 
-#define PCM_MAX_NONSTREAMING (2 * 1024 * 1024)
+#define PCM_MAX_NONSTREAMING (8 * 1024 * 1024)
 
 struct snd_stream_s;
 
@@ -37,8 +37,15 @@ void snd_set_listener_pos (const float *pos) GNUC_NONNULL;
 void snd_set_listener_orientation (const float *ori) GNUC_NONNULL;
 void snd_set_listener_velocity (const float *vel) GNUC_NONNULL;
 
-snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags);
+snd_sound_t snd_load (const char *name, int flags);
 void snd_unload (snd_sound_t *sound);
+
+unsigned int snd_create_source (const snd_sound_t *sound);
+void snd_delete_source (unsigned int source);
+void snd_source_play (unsigned int source);
+void snd_source_stop (unsigned int source);
+void snd_source_set_looping (unsigned int source, erbool loop);
+erbool snd_source_is_playing (unsigned int source);
 
 void snd_frame (void);
 

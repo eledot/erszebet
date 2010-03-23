@@ -33,6 +33,8 @@ typedef struct sound_s
 {
     char name[MISC_MAX_FILENAME];
 
+    erbool looping;
+
     ALuint al_buffer;
     ALuint al_buffer2;
 
@@ -40,7 +42,6 @@ typedef struct sound_s
     snd_stream_t stream;
 
     struct sound_s *next;
-    struct sound_s *prev;
 }sound_t;
 
 mem_pool_t snd_mempool;
@@ -109,7 +110,10 @@ static void snd_check_error (const char *func, const char *file, int line)
             case AL_INVALID_VALUE:     msg = "invalid value";     break;
             case AL_INVALID_OPERATION: msg = "invalid operation"; break;
             case AL_OUT_OF_MEMORY:     msg = "out of memory";     break;
-            default:                   msg = "unknown";           break;
+            default:
+                msg = "unknown";
+                sys_printf("AL: UNKNOWN ERROR 0x%04x\n", err);
+                break;
             }
 
             al_error = err;
@@ -290,7 +294,7 @@ static GNUC_NONNULL erbool snd_load_internal (const char *name, sound_t *sound)
 snd_load
 =================
 */
-snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
+snd_sound_t snd_load (const char *name, int flags)
 {
     sound_t sound, *sound_allocated = NULL;
 
@@ -309,7 +313,7 @@ snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
         goto error;
     }
 
-    if (!sound.streaming)
+    if (!sound.stream.streaming)
     {
         alBufferData(sound.al_buffer,
                      sound.stream.stream_data_format,
@@ -317,6 +321,8 @@ snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
                      sound.stream.data_size,
                      sound.stream.stream_data_rate);
         ALERROR();
+
+        sys_printf("audio buffer: %u\n", sound.al_buffer);
 
         if (al_error)
         {
@@ -329,6 +335,7 @@ snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
     }
     else
     {
+        sys_printf("streaming sounds not supported!!!\n");
         /* FIXME -- streaming sounds */
     }
 
@@ -338,7 +345,12 @@ snd_sound_t snd_load (const char *name, GNUC_UNUSED int flags)
         goto error;
     }
 
+    if (flags & SND_FL_LOOPING)
+        sound.looping = true;
+
     memcpy(sound_allocated, &sound, sizeof(sound));
+
+    sound_allocated->next = sounds;
 
     return sound_allocated;
 
@@ -367,11 +379,130 @@ snd_unload
 */
 void snd_unload (snd_sound_t *sound)
 {
+    sound_t *s, *prev;
+
     if (NULL == sound)
     {
         sys_printf("NULL sound\n");
         return;
     }
+
+    for (s = sounds, prev = NULL; NULL != s ;s = s->next)
+    {
+        if ((snd_sound_t *)s == sound)
+        {
+            if (NULL == prev)
+                sounds = s->next;
+            else
+                prev->next = s->next;
+
+            alDeleteBuffers(1, &s->al_buffer);
+            ALERROR();
+            mem_free(sound);
+            break;
+        }
+
+        prev = s;
+    }
+}
+
+/*
+=================
+snd_create_source
+=================
+*/
+unsigned int snd_create_source (const snd_sound_t *sound)
+{
+    const sound_t *s = (const sound_t *)sound;
+    ALuint         source = 0;
+    float          pos[] = { 0.0f, 0.0f, 0.0f };
+
+    sys_printf("using audio buffer %u\n", s->al_buffer);
+
+    alGenSources(1, &source);
+    ALERROR();
+    alSourcei(source, AL_BUFFER, s->al_buffer);
+    ALERROR();
+    alSourcef(source, AL_PITCH, 1.0f);
+    ALERROR();
+    alSourcef(source, AL_GAIN, 1.0f);
+    ALERROR();
+    alSourcei(source, AL_LOOPING, s->looping);
+    ALERROR();
+    alSourcefv(source, AL_POSITION, pos);
+    ALERROR();
+
+    sys_printf("generated source %u\n", source);
+
+    return source;
+}
+
+/*
+=================
+snd_delete_source
+=================
+*/
+void snd_delete_source (unsigned int source)
+{
+    alDeleteSources(1, &source);
+    ALERROR();
+}
+
+/*
+=================
+snd_source_play
+=================
+*/
+void snd_source_play (unsigned int source)
+{
+    sys_printf("internal playing source %u\n", source);
+
+/*
+    if (snd_source_is_playing(source))
+    {
+        alSourceStop(source);
+        ALERROR();
+    }
+*/
+
+    alSourcePlay(source);
+    ALERROR();
+}
+
+/*
+=================
+snd_source_stop
+=================
+*/
+void snd_source_stop (unsigned int source)
+{
+    alSourceStop(source);
+    ALERROR();
+}
+
+/*
+=================
+snd_source_set_looping
+=================
+*/
+void snd_source_set_looping (unsigned int source, erbool loop)
+{
+    alSourcei(source, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
+    ALERROR();
+}
+
+/*
+=================
+snd_source_is_playing
+=================
+*/
+erbool snd_source_is_playing (unsigned int source)
+{
+    int value;
+    alGetSourcei(source, AL_SOURCE_STATE, &value);
+    ALERROR();
+
+    return AL_PLAYING == value;
 }
 
 /*
@@ -394,6 +525,26 @@ void snd_frame (void)
 
 /*
 =================
+snd_context_off
+=================
+*/
+void snd_context_off (void)
+{
+    alcMakeContextCurrent(NULL);
+}
+
+/*
+=================
+snd_context_on
+=================
+*/
+void snd_context_on (void)
+{
+    alcMakeContextCurrent(snd_context);
+}
+
+/*
+=================
 snd_init
 =================
 */
@@ -406,7 +557,7 @@ erbool snd_init (void)
     sounds = sounds_streaming = NULL;
 
     /* sound volume (0.0 - 1.0) */
-    s_volume = cvar_get("s_volume", "1", CVAR_FL_SAVE);
+    s_volume = cvar_get("s_volume", "0.5", CVAR_FL_SAVE);
     cvar_set_minmax(s_volume, 0.0, 1.0f);
     s_volume->callback = &s_volume_callback;
 

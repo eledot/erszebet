@@ -33,6 +33,7 @@ extern const g_render_plugin_t g_render_plugin_text;
 extern const g_render_plugin_t g_render_plugin_scissor;
 extern const g_render_plugin_t g_render_plugin_text2;
 extern const g_render_plugin_t g_render_plugin_fade;
+extern const g_render_plugin_t g_render_plugin_sound;
 
 static const g_render_plugin_t * const g_render_plugins[] =
 {
@@ -42,7 +43,10 @@ static const g_render_plugin_t * const g_render_plugins[] =
     &g_render_plugin_text,
     &g_render_plugin_scissor,
     &g_render_plugin_text2,
-    &g_render_plugin_fade
+    &g_render_plugin_fade,
+#ifdef ENGINE_SND
+    &g_render_plugin_sound
+#endif
 };
 
 enum { g_render_plugins_num = STSIZE(g_render_plugins) };
