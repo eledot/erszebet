@@ -218,7 +218,6 @@ static void apply_touches (NSSet *touches, int down)
     {
         CGPoint point = [touch locationInView: [touch view]];
         g_call_func("g_touchpad_event", "iidd", 1, down, (double)point.x, (double)point.y);
-        sys_printf("touch %i - %i %i\n", down, (int)point.x, (int)point.y);
     }
 }
 
