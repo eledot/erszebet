@@ -1,0 +1,9 @@
+Free open source cross-platform 2D game engine written in C.
+Beta development stage.
+
+Supported platforms: PC (Linux, FreeBSD), iPhone.
+
+Game code: Lua.
+Graphics: OpenGL.
+Sound: OpenAL.
+Physics: Chipmunk.
